@@ -5,12 +5,12 @@ using namespace std;
 using Eigen::MatrixXd;
 
 //takes a vector of an object (ie nodes)
-//the object tye Data must have a method get_data that outputs the 
+//the object type named here as Data must have a method get_data that outputs the 
 //constants of a line of a matrix in the form {a,b,c, ... ,d} such that
 //ax1 + bx2 + cx3 .... + d = 0
 //the matrix outputs the solution to the matrix equation in a vector float
 template<typename Data>
-vector<float> MatrixSolver(vector<Data> input){
+vector<double> MatrixSolver(vector<Data> input){
     //create a matrix with the correct dimensions
     MatrixXd matrix(input.size(),input.size());
     //create vectors for the left and right hand side of the equation
@@ -19,7 +19,7 @@ vector<float> MatrixSolver(vector<Data> input){
     //iterate through all the inputs
     for(int i=0; i < input.size(); i++){
         //for each input extract the row data
-        vector<float> row = input[i].get_data();
+        vector<double> row = input[i].get_data();
         //fill the corresponding matrix row with the input data
         for(int j=0; j<input.size(); j++){
 
@@ -33,7 +33,7 @@ vector<float> MatrixSolver(vector<Data> input){
     matrix = matrix.inverse();
     result = matrix * constants;
     //convert the output matrix to vector format
-    vector<float> output;
+    vector<double> output;
     for(int i=0; i < input.size(); i++){
         output.push_back(result(i));
     }
@@ -45,18 +45,18 @@ vector<float> MatrixSolver(vector<Data> input){
 //Test Code
 /*
 struct TestData{
-    vector<float> data;
-    vector<float> get_data(){
+    vector<double> data;
+    vector<double> get_data(){
         return data;
     }
-};*/
-/*
+};
+
 int main(){
     TestData row1{{1,2,3,-4}};
     TestData row2{{3,2,5,-4}};
     TestData row3{{7,2,3,-4}};
     vector<TestData> vec{row1,row2,row3};
-    vector<float> output = MatrixSolver(vec);
+    vector<double> output = MatrixSolver(vec);
     cout << output[2];
     //MatrixXd m(2,2);
     //m(0,0) = 0;
