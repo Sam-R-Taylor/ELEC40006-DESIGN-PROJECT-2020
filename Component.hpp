@@ -10,7 +10,7 @@ protected:
     std::string name;
     int anode;
     int cathode;
-
+    double value;
 
 public:
     Component();
@@ -30,6 +30,7 @@ public:
     reurns the cathode of the component
     */  
     int get_cathode() const {return cathode;}
+    double get_value() const {return value;}
 };
 
 
