@@ -10,6 +10,7 @@ protected:
     std::string name;
     int anode;
     int cathode;
+    double value;
 
 
 public:
