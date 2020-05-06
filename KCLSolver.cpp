@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 using namespace std;
 using Eigen::MatrixXd;
-
+//to compile use g++ -I eigen3 KCLSolver.cpp -o ...
 //takes a vector of an object (ie nodes)
 //the object type named here as Data must have a method get_data that outputs the 
 //constants of a line of a matrix in the form {a,b,c, ... ,d} such that
@@ -43,7 +43,7 @@ vector<double> MatrixSolver(vector<Data> input){
 
 
 //Test Code
-/*
+
 struct TestData{
     vector<double> data;
     vector<double> get_data(){
@@ -62,4 +62,4 @@ int main(){
     //m(0,0) = 0;
     ///cout << m;
 }
-*/
+
