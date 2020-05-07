@@ -6,6 +6,7 @@ using namespace std;
 using Eigen::MatrixXd;
 //to compile use g++ -I eigen3 KCLSolver.cpp -o ...
 
+//Test struct for a component
 struct Component{
     int anode;
     int cathode;
@@ -28,7 +29,7 @@ struct Component{
         return name;
     }
 };
-//template<typename Component>
+//Test struct for a Node
 struct Node{
         double voltage = 0;
         int index = 0;
@@ -43,95 +44,28 @@ struct Node{
         vector<Component> get_components(){
             return components;
         }
-/*
-        vector<double> coefficient_generator(vector<Node> nodes){
-            vector<double> coeffiecients(nodes.size() + 1,0);
-            for(Component component: components){
-                vector<double> sub_coeffiecients(nodes.size() + 1,0);
-                if(component.get_type() == 'R'){
-                    if(component.get_anode() == index){
-                        sub_coeffiecients[component.get_anode()] = 1/component.get_value();
-                        sub_coeffiecients[component.get_cathode()] = -1/component.get_value();
-                    }else{
-                        sub_coeffiecients[component.get_anode()] = -1/component.get_value();
-                        sub_coeffiecients[component.get_cathode()] = 1/component.get_value();
-                    }
-                }
-                if(component.get_type() == 'C'){
-                    sub_coeffiecients[nodes.size()] = component.value * component.get_anode() == index?1:-1;
-                }
-                if(component.get_type() == 'V'){
-                    if(component.get_anode() == index){
-                        sub_coeffiecients == 
-                        nodes[component.get_cathode()].coefficient_generator(this, nodes);
-                        sub_coeffiecients[index] = sub_coeffiecients[component.get_cathode()];
-                        sub_coeffiecients[nodes.size()] = sub_coeffiecients[component.get_cathode()] * -component.value;
-                        sub_coeffiecients[component.get_cathode()] = 0;
-                    }else{
-                        sub_coeffiecients == 
-                        nodes[component.get_anode()].coefficient_generator(this, nodes);
-                        sub_coeffiecients[index] = sub_coeffiecients[component.get_anode()];
-                        sub_coeffiecients[nodes.size()] = sub_coeffiecients[component.get_anode()] * component.value;
-                        sub_coeffiecients[component.get_anode()] = 0;
-                    }
-                }
-                for(int i=0; i < coeffiecients.size(); i++){
-                    coeffiecients[i] += sub_coeffiecients[i];
-                }
-                
-            }
-            coeffiecients[0] = 0;
-            return coeffiecients;
-        }
-        vector<double> coefficient_generator(Node *source_node, vector<Node> nodes){
-            vector<double> coeffiecients(nodes.size() + 1,0);
-            for(Component component: components){
-                if(component.get_anode() != source_node->get_index() && component.get_cathode() != source_node->get_index()){
-                    vector<double> sub_coeffiecients(nodes.size() + 1,0);
-                    if(component.get_type() == 'R'){
-                        if(component.get_anode() == index){
-                            sub_coeffiecients[component.get_anode()] = 1/component.get_value();
-                            sub_coeffiecients[component.get_cathode()] = -1/component.get_value();
-                        }else{
-                            sub_coeffiecients[component.get_anode()] = -1/component.get_value();
-                            sub_coeffiecients[component.get_cathode()] = 1/component.get_value();
-                        }
-                    }
-                    if(component.get_type() == 'C'){
-                        sub_coeffiecients[nodes.size()] = component.value * component.get_anode() == index?1:-1;
-                    }
-                    if(component.get_type() == 'V'){
-                        if(component.get_anode() == index){
-                            sub_coeffiecients == 
-                            nodes[component.get_cathode()].coefficient_generator(this, nodes);
-                            sub_coeffiecients[index] = sub_coeffiecients[component.get_cathode()];
-                            sub_coeffiecients[nodes.size()] = sub_coeffiecients[component.get_cathode()] * -component.value;
-                            sub_coeffiecients[component.get_cathode()] = 0;
-                        }else{
-                            sub_coeffiecients == 
-                            nodes[component.get_anode()].coefficient_generator(this, nodes);
-                            sub_coeffiecients[index] = sub_coeffiecients[component.get_anode()];
-                            sub_coeffiecients[nodes.size()] = sub_coeffiecients[component.get_anode()] * component.value;
-                            sub_coeffiecients[component.get_anode()] = 0;
-                        }
-                    }
-                    for(int i=0; i < coeffiecients.size(); i++){
-                        coeffiecients[i] += sub_coeffiecients[i];
-                    }
-                }
-            }
-            return coeffiecients;
-        }*/
 };
 
-vector<double> coefficient_generator(Node *node, Component *source_component, vector<Node> nodes){
-    //cout<<"voltage source " << node->get_index() << " " << source_node->get_index()<<endl;
+//creates the kcl equation for a node in the circuit
+//input is the current node and a list of nodes
+//output is a vector of doubles representing each of the coeefiicients {a,b,c...,d}
+//such that ax1 + bx2 + cx3 ...+ d =0
+//if being used for a super node include the component connecting the two nodes as the last parameter
+vector<double> coefficient_generator(Node *node, vector<Node> nodes, Component *source_component = nullptr){
+    //create a vector to store the output coefficients
     vector<double> coeffiecients(nodes.size() + 1,0);
+    //iterate through all the components connected to that node
     for(Component component: node->get_components()){
-        if(component.get_name() != source_component->get_name()){
+        //if the source component is not included just continue, otherwise only run if teh current component
+        //isn't the connecting component
+        if(source_component == nullptr || component.get_name() != source_component->get_name()){
+            //create a vector to store the contributions to the final coefficients of this component
             vector<double> sub_coeffiecients(nodes.size() + 1,0);
+            //if component type is resistor
             if(component.get_type() == 'R'){
+                //check with node of the resistor is the current node
                 if(component.get_anode() == node->get_index()){
+                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
                     sub_coeffiecients[component.get_anode()] += 1/component.get_value();
                     sub_coeffiecients[component.get_cathode()] += -1/component.get_value();
                 }
@@ -139,41 +73,44 @@ vector<double> coefficient_generator(Node *node, Component *source_component, ve
                     sub_coeffiecients[component.get_anode()] += -1/component.get_value();
                     sub_coeffiecients[component.get_cathode()] += 1/component.get_value();
                 }
-                //cout << "sub resistor" << sub_coeffiecients[node->get_index()]<< endl;
             }
+            //if component type is current source
             if(component.get_type() == 'C'){
-                sub_coeffiecients[nodes.size()] = component.value * (component.get_anode() == node->get_index()?-1:1);
+                //add the current source value to the final constant in the list of coeffiecients
+                sub_coeffiecients[nodes.size()] += component.value * (component.get_anode() == node->get_index()?-1:1);
             }
+            //if component is a voltage source
             if(component.get_type() == 'V'){
+                //check which end of the voltage source is connected to the current node
                 if(component.get_anode() == node->get_index()){
+                    //generate the coeffiecient for node on the other side of the voltage source
+                    //leaving out he connection to the current node by adding the source_component parameter
                     sub_coeffiecients = 
-                    coefficient_generator(&nodes[component.get_cathode()],&component, nodes);
+                    coefficient_generator(&nodes[component.get_cathode()], nodes,&component);
+                    //correct the coefficient by swapping "N2" with "N1 + V" and add the voltage constant
+                    //multiplied by the coefficient value to the constant term of the coefficients.
                     sub_coeffiecients[node->get_index()] += sub_coeffiecients[component.get_cathode()];
-                    sub_coeffiecients[nodes.size()] = sub_coeffiecients[component.get_cathode()] * component.get_value() *-1;
+                    sub_coeffiecients[nodes.size()] += sub_coeffiecients[component.get_cathode()] * component.get_value() *-1;
                     sub_coeffiecients[component.get_cathode()] = 0;
-                }else{
+                }
+                if(component.get_cathode() == node->get_index()){
                     sub_coeffiecients = 
-                    coefficient_generator(&nodes[component.get_anode()],&component, nodes);
+                    coefficient_generator(&nodes[component.get_anode()], nodes,&component);
                     sub_coeffiecients[node->get_index()] += sub_coeffiecients[component.get_anode()];
-                    sub_coeffiecients[nodes.size()] = sub_coeffiecients[component.get_anode()] * component.get_value();
+                    sub_coeffiecients[nodes.size()] += sub_coeffiecients[component.get_anode()] * component.get_value();
                     sub_coeffiecients[component.get_anode()] = 0;
                 }
-
-                //cout << "sub voltage" << sub_coeffiecients[node->get_index()]<< endl;
             }
+            //add the sub coefficients to the output
             for(int i=0; i < coeffiecients.size(); i++){
                 coeffiecients[i] += sub_coeffiecients[i];
             }
         }
     }
-    //cout << "sub " << coeffiecients[node->get_index()]<< endl;
-    //cout <<"supernode ";
-    //for(double val: coeffiecients){
-    //    cout <<val<<" ";
-    //}
-    cout << endl;
+    //return the output
     return coeffiecients;
 }
+/*
 vector<double> coefficient_generator(Node *node, vector<Node> nodes){
             vector<double> coeffiecients(nodes.size() + 1,0);
             for(Component component: node->get_components()){
@@ -197,10 +134,10 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes){
                     //cout << "Voltage" <<endl;
                     if(component.get_anode() == node->get_index()){
                         sub_coeffiecients = 
-                        coefficient_generator(&nodes[component.get_cathode()],&component, nodes);
-                        /*for(double c: sub_coeffiecients){
-                            cout << c << " ";
-                        }*/
+                        coefficient_generator(&nodes[component.get_cathode()], nodes,&component);
+                        //for(double c: sub_coeffiecients){
+                        //    cout << c << " ";
+                        //}
                         //cout << "Voltage anode " << coefficient_generator(&nodes[component.get_cathode()],node, nodes)[component.get_cathode()] << " "<< node->get_index() <<endl;
                         sub_coeffiecients[node->get_index()] += sub_coeffiecients[component.get_cathode()];
                         sub_coeffiecients[nodes.size()] += sub_coeffiecients[component.get_cathode()] * component.get_value() * -1;
@@ -211,7 +148,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes){
                         
                     }else{
                         sub_coeffiecients = 
-                        coefficient_generator(&nodes[component.get_anode()],&component, nodes);
+                        coefficient_generator(&nodes[component.get_anode()], nodes,&component);
                         sub_coeffiecients[node->get_index()] += sub_coeffiecients[component.get_anode()];
                         sub_coeffiecients[nodes.size()] += sub_coeffiecients[component.get_anode()] * component.get_value();
                         sub_coeffiecients[component.get_anode()] = 0;
@@ -238,7 +175,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes){
             return coeffiecients;
 }
 
-
+*/
 
 //takes a vector of objects (should be components)
 //outputs a vector of objects (should be nodes)
@@ -248,9 +185,8 @@ vector<Node> NodeGenerator(vector<Component> components){
     vector<Node> Nodes;
     //iterate through the components
     int index = 0;
-    for(Component component: components){
-        
-        //add the components to the nodes it is attached to
+    for(Component component: components){ 
+        //ensure the node list has a node of high enough index 
         while(Nodes.size()<=component.get_cathode()){
             Node node;
             node.set_index(index);
@@ -263,7 +199,7 @@ vector<Node> NodeGenerator(vector<Component> components){
             Nodes.push_back(node);
             index++;
         }
-        //cout << component.get_type() << " " << component.get_cathode()<< " " << component.get_anode() << endl;
+        //add the components to the nodes it is attached to
         Nodes[component.get_cathode()].add_component(component);
         Nodes[component.get_anode()].add_component(component);
     }
