@@ -12,7 +12,6 @@ protected:
     int cathode;
     double value;
 
-
 public:
     Component();
     virtual ~Component();
@@ -31,6 +30,7 @@ public:
     reurns the cathode of the component
     */  
     int get_cathode() const {return cathode;}
+    double get_value() const {return value;}
 };
 
 
