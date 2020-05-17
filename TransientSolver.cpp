@@ -44,6 +44,7 @@ struct Node{
 };
 
 
+//Takes a vector of componenets and outputs a vector of nodes that each have their own vector of componenets
 vector<Node> NodeGenerator(vector<Component> components){
     vector<Node> Nodes;
     //iterate through the components
@@ -69,21 +70,32 @@ vector<Node> NodeGenerator(vector<Component> components){
     return Nodes;
 }
 
-double GetCurrent(int node_index, vector<double> voltages, vector<nodes> nodes, Component current_component = nullptr){
+
+//Works out the total current at a node given the voltages in the circuit, the time, 
+//the vector of nodes and the index of the node
+//if current_componet isn't left as null the branch connected to this component will be ignored
+double GetCurrent(int node_index, vector<double> voltages, vector<Node> nodes, double time, Component current_component = nullptr){
     double total_current = 0;
+    //loop through all the components
     for(Component component: nodes[node_index].get_components()){
+        //make sure that this isn't the current_component
         if(current_component == null || current_component.get_name() != component.get_name()){
+            //if this is a capacitor or voltage source
             if(component.is_voltage()){
+                //create a vector to store modified voltages
                 vector<double> modified_voltages = voltages;
                 if(component.get_anode() == node_index){
+                    //change the voltage at the other end of the voltage source to this nodes voltage + the voltage source value
                     modified_voltages[component.get_cathode()] = voltages[node_index] - component.get_value();
-                    current += GetCurrent(component.get_cathode(),modified_voltages,nodes,component);
+                    //get the current at the other node using the modified voltages and ignoring this component
+                    current += GetCurrent(component.get_cathode(),modified_voltages,time,nodes,component);
                 }
                 if(component.get_cathode() == node_index){
                     modified_voltages[component.get_anode()] = voltages[node_index] + component.get_value();
-                    current += GetCurrent(component.get_anode(),modified_voltages,nodes,component);
+                    current += GetCurrent(component.get_anode(),modified_voltages,nodes,time,component);
                 }
             }else{
+                //if this isnt a voltage source add the current from this component (multiplied by -1 if this is the cathode)
                 total_current += component.get_current(voltages) * component.get_anode()==node_index?1:-1;
             }
         }
@@ -91,8 +103,12 @@ double GetCurrent(int node_index, vector<double> voltages, vector<nodes> nodes, 
 }
 
 
-
-vector<double> GetCurrentDerivative(int node_index, vector<double> voltages, vector<nodes> nodes, Component component = null){
+//Works out the total current parital derivatives at a node given the voltages in the circuit, time,
+//the vector of nodes and the node index of this node
+//if current_componet isn't left as null the branch connected to this component will be ignored
+//output represents the partial derivative of current with respect to each node voltage 
+vector<double> GetCurrentDerivative(int node_index, vector<double> voltages, vector<Node> nodes,double time, Component component = null){
+    //functionaly same as GetCurrent except exporting the vector of current derivatives
     vector<double> total_derivative(volatges.size(),0);
     for(Component component: nodes[node_index].get_components()){
         if(current_component == null || current_component.get_name() != component.get_name()){
@@ -102,13 +118,13 @@ vector<double> GetCurrentDerivative(int node_index, vector<double> voltages, vec
                     modified_voltages[component.get_cathode()] = voltages[node_index] - component.get_value();
                     current += GetCurrent(component.get_cathode(),modified_voltages,nodes,component);
                     for(int i=0; i < total_derivative.size(); i++){
-                        total_derivative[i] += GetCurrentDerivative(component.get_cathode(),modified_voltages,nodes,component)[i];
+                        total_derivative[i] += GetCurrentDerivative(component.get_cathode(),modified_voltages,nodes,time,component)[i];
                     }
                 }
                 if(component.get_cathode() == node_index){
                     modified_voltages[component.get_anode()] = voltages[node_index] + component.get_value();
                     for(int i=0; i < total_derivative.size(); i++){
-                        total_derivative[i] += GetCurrentDerivative(component.get_anode(),modified_voltages,nodes,component)[i];
+                        total_derivative[i] += GetCurrentDerivative(component.get_anode(),modified_voltages,nodes,time,component)[i];
                     }
                 }
             }else{
@@ -121,7 +137,11 @@ vector<double> GetCurrentDerivative(int node_index, vector<double> voltages, vec
     return total_derivative;
 }
 
-vector<double> TransientSolver(vector<double> voltages, double time, double delta_time, vector<Component> components, int max_iterations, double max_error){
+//takes the previous node voltages, time, components, max iterations and max error
+//outputs the new node voltages at that time using multi variable newton raphson
+//max iterations is the maximum times to use newton raphson
+//max error represents the total current error at all the nodes summed together
+vector<double> TransientSolver(vector<double> voltages, double time, vector<Component> components, int max_iterations, double max_error){
     //convert voltages into matrix format ingnoring 0 node
     MatrixXd outputMatrix(voltages.size()-1);
     for(int i==1; i < nodes.size(); i++){
@@ -159,7 +179,7 @@ vector<double> TransientSolver(vector<double> voltages, double time, double delt
             outputMatrix = outputMatrix - Jacobian.inverse()*current;
         }
 
-        //check that max iterations havent occured
+        //check that max iterations haven't occured
         if(current_iteration >= max_iterations){
             cout << "Hit maximum iterations in Newton-Raphson";
             incomplete = true;
@@ -170,13 +190,4 @@ vector<double> TransientSolver(vector<double> voltages, double time, double delt
         output[i] = outputMatrix(i-1);
     }
     return output;
-}
-
-
-
-
-
-
-int main(){
-
 }
