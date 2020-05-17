@@ -2,9 +2,10 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include <string>
+#include "Component.hpp"
 using namespace std;
 using Eigen::MatrixXd;
-
+/*
 struct Component{
     int anode;
     int cathode;
@@ -26,7 +27,7 @@ struct Component{
     string get_name(){
         return name;
     }
-};
+};*/
 struct Node{
         double voltage = 0;
         int index = 0;
@@ -49,23 +50,24 @@ vector<Node> NodeGenerator(vector<Component> components){
     vector<Node> Nodes;
     //iterate through the components
     int index = 0;
-    for(Component component: components){ 
+    for(int i=0; i < components.size(); i++){
+    //for(Component component: components){ 
         //ensure the node list has a node of high enough index 
-        while(Nodes.size()<=component.get_cathode()){
+        while(Nodes.size()<=components[i].get_cathode()){
             Node node;
             node.set_index(index);
             Nodes.push_back(node);
             index++;
         }
-        while(Nodes.size()<=component.get_anode()){
+        while(Nodes.size()<=components[i].get_anode()){
             Node node;
             node.set_index(index);
             Nodes.push_back(node);
             index++;
         }
         //add the components to the nodes it is attached to
-        Nodes[component.get_cathode()].add_component(component);
-        Nodes[component.get_anode()].add_component(component);
+        Nodes[components[i].get_cathode()].add_component(components[i]);
+        Nodes[components[i].get_anode()].add_component(components[i]);
     }
     return Nodes;
 }
@@ -74,32 +76,33 @@ vector<Node> NodeGenerator(vector<Component> components){
 //Works out the total current at a node given the voltages in the circuit, the time, 
 //the vector of nodes and the index of the node
 //if current_componet isn't left as null the branch connected to this component will be ignored
-double GetCurrent(int node_index, vector<double> voltages, vector<Node> nodes, double time, Component current_component = nullptr){
+double GetCurrent(int node_index, vector<double> voltages, vector<Node> nodes, double time, Component *current_component = nullptr){
     double total_current = 0;
     //loop through all the components
     for(Component component: nodes[node_index].get_components()){
         //make sure that this isn't the current_component
-        if(current_component == null || current_component.get_name() != component.get_name()){
+        if(current_component == nullptr || current_component->get_name() != component.get_name()){
             //if this is a capacitor or voltage source
-            if(component.is_voltage()){
+            if(component.get_type() == 'C' || component.get_type() == 'V'){
                 //create a vector to store modified voltages
                 vector<double> modified_voltages = voltages;
                 if(component.get_anode() == node_index){
                     //change the voltage at the other end of the voltage source to this nodes voltage + the voltage source value
                     modified_voltages[component.get_cathode()] = voltages[node_index] - component.get_value();
                     //get the current at the other node using the modified voltages and ignoring this component
-                    current += GetCurrent(component.get_cathode(),modified_voltages,time,nodes,component);
+                    total_current += GetCurrent(component.get_cathode(),modified_voltages,nodes,time,&component);
                 }
                 if(component.get_cathode() == node_index){
                     modified_voltages[component.get_anode()] = voltages[node_index] + component.get_value();
-                    current += GetCurrent(component.get_anode(),modified_voltages,nodes,time,component);
+                    total_current += GetCurrent(component.get_anode(),modified_voltages,nodes,time,&component);
                 }
             }else{
                 //if this isnt a voltage source add the current from this component (multiplied by -1 if this is the cathode)
-                total_current += component.get_current(voltages) * component.get_anode()==node_index?1:-1;
+                total_current += ((Current_Component*)&component)->get_current(voltages) * component.get_anode()==node_index?1:-1;
             }
         }
     }
+    return total_current;
 }
 
 
@@ -107,29 +110,28 @@ double GetCurrent(int node_index, vector<double> voltages, vector<Node> nodes, d
 //the vector of nodes and the node index of this node
 //if current_componet isn't left as null the branch connected to this component will be ignored
 //output represents the partial derivative of current with respect to each node voltage 
-vector<double> GetCurrentDerivative(int node_index, vector<double> voltages, vector<Node> nodes,double time, Component component = null){
+vector<double> GetCurrentDerivative(int node_index, vector<double> voltages, vector<Node> nodes,double time, Component *current_component = nullptr){
     //functionaly same as GetCurrent except exporting the vector of current derivatives
-    vector<double> total_derivative(volatges.size(),0);
+    vector<double> total_derivative(voltages.size(),0);
     for(Component component: nodes[node_index].get_components()){
-        if(current_component == null || current_component.get_name() != component.get_name()){
-            if(component.is_voltage()){
+        if(current_component == nullptr || current_component->get_name() != component.get_name()){
+            if(component.get_type() == 'V' || component.get_type() == 'C'){
                 vector<double> modified_voltages = voltages;
                 if(component.get_anode() == node_index){
                     modified_voltages[component.get_cathode()] = voltages[node_index] - component.get_value();
-                    current += GetCurrent(component.get_cathode(),modified_voltages,nodes,component);
                     for(int i=0; i < total_derivative.size(); i++){
-                        total_derivative[i] += GetCurrentDerivative(component.get_cathode(),modified_voltages,nodes,time,component)[i];
+                        total_derivative[i] += GetCurrentDerivative(component.get_cathode(),modified_voltages,nodes,time,&component)[i];
                     }
                 }
                 if(component.get_cathode() == node_index){
                     modified_voltages[component.get_anode()] = voltages[node_index] + component.get_value();
                     for(int i=0; i < total_derivative.size(); i++){
-                        total_derivative[i] += GetCurrentDerivative(component.get_anode(),modified_voltages,nodes,time,component)[i];
+                        total_derivative[i] += GetCurrentDerivative(component.get_anode(),modified_voltages,nodes,time,&component)[i];
                     }
                 }
             }else{
                 for(int i=0; i < total_derivative.size(); i++){
-                    total_derivative[i] += component.get_current(voltages)[i] * component.get_anode()==node_index?1:-1;
+                    total_derivative[i] += ((Current_Component*)&component)->get_current_derivative(voltages)[i] * component.get_anode()==node_index?1:-1;
                 }
             }
         }
@@ -143,8 +145,8 @@ vector<double> GetCurrentDerivative(int node_index, vector<double> voltages, vec
 //max error represents the total current error at all the nodes summed together
 vector<double> TransientSolver(vector<double> voltages, double time, vector<Component> components, int max_iterations, double max_error){
     //convert voltages into matrix format ingnoring 0 node
-    MatrixXd outputMatrix(voltages.size()-1);
-    for(int i==1; i < nodes.size(); i++){
+    MatrixXd outputMatrix(voltages.size()-1,1);
+    for(int i=1; i < voltages.size(); i++){
         outputMatrix(i-1) = voltages[i];
     
     }
@@ -157,21 +159,21 @@ vector<double> TransientSolver(vector<double> voltages, double time, vector<Comp
     while(incomplete){
         current_iteration++;
         //create a matrix for the currents and Jacobian
-        MatrixXd current(nodes.size()-1,1);
-        MatrixXd Jacobian(nodes.size()-1,nodes.size()-1);
+        MatrixXd current(voltages.size()-1,1);
+        MatrixXd Jacobian(voltages.size()-1,voltages.size()-1);
         double total_error = 0;
-        for(int i==1; i < nodes.size(); i++){
+        for(int i=1; i < voltages.size(); i++){
             //set the total current at each node
-            current(i-1) = GetCurrent(i,output,nodes);
-            total_error += current(i-1)
+            current(i-1) = GetCurrent(i,output,nodes,time);
+            total_error += current(i-1);
         }
         if(total_error < max_error){
             incomplete = false;
         }else{
-            for(int i==1; i < nodes.size(); i++){
+            for(int i=1; i < voltages.size(); i++){
                 //get the partial derivatives at that node and input into jacobian
-                vector<double> derivatives = GetCurrentDerative(i,output,nodes)
-                for(int j = 1; j < nodes.size(); j++){
+                vector<double> derivatives = GetCurrentDerivative(i,output,nodes,time);
+                for(int j = 1; j < voltages.size(); j++){
                     Jacobian(i-1,j-1) = derivatives[j];
                 }
             }
@@ -186,8 +188,12 @@ vector<double> TransientSolver(vector<double> voltages, double time, vector<Comp
         }
     }
     //convert the output matrix into a vector 
-    for(int i==1; i < nodes.size(); i++){
+    for(int i=1; i < voltages.size(); i++){
         output[i] = outputMatrix(i-1);
     }
     return output;
+}
+
+int main(){
+    cout << "Running";
 }

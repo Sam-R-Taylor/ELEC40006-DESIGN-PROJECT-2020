@@ -13,6 +13,8 @@ protected:
     int anode;
     int cathode;
     double value;
+    
+
 public:
     Component();                            //to implement
     virtual ~Component();
@@ -32,6 +34,7 @@ public:
     */  
     int get_cathode() const {return cathode;}
     double get_value() const {return value;}
+    std::string get_name() const {return name;}
 };
 
 
@@ -45,7 +48,6 @@ public:
     given a vector<double> nodevoltages where 
     -each index of nodevoltages corresponds to a node
     -each double of nodevoltages corresponds to a voltage at the given node
-
     returns the current through the Component going from anode to cathode
     */ 
     virtual double get_current(const std::vector<double> &nodevoltages) const = 0;
@@ -54,7 +56,6 @@ public:
     given a vector<double> nodevoltages where 
     -each index of nodevoltages corresponds to a node
     -each double of nodevoltages corresponds to a voltage at the given node
-
     returns a vector<double> current_derivative where 
     -each index of current_derivative corresponds to a node
     -each double of current_derivative corresponds to the partial derivative of the current through the component (from characteristic equation) with respect to the corresponding voltage provided by nodevoltages
@@ -108,7 +109,6 @@ public:
     ~Inductor();
     /*
     given an increment computed by "controller" due to a timestep
-
     updates the value of Inductor::integral
     */
     void update_integral(double increment){
@@ -120,9 +120,11 @@ public:
         return integral/value;
     }
 
-    double get_current_derivative(double time)         //to implement. needs controller to know the previous value of current
+    std::vector<double> get_current_derivative(const std::vector<double> &nodevoltages)         //to implement. needs controller to know the previous value of current
     {
-        std::cerr << "not implemented yet" << std::endl;
+        //std::cerr << "not implemented yet" << std::endl;
+        std::vector<double> current_derivative(nodevoltages.size(),0);
+        return current_derivative;
     }
 
 };
@@ -191,7 +193,6 @@ public:
     given a vector<double> nodevoltages where 
     -each index of nodevoltages corresponds to a node
     -each double of nodevoltages corresponds to a voltage at the given node
-
     returns the  through the voltage difference across the component from anode to cathode
     */ 
     virtual double get_voltage(const std::vector<double> &nodevoltages) const = 0;
@@ -219,7 +220,6 @@ public:
 
     /*
     given an increment computed by "controller" due to a timestep
-
     updates the value of Voltage_Source:: voltage
     */
     void update_integral(double increment){
@@ -252,7 +252,6 @@ public:
 
     /*
     given an increment computed by "controller" due to a timestep
-
     updates the value of Capacitor::integral
     */
     void update_integral(double increment)
