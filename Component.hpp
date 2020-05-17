@@ -228,7 +228,7 @@ public:
         voltage += increment;
     }
 
-}
+};
 
 
 
