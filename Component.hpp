@@ -11,6 +11,10 @@ protected:
     int anode;
     int cathode;
     double value;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5bffbee4ff332b8e34efb67a64fbe1ac6b739052
 
 public:
     Component();
