@@ -150,8 +150,13 @@ private:
     */
     double current;
 public:
-    Current_source();
-    ~Current_source();
+    Current_source(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
+    ~Current_source(){}
 
     double get_current(const std::vector<double> &nodevoltages) const override
     {
@@ -171,23 +176,51 @@ class Diode:
     public Current_Component
 {
 private:
-    double V_t;
-    double I_s;
+    double Vt = 0.025;
+    double I_s = 0.0000000000001;
+    double vd = 0;
+    double id0 = 0;
 public:
-    Diode(){}
+    Diode(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
     ~Diode(){}
-
+    void set_vd(double _vd){
+        vd = _vd;
+    }
+    void set_id0(double _id0){
+        id0 = _id0;
+    }
+    double get_conductance(){
+        double conductance = ((I_s/Vt)*exp(vd/Vt));
+        conductance = conductance<0.01?0.01:conductance;
+        conductance = conductance>10?10:conductance;
+        std::cout << "conductance " << conductance << std::endl;
+        std::cout << "Vd " << vd << std::endl;
+        return conductance;
+    }
+    double get_linear_current(){
+        std::cout << "current " << (id0 - ((I_s/Vt)*exp(vd/Vt))*vd) << std::endl;
+        double current = (id0 - this->get_conductance()*vd);
+        current = current>10?10:current;
+        return current;
+    }
     double get_current(const std::vector<double> &nodevoltages) const override
     {
-        double current = I_s*exp((nodevoltages[anode]-nodevoltages[cathode])/V_t);
+        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/Vt)-1);
+        current = current>10?10:current;
+        std::cout << "Current  " <<current << std::endl; 
         return current;
     }
     
     std::vector<double> get_current_derivative(const std::vector<double> &nodevoltages) const override
     {
         std::vector<double> current_derivative(nodevoltages.size(),0);
-        current_derivative[anode]= get_current(nodevoltages)/V_t;
-        current_derivative[cathode]= -get_current(nodevoltages)/V_t;
+        current_derivative[anode]= get_current(nodevoltages)/Vt;
+        current_derivative[cathode]= -get_current(nodevoltages)/Vt;
         return current_derivative;
     }
 };
