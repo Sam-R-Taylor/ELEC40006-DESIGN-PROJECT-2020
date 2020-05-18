@@ -9,20 +9,20 @@ class Component
 {
 protected:
     std::string name;
-    char type;
+    char type = 'A';
     int anode;
     int cathode;
     double value;
     
 
 public:
-    Component();                            //to implement
-    virtual ~Component();
+    Component(){}                            //to implement
+    virtual ~Component(){}
 
     /*
     reurns the type of the component
     */
-    char get_type() const {return type;}
+    virtual char get_type() const {return type;}
 
     /*
     reurns the anode of the component
@@ -72,12 +72,21 @@ class Resistor :
     public Current_Component
 {
 public:
-    Resistor();
-    ~Resistor();
+    Resistor(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
+    ~Resistor(){}
 
+    char get_type(){
+        return 'R';
+    }
     double get_current(const std::vector<double> &nodevoltages) const override
     {
         double current = (nodevoltages[anode]-nodevoltages[cathode])/value;
+        //std::cout << "Resistor Current" << current << std::endl;
         return current;
     }
 
@@ -88,6 +97,7 @@ public:
         current_derivative[cathode]= -1/value;
         return current_derivative;
     }
+
 
 };
 
@@ -105,8 +115,8 @@ private:
     */
     double integral ;
 public:
-    Inductor();
-    ~Inductor();
+    Inductor(){}
+    ~Inductor(){}
     /*
     given an increment computed by "controller" due to a timestep
     updates the value of Inductor::integral
@@ -164,8 +174,8 @@ private:
     double V_t;
     double I_s;
 public:
-    Diode();
-    ~Diode();
+    Diode(){}
+    ~Diode(){}
 
     double get_current(const std::vector<double> &nodevoltages) const override
     {
@@ -210,12 +220,20 @@ private:
     */
     double voltage;
 public:
-    Voltage_Source();
-    ~Voltage_Source();
+    Voltage_Source(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
+    ~Voltage_Source(){}
 
     double get_voltage(const std::vector<double> &nodevoltages) const override
     {
         return voltage;
+    }
+    char get_type(){
+        return 'V';
     }
 
     /*
@@ -241,8 +259,8 @@ private:
     */
     double integral ;
 public:
-    Capacitor();
-    ~Capacitor();
+    Capacitor(){}
+    ~Capacitor(){}
 
 
     double get_voltage(const std::vector<double> &nodevoltages) const override
