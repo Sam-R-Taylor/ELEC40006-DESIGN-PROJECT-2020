@@ -10,7 +10,7 @@ class Circuit
 protected:
     std::vector<Component> components;
 public:
-    void add_component(Component& _component)
+    void add_component(const Component& _component)
     {
         components.push_back(_component);
     }
