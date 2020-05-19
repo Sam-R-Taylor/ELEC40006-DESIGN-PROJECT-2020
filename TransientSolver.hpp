@@ -1,3 +1,7 @@
+#ifndef TRANSIENTSOLVER_HPP
+#define TRANSIENTSOLVER_HPP
+
+
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
@@ -16,14 +20,21 @@ Outputs the new node voltages at that time using multi variable newton raphson i
 /max iterations is the maximum iterations in newton raphson
 /max error represents the maximum voltage error at anyone node
 */
-vector<double> TransientSolver(vector<double> voltages, double time, vector<Component*>& components, int max_iterations, double max_error){
+vector<double> TransientSolver(vector<double> voltages, double time, vector<Component*>& components, int max_iterations, double max_error, vector<Node> *nodes = nullptr){
     //store the voltages in a new vector that can be adjusted each iteration
     vector<double> current_voltages = voltages;
 
     bool incomplete = true;
     int current_iteration = 0;
-    //create a vector of Nodes
-    vector<Node> nodes = NodeGenerator(components);
+    //create a vector of Nodes if one isn't given
+    vector<Node> _nodes;
+    vector<Node>* _nodesptr;
+    if(nodes == nullptr){
+       _nodes = NodeGenerator(components);
+       _nodesptr = &_nodes;
+    }else{
+        _nodesptr = nodes;
+    }
     //iterate adjusting voltages each time
     while(incomplete){
         current_iteration++;
@@ -37,7 +48,7 @@ vector<double> TransientSolver(vector<double> voltages, double time, vector<Comp
             }
         }
         //set the voltages to the output of the KCL with the components
-        vector<double> new_voltages = NodeVoltageSolver(components,&nodes);
+        vector<double> new_voltages = NodeVoltageSolver(components,_nodesptr);
         //check the error
         for(int i=0; i<voltages.size(); i++){
             incomplete = (abs(current_voltages[i] - new_voltages[i])>max_error);
@@ -56,21 +67,5 @@ vector<double> TransientSolver(vector<double> voltages, double time, vector<Comp
     return current_voltages;
 }
 
-int main(){
-    Voltage_Source v1(1,0,"V1",6);
-    Resistor r1(1,2,"R1",5);
-    Resistor r2(2,3,"R2",5);
-    Diode d1(0,3,"D1");
-    vector<Component*> components;
-    components.push_back(&v1);
-    components.push_back(&r1);
-    components.push_back(&r2);
-    components.push_back(&d1);
-    vector<double> Voltages{0,0,0,0};
-    Voltages = TransientSolver(Voltages,0,components,10000,0.001);
-    cout << "Test 1:" << endl;
-    cout << "V0 " << Voltages[0];
-    cout << " ,V1 " << Voltages[1];
-    cout << " ,V2 " << Voltages[2];
-    cout << " ,V3 " << Voltages[3] << endl;
-}
+
+#endif

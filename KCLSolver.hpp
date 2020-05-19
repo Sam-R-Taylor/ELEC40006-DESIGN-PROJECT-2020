@@ -73,7 +73,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes, Component *
                 sub_coefficients[nodes.size()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->get_index()?-1:1);
             }
             //if component is a voltage source
-            if(dynamic_cast<Voltage_Source*>(component)){
+            if(dynamic_cast<Voltage_Component*>(component)){
                 //check which end of the voltage source is connected to the current node
                 if(component->get_anode() == node->get_index()){
                     //generate the coeffiecient for node on the other side of the voltage source
@@ -160,12 +160,8 @@ vector<double> MatrixSolver(vector<Node> input){
             constants(i) = -row[input.size()];
     }
     //invert matrix and solve equation
-    //cout << matrix << endl;
     matrix = matrix.inverse();
     result = matrix * constants;
-    
-    //cout << constants << endl;
-    //cout << result << endl;
     //convert the output matrix to vector format
     vector<double> output;
     output.push_back(0);
@@ -176,9 +172,21 @@ vector<double> MatrixSolver(vector<Node> input){
     return output;
 }
 
-//just combines both funcitons into one
-vector<double> NodeVoltageSolver(vector<Component*> components){
-    return MatrixSolver(NodeGenerator(components));
+double ComponentCurrent(vector<double> &voltages, vector<Node> nodes, Component* component){
+    vector<double> coefficients = coefficient_generator(&nodes[component->get_anode()], nodes, component);
+    double current = 0;
+    for(int i = 0; i<voltages.size(); i++){
+        current += voltages[i] * coefficients[i];
+    }
+    return -current;
+}
+
+//outputs the vector of voltages given the vector of components, optional vector of nodes used to increase speed
+vector<double> NodeVoltageSolver(vector<Component*> components, vector<Node> *nodes = nullptr){
+    if(nodes == nullptr){
+        return MatrixSolver(NodeGenerator(components));
+    }
+    return MatrixSolver(*nodes);
 }
 
 

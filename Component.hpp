@@ -98,7 +98,12 @@ private:
     double integral;
     double value;
 public:
-    Inductor(){}
+    Inductor(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
     ~Inductor(){}
     /*
     given an increment computed by "controller" due to a timestep
@@ -170,7 +175,7 @@ public:
     double get_conductance(){
         double conductance = ((I_s/Vt)*exp(vd/Vt));
         conductance = conductance<0.01?0.01:conductance;
-        conductance = conductance>10?10:conductance;
+        conductance = conductance>20?20:conductance;
         std::cout << "conductance " << conductance << std::endl;
         std::cout << "Vd " << vd << std::endl;
         return conductance;
@@ -249,7 +254,12 @@ private:
     double integral;
     double value;
 public:
-    Capacitor(){}
+    Capacitor(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
     ~Capacitor(){}
 
 
@@ -263,6 +273,7 @@ public:
     */
     void update_integral(double increment)
     {
+        std::cout << "Integral " << integral << std::endl;
         integral += increment;
     }
 };
