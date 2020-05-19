@@ -78,46 +78,46 @@ int main(int argc, char const *argv[])
         //stores type of component in tmp
         tmp = src.peek();
 
-        if (tmp == 'R' | tmp == 'r')             //Resistor added to _circuit
+        if (tmp == 'r')             //Resistor added to _circuit
         {    
             src >> _name >> _anode >> _cathode >> _value;
             _value *= read_power_of_ten(src);
             _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
             //std::cerr << _name << _anode << _cathode << _value << std::endl;
         }
-        else if (tmp == 'L' | tmp == 'l')            //Inductor added to _circuit
+        else if (tmp == 'l')            //Inductor added to _circuit
         {
             src >> _name >> _anode >> _cathode >> _value;
             _value *= read_power_of_ten(src);
             _circuit.add_component(Inductor(_anode,_cathode,_name,_value));
             //std::cerr << _name << _anode << _cathode << _value << std::endl;
         }
-        else if (tmp == 'I')            //Current source added to _circuit
+        else if (tmp == 'i')            //Current source added to _circuit
         {
             double _current;
             src >> _name >> _anode >> _cathode >> _current;
             _current *= read_power_of_ten(src);
             _circuit.add_component(Current_source(_anode, _cathode, _name, _current));
         }
-        else if (tmp == 'D')            //Diode added to _circuit
+        else if (tmp == 'd')            //Diode added to _circuit
         {   
             src >> _name >> _anode >> _cathode;
             _circuit.add_component(Diode(_anode,_cathode,_name));
         }
-        else if (tmp == 'V')            //Voltage source added to _circuit
+        else if (tmp == 'v')            //Voltage source added to _circuit
         {
             double _voltage;
             src >> _name >> _anode >> _cathode >> _voltage;
             _voltage *= read_power_of_ten(src);
             _circuit.add_component(Voltage_Source(_anode, _cathode, _name, _voltage));
         }
-        else if (tmp == 'C' | tmp == 'c')           //Capacitor added to _circuit
+        else if (tmp == 'c')           //Capacitor added to _circuit
         {
             src >> _name >> _anode >> _cathode >> _value;
             _value *= read_power_of_ten(src);
             _circuit.add_component(Capacitor(_anode,_cathode,_name,_value));
         }
-        else if (tmp == 'E')            //Voltage_Controlled_Voltage_Source added to _circuit
+        else if (tmp == 'e')            //Voltage_Controlled_Voltage_Source added to _circuit
         {
             double _gain;
             int _control_voltage_anode;
@@ -127,7 +127,7 @@ int main(int argc, char const *argv[])
             _circuit.add_component(Voltage_Controlled_Voltage_Source(_anode, _cathode, _name, _gain, _control_voltage_anode, _control_voltage_cathode));
 
         }
-        else if (tmp == 'G')            //Voltage_Controlled_Current_Source added to _circuit
+        else if (tmp == 'g')            //Voltage_Controlled_Current_Source added to _circuit
         {
             double _gain;
             int _control_voltage_anode;
