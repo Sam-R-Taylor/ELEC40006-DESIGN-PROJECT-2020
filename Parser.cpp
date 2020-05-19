@@ -28,8 +28,7 @@ int main(int argc, char const *argv[])
     tmp = src.peek();
 
     if (tmp == 'R')             //Resistor added to _circuit
-    {
-        
+    {    
         src >> _name >> _anode >> _cathode >> _value;
         _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
     }
@@ -38,7 +37,13 @@ int main(int argc, char const *argv[])
         src >> _name >> _anode >> _cathode >> _value;
         _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
     }
+    else if (tmp == 'I')
+    {
+        double _current;
+        src >> _name >> _anode >> _cathode >> _current;
+        _circuit.add_component(Current_source(_anode, _cathode, _name, _current));
 
+    }
 
     src.close();
     
