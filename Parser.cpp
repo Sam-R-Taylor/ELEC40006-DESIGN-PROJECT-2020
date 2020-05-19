@@ -83,13 +83,14 @@ int main(int argc, char const *argv[])
             src >> _name >> _anode >> _cathode >> _value;
             _value *= read_power_of_ten(src);
             _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
-            std::cerr << _name << _anode << _cathode << _value;
+            //std::cerr << _name << _anode << _cathode << _value << std::endl;
         }
         else if (tmp == 'L' | tmp == 'l')            //Inductor added to _circuit
         {
             src >> _name >> _anode >> _cathode >> _value;
             _value *= read_power_of_ten(src);
             _circuit.add_component(Inductor(_anode,_cathode,_name,_value));
+            //std::cerr << _name << _anode << _cathode << _value << std::endl;
         }
         else if (tmp == 'I')            //Current source added to _circuit
         {
