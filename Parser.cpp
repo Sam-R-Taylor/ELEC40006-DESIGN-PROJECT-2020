@@ -67,6 +67,23 @@ int main(int argc, char const *argv[])
             src >> _name >> _anode >> _cathode >> _value;
             _circuit.add_component(Capacitor(_anode,_cathode,_name,_value));
         }
+        else if (tmp == 'E')            //Voltage_Controlled_Voltage_Source added to _circuit
+        {
+            double _gain;
+            int _control_voltage_anode;
+            int _control_voltage_cathode;
+            src >> _name >> _anode >> _cathode >> _control_voltage_anode >> _control_voltage_cathode >> _gain;
+            _circuit.add_component(Voltage_Controlled_Voltage_Source(_anode, _cathode, _name, _gain, _control_voltage_anode, _control_voltage_cathode));
+
+        }
+        else if (tmp == 'G')            //Voltage_Controlled_Current_Source added to _circuit
+        {
+            double _gain;
+            int _control_voltage_anode;
+            int _control_voltage_cathode;
+            src >> _name >> _anode >> _cathode >> _control_voltage_anode >> _control_voltage_cathode >> _gain;
+            _circuit.add_component(Voltage_Controlled_Current_Source(_anode, _cathode, _name, _gain, _control_voltage_anode, _control_voltage_cathode));
+        }
         else
         {
             //terminate the program if component is not known
