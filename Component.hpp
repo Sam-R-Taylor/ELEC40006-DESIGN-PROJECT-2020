@@ -282,7 +282,7 @@ public:
 
 
 //added sketch of Dependent_Voltage_Source
-class Dependent_Voltage_Source :                
+class Voltage_Dependent_Voltage_Source :                
     public Voltage_Component
 {
 private:
@@ -290,7 +290,7 @@ private:
     int control_voltage_anode;
     int control_voltage_cathode;
 public:
-    Dependent_Voltage_Source(int _anode, int _cathode, std:: string _name, double _gain, int _control_voltage_anode, int _control_voltage_cathode)
+    Voltage_Dependent_Voltage_Source(int _anode, int _cathode, std:: string _name, double _gain, int _control_voltage_anode, int _control_voltage_cathode)
     {
         anode = _anode;
         cathode = _cathode;
