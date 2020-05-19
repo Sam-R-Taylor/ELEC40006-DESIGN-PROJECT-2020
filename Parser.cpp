@@ -2,6 +2,48 @@
 #include"Component.hpp"
 #include<fstream>
 #include<cctype>
+#include<cmath>
+
+class Power_of_Ten
+{
+private:
+    double femto = pow(10,-15);
+    double pico = pow(10,-12);
+    double nano = pow(10,-9);
+    double micro = pow(10,-6);
+    double milli = pow(10,-3);
+    double kilo = pow(10,3);
+    double mega = pow(10,6);
+    double giga = pow(10,9);
+    double tera = pow(10,12);
+
+    double mil = 25.4*pow(10,-6);
+
+public:
+    double read_power_of_ten(std::istream& src) const
+    {
+        std::string tmp;
+        if(src >> tmp)
+        {            
+            char c = tolower(tmp[0]);
+
+            if(c == 'f'){return femto;}
+            else if(c == 'p'){return pico;}
+            else if(c == 'n'){return nano;}
+            else if(c == 'u'){return micro;}
+            else if(c == 'm'){return milli;}
+            else if(c == 'k'){return kilo;}
+            else if(c == 'm' && tolower(tmp[1]) == 'e' && tolower(tmp[2]) == 'g'){return mega;}
+            else if(c == 'g'){return giga;}
+            else if(c == 't'){return tera;}
+            else if(c == 'm' && tolower(tmp[1]) == 'i' && tolower(tmp[2]) == 'l'){return mil;}
+        }
+        return 1; 
+    }
+
+};
+
+
 
 
 //input file specified as argv[1]
@@ -38,6 +80,7 @@ int main(int argc, char const *argv[])
         if (tmp == 'R' | tmp == 'r')             //Resistor added to _circuit
         {    
             src >> _name >> _anode >> _cathode >> _value;
+            _value *= 
             _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
         }
         else if (tmp == 'L' | tmp == 'l')            //Inductor added to _circuit
