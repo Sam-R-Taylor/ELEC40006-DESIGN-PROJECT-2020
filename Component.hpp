@@ -12,28 +12,21 @@ protected:
     char type;
     int anode;
     int cathode;
-    double value;
-    
-
 public:
-    Component();                            //to implement
-    virtual ~Component();
-
-    /*
-    reurns the type of the component
-    */
-    char get_type() const {return type;}
-
+    Component(){}                            //to implement
+    virtual ~Component(){}
     /*
     reurns the anode of the component
     */     
     int get_anode() const {return anode;}
-
     /*
     reurns the cathode of the component
     */  
     int get_cathode() const {return cathode;}
-    double get_value() const {return value;}
+    /*
+    reurns the name of the component
+    */  
+    std::string get_name() const {return name;}
 };
 
 
@@ -47,21 +40,18 @@ public:
     given a vector<double> nodevoltages where 
     -each index of nodevoltages corresponds to a node
     -each double of nodevoltages corresponds to a voltage at the given node
-
     returns the current through the Component going from anode to cathode
     */ 
-    virtual double get_current(const std::vector<double> &nodevoltages) const = 0;
+    virtual double get_current() const = 0;
 
     /*
     given a vector<double> nodevoltages where 
     -each index of nodevoltages corresponds to a node
     -each double of nodevoltages corresponds to a voltage at the given node
-
     returns a vector<double> current_derivative where 
     -each index of current_derivative corresponds to a node
     -each double of current_derivative corresponds to the partial derivative of the current through the component (from characteristic equation) with respect to the corresponding voltage provided by nodevoltages
     */ 
-    virtual std::vector<double> get_current_derivative(const std::vector<double> &nodevoltages) const = 0;
 };
 
 
@@ -72,24 +62,26 @@ public:
 class Resistor :
     public Current_Component
 {
+protected:
+    double value;
 public:
-    Resistor();
-    ~Resistor();
+    Resistor(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
+    ~Resistor(){}
 
-    double get_current(const std::vector<double> &nodevoltages) const override
+    double get_value(){
+        return value;
+    }
+    double get_current(const std::vector<double> &nodevoltages) const
     {
         double current = (nodevoltages[anode]-nodevoltages[cathode])/value;
+        //std::cout << "Resistor Current" << current << std::endl;
         return current;
     }
-
-    std::vector<double> get_current_derivative(const std::vector<double> &nodevoltages) const override
-    {
-        std::vector<double> current_derivative(nodevoltages.size(),0);
-        current_derivative[anode]= 1/value;
-        current_derivative[cathode]= -1/value;
-        return current_derivative;
-    }
-
 };
 
 
@@ -104,29 +96,28 @@ private:
     /*
     integral of voltage wrt time. Voltage is defined as V_anode - V_cathode
     */
-    double integral ;
+    double integral;
+    double value;
 public:
-    Inductor();
-    ~Inductor();
+    Inductor(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
+    ~Inductor(){}
     /*
     given an increment computed by "controller" due to a timestep
-
     updates the value of Inductor::integral
     */
     void update_integral(double increment){
         integral += increment;
     }
     
-    double get_current(const std::vector<double> &nodevoltages) const override        //does not need the parameter. modify later
+    double get_current() const override        //does not need the parameter. modify later
     {
         return integral/value;
     }
-
-    double get_current_derivative(double time)         //to implement. needs controller to know the previous value of current
-    {
-        std::cerr << "not implemented yet" << std::endl;
-    }
-
 };
 
 
@@ -140,46 +131,72 @@ private:
     */
     double current;
 public:
-    Current_source();
-    ~Current_source();
-
-    double get_current(const std::vector<double> &nodevoltages) const override
+    Current_source(int _anode, int _cathode, std:: string _name, double _current){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        current = _current;
+    }
+    ~Current_source(){}
+    double get_current() const override
     {
         return current;
-    }
-
-    std::vector<double> get_current_derivative(const std::vector<double> &nodevoltages) const override
-    {
-        std::vector<double> current_derivative(nodevoltages.size(),0);
-        return current_derivative;
     }
 };    
 
 
 
 class Diode:
-    public Current_Component
+    public Component
 {
 private:
-    double V_t;
-    double I_s;
+    //Thermal Voltage
+    double Vt = 0.025;
+    double I_s = 0.0000000000001;
+    //Voltage across terminals, used for linear aporximations
+    double vd = 0;
+    //current at voltage guess, used for linear aproximations
+    double id0 = 0;
 public:
-    Diode();
-    ~Diode();
-
-    double get_current(const std::vector<double> &nodevoltages) const override
+    Diode(int _anode, int _cathode, std:: string _name){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+    }
+    ~Diode(){}
+    //set the voltage across the diode
+    void set_vd(double _vd){
+        vd = _vd;
+    }
+    //set the current through the diode at operating point
+    void set_id0(double _id0){
+        id0 = _id0;
+    }
+    //get the linear aproximation of the conductor for the diode
+    double get_conductance(){
+        double conductance = ((I_s/Vt)*exp(vd/Vt));
+        conductance = conductance<0.01?0.01:conductance;
+        conductance = conductance>20?20:conductance;
+        std::cout << "conductance " << conductance << std::endl;
+        std::cout << "Vd " << vd << std::endl;
+        return conductance;
+    }
+    //get the linear aproximations of the current source from the diode
+    double get_linear_current(){
+        std::cout << "current " << (id0 - ((I_s/Vt)*exp(vd/Vt))*vd) << std::endl;
+        double current = (id0 - this->get_conductance()*vd);
+        current = current>10?10:current;
+        return current;
+    }
+    //get the current through the diode
+    double get_current(const std::vector<double> &nodevoltages) const
     {
-        double current = I_s*exp((nodevoltages[anode]-nodevoltages[cathode])/V_t);
+        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/Vt)-1);
+        current = current>10?10:current;
+        std::cout << "Current  " <<current << std::endl; 
         return current;
     }
     
-    std::vector<double> get_current_derivative(const std::vector<double> &nodevoltages) const override
-    {
-        std::vector<double> current_derivative(nodevoltages.size(),0);
-        current_derivative[anode]= get_current(nodevoltages)/V_t;
-        current_derivative[cathode]= -get_current(nodevoltages)/V_t;
-        return current_derivative;
-    }
 };
 
 
@@ -193,10 +210,9 @@ public:
     given a vector<double> nodevoltages where 
     -each index of nodevoltages corresponds to a node
     -each double of nodevoltages corresponds to a voltage at the given node
-
     returns the  through the voltage difference across the component from anode to cathode
     */ 
-    virtual double get_voltage(const std::vector<double> &nodevoltages) const = 0;
+    virtual double get_voltage() const =0;
 
     
 };
@@ -211,24 +227,19 @@ private:
     */
     double voltage;
 public:
-    Voltage_Source();
-    ~Voltage_Source();
+    Voltage_Source(int _anode, int _cathode, std:: string _name, double _voltage){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        voltage = _voltage;
+    }
+    ~Voltage_Source(){}
 
-    double get_voltage(const std::vector<double> &nodevoltages) const override
+    double get_voltage() const override
     {
         return voltage;
     }
-
-    /*
-    given an increment computed by "controller" due to a timestep
-
-    updates the value of Voltage_Source:: voltage
-    */
-    void update_integral(double increment){
-        voltage += increment;
-    }
-
-}
+};
 
 
 
@@ -241,33 +252,34 @@ private:
     /*
     integral of current wrt time. Current goes from anode to cathode
     */
-    double integral ;
+    double integral;
+    double value;
 public:
-    Capacitor();
-    ~Capacitor();
+    Capacitor(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
+    ~Capacitor(){}
 
 
-    double get_voltage(const std::vector<double> &nodevoltages) const override
+    double get_voltage() const override
     {
         return integral/value;
     }
-
     /*
     given an increment computed by "controller" due to a timestep
-
     updates the value of Capacitor::integral
     */
     void update_integral(double increment)
     {
+        std::cout << "Integral " << integral << std::endl;
         integral += increment;
     }
-
-
-
 };
 
 
 
 
 #endif
-

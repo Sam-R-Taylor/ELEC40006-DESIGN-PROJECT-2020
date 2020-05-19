@@ -1,3 +1,6 @@
+#ifndef KCLSOLVER_HPP
+#define KCLSOLVER_HPP
+
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
@@ -7,30 +10,6 @@ using namespace std;
 using Eigen::MatrixXd;
 //to compile use g++ -I eigen3 KCLSolver.cpp -o ...
 
-//Test struct for a component
-/*struct Component{
-    int anode;
-    int cathode;
-    string name;
-    double value;
-    char type;
-    char get_type() {
-        return type;
-    }
-    int get_anode(){
-        return anode;
-    }
-    int get_cathode(){
-        return cathode;
-    }
-    double get_value(){
-        return value;
-    }
-    string get_name(){
-        return name;
-    }
-};*/
-//Test struct for a Node
 struct Node{
         double voltage = 0;
         int index = 0;
@@ -62,6 +41,19 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes, Component *
         if(source_component == nullptr || component != source_component){
             //create a vector to store the contributions to the final coefficients of this component
             vector<double> sub_coefficients(nodes.size() + 1,0);
+            //if a component is a diode use its linear properties
+            if(dynamic_cast<Diode*>(component)){
+                if(component->get_anode() == node->get_index()){
+                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
+                    sub_coefficients[component->get_anode()] += ((Diode*)component)->get_conductance();
+                    sub_coefficients[component->get_cathode()] += -((Diode*)component)->get_conductance();
+                }
+                if(component->get_cathode() == node->get_index()){
+                    sub_coefficients[component->get_anode()] += -((Diode*)component)->get_conductance();
+                    sub_coefficients[component->get_cathode()] += ((Diode*)component)->get_conductance();
+                }
+                sub_coefficients[nodes.size()] += ((Diode*)component)->get_linear_current() * (component->get_anode() == node->get_index()?1:-1);
+            }
             //if component type is resistor
             if(dynamic_cast<Resistor*>(component)){
                 //check with node of the resistor is the current node
@@ -78,7 +70,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes, Component *
             //if component type is current source
             if(dynamic_cast<Current_source*>(component)){
                 //add the current source value to the final constant in the list of coefficients
-                sub_coefficients[nodes.size()] += ((Current_source*)component)->get_value() * (component->get_anode() == node->get_index()?-1:1);
+                sub_coefficients[nodes.size()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->get_index()?-1:1);
             }
             //if component is a voltage source
             if(dynamic_cast<Voltage_Component*>(component)){
@@ -91,14 +83,14 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes, Component *
                     //correct the coefficient by swapping "N2" with "N1 + V" and add the voltage constant
                     //multiplied by the coefficient value to the constant term of the coefficients.
                     sub_coefficients[node->get_index()] += sub_coefficients[component->get_cathode()];
-                    sub_coefficients[nodes.size()] += sub_coefficients[component->get_cathode()] * component->get_value() *-1;
+                    sub_coefficients[nodes.size()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage() *-1;
                     sub_coefficients[component->get_cathode()] = 0;
                 }
                 if(component->get_cathode() == node->get_index()){
                     sub_coefficients = 
                     coefficient_generator(&nodes[component->get_anode()], nodes,component);
                     sub_coefficients[node->get_index()] += sub_coefficients[component->get_anode()];
-                    sub_coefficients[nodes.size()] += sub_coefficients[component->get_anode()] * component->get_value();
+                    sub_coefficients[nodes.size()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage();
                     sub_coefficients[component->get_anode()] = 0;
                 }
             }
@@ -168,12 +160,8 @@ vector<double> MatrixSolver(vector<Node> input){
             constants(i) = -row[input.size()];
     }
     //invert matrix and solve equation
-    cout << matrix << endl;
     matrix = matrix.inverse();
     result = matrix * constants;
-    
-    cout << constants << endl;
-    cout << result << endl;
     //convert the output matrix to vector format
     vector<double> output;
     output.push_back(0);
@@ -184,55 +172,22 @@ vector<double> MatrixSolver(vector<Node> input){
     return output;
 }
 
-//just combines both funcitons into one
-vector<double> NodeVoltageSolver(vector<Component*> components){
-    return MatrixSolver(NodeGenerator(components));
-}
-
-
-//Test Code 1
-/*
-struct TestData{
-    vector<double> data;
-    vector<double> get_data(){
-        return data;
+double ComponentCurrent(vector<double> &voltages, vector<Node> nodes, Component* component){
+    vector<double> coefficients = coefficient_generator(&nodes[component->get_anode()], nodes, component);
+    double current = 0;
+    for(int i = 0; i<voltages.size(); i++){
+        current += voltages[i] * coefficients[i];
     }
-};
-
-int main(){
-    TestData row1{{1,2,3,-4}};
-    TestData row2{{3,2,5,-4}};
-    TestData row3{{7,2,3,-4}};
-    vector<TestData> vec{row1,row2,row3};
-    vector<double> output = MatrixSolver(vec);
-    cout << output[2];
-    //MatrixXd m(2,2);
-    //m(0,0) = 0;
-    ///cout << m;
-}
-*/
-
-
-
-
-int main(){
-    //Component v{0,1,"V",3,'V'};
-    //Component r1{1,2,"R1",2,'R'};
-    //Component r2{2,0,"R2",1,'R'};
-    Voltage_Source v1{1,0,"V1",4};
-    Resistor r1{1,0,"R1",1};
-    Voltage_Source v2{2,1,"V2",5};
-    Resistor r2{2,3,"R2",2};
-    Resistor r3{3,0,"R3",3};
-    vector<Component*> components{&r1,&r3,&r2,&v2,&v1};
-    vector<double> values = MatrixSolver(NodeGenerator(components));
-
-    Current_source c1{1,0,"C1",1};
-    Resistor r4{2,0,"R4",1};
-    Resistor v3{2,1,"V2",1};
-    vector<Component*> components2{&c1,&r4,&v3};
-    vector<double> values2 = MatrixSolver(NodeGenerator(components2));
-    //cout << values[1];
-    //cout << nodes.size();
+    return -current;
 }
 
+//outputs the vector of voltages given the vector of components, optional vector of nodes used to increase speed
+vector<double> NodeVoltageSolver(vector<Component*> components, vector<Node> *nodes = nullptr){
+    if(nodes == nullptr){
+        return MatrixSolver(NodeGenerator(components));
+    }
+    return MatrixSolver(*nodes);
+}
+
+
+#endif
