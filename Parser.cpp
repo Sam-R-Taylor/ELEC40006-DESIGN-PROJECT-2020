@@ -13,6 +13,11 @@ int main(int argc, char const *argv[])
     Circuit _circuit;
     char tmp;
 
+    std:: string _name;
+    int _anode;
+    int _cathode; 
+    double _value;
+
     //discards whitespace
     while (isspace(src.peek()))
     {
@@ -22,18 +27,19 @@ int main(int argc, char const *argv[])
     //stores type of component in tmp
     tmp = src.peek();
 
-    if (tmp == 'R')
+    if (tmp == 'R')             //Resistor added to _circuit
     {
-        std:: string _name;
-        int _anode;
-        int _cathode; 
-        double _value;
-
+        
         src >> _name >> _anode >> _cathode >> _value;
-
         _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
     }
-    
+    else if (tmp == 'L')            //Inductor added to _circuit
+    {
+        src >> _name >> _anode >> _cathode >> _value;
+        _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
+    }
+
+
     src.close();
     
 }
