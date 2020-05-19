@@ -281,4 +281,32 @@ public:
 
 
 
+//added sketch of Dependent_Voltage_Source
+class Dependent_Voltage_Source :                
+    public Voltage_Component
+{
+private:
+    double gain;
+    int control_voltage_anode;
+    int control_voltage_cathode;
+public:
+    Dependent_Voltage_Source(int _anode, int _cathode, std:: string _name, double _gain, int _control_voltage_anode, int _control_voltage_cathode)
+    {
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        control_voltage_anode = _control_voltage_anode;
+        control_voltage_cathode = _control_voltage_cathode;
+    }
+    double get_voltage() const override
+    {
+        return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
+    }
+
+
+};
+
+
+
+
 #endif
