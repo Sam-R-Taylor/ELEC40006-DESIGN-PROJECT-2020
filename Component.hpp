@@ -9,31 +9,22 @@ class Component
 {
 protected:
     std::string name;
-    char type = 'A';
     int anode;
     int cathode;
-    double value;
-    
-
 public:
     Component(){}                            //to implement
     virtual ~Component(){}
-
-    /*
-    reurns the type of the component
-    */
-    virtual char get_type() const {return type;}
-
     /*
     reurns the anode of the component
     */     
     int get_anode() const {return anode;}
-
     /*
     reurns the cathode of the component
     */  
     int get_cathode() const {return cathode;}
-    double get_value() const {return value;}
+    /*
+    reurns the name of the component
+    */  
     std::string get_name() const {return name;}
 };
 
@@ -71,6 +62,8 @@ public:
 class Resistor :
     public Current_Component
 {
+protected:
+    double value;
 public:
     Resistor(int _anode, int _cathode, std:: string _name, double _value){
         anode = _anode;
@@ -80,8 +73,8 @@ public:
     }
     ~Resistor(){}
 
-    char get_type(){
-        return 'R';
+    double get_value(){
+        return value;
     }
     double get_current(const std::vector<double> &nodevoltages) const override
     {
@@ -150,11 +143,11 @@ private:
     */
     double current;
 public:
-    Current_source(int _anode, int _cathode, std:: string _name, double _value){
+    Current_source(int _anode, int _cathode, std:: string _name, double _currrent){
         anode = _anode;
         cathode = _cathode;
         name = _name;
-        value = _value;
+        current = _current;
     }
     ~Current_source(){}
 

@@ -228,7 +228,7 @@ int main(){
     Voltage_Source v1(1,0,"V1",6);
     Resistor r1(1,2,"R1",5);
     Resistor r2(2,3,"R2",5);
-    Diode d1(0,3,"D1",5);
+    Diode d1(3,0,"D1",5);
     vector<Component*> components;
     components.push_back(&v1);
     components.push_back(&r1);
