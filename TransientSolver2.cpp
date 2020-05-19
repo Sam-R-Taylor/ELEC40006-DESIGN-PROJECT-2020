@@ -27,18 +27,21 @@ vector<double> TransientSolver(vector<double> voltages, double time, vector<Comp
     while(incomplete){
         current_iteration++;
         cout << "Iteration " << current_iteration << endl;
-        //vector<Component*> LinearComponents;
+        //loop through the components
         for(Component* component: components){
+            //adjust all the diodes for the current voltage guess
             if(dynamic_cast<Diode*>(component)){
                 ((Diode*)component)->set_vd(current_voltages[component->get_anode()] - current_voltages[component->get_cathode()]);
                 ((Diode*)component)->set_id0(((Diode*)component)->get_current(current_voltages));
             }
-            //LinearComponents.push_back(component);
         }
+        //set the voltages to the output of the KCL with the components
         vector<double> new_voltages = NodeVoltageSolver(components);
+        //check the error
         for(int i=0; i<voltages.size(); i++){
             incomplete = (abs(current_voltages[i] - new_voltages[i])>max_error);
         }
+        //set the stored voltages to the new voltages
         if(incomplete){
             current_voltages = new_voltages;
         }
@@ -48,6 +51,7 @@ vector<double> TransientSolver(vector<double> voltages, double time, vector<Comp
             incomplete = false;
         }
     }
+    //output the voltages
     return current_voltages;
 }
 
@@ -55,13 +59,13 @@ int main(){
     Voltage_Source v1(1,0,"V1",6);
     Resistor r1(1,2,"R1",5);
     Resistor r2(2,3,"R2",5);
-    Diode d1(3,0,"D1",5);
+    Diode d1(3,0,"D1");
     vector<Component*> components;
     components.push_back(&v1);
     components.push_back(&r1);
     components.push_back(&r2);
     components.push_back(&d1);
-    vector<double> Voltages{0,6,5,0.8};
+    vector<double> Voltages{0,6,5,0.7};
     Voltages = TransientSolver(Voltages,0,components,10000,0.01);
     cout << "Test 1:" << endl;
     cout << "V0 " << Voltages[0];
