@@ -32,12 +32,12 @@ double read_power_of_ten(std::istream& src)
         else if(c == 'p'){return pico;}
         else if(c == 'n'){return nano;}
         else if(c == 'u'){return micro;}
-        else if(c == 'm'){return milli;}
         else if(c == 'k'){return kilo;}
         else if(c == 'm' && tolower(tmp[1]) == 'e' && tolower(tmp[2]) == 'g'){return mega;}
         else if(c == 'g'){return giga;}
         else if(c == 't'){return tera;}
         else if(c == 'm' && tolower(tmp[1]) == 'i' && tolower(tmp[2]) == 'l'){return mil;}
+        else if(c == 'm'){return milli;}
     }
     return 1; 
 }
@@ -83,6 +83,7 @@ int main(int argc, char const *argv[])
             src >> _name >> _anode >> _cathode >> _value;
             _value *= read_power_of_ten(src);
             _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
+            std::cerr << _name << _anode << _cathode << _value;
         }
         else if (tmp == 'L' | tmp == 'l')            //Inductor added to _circuit
         {
