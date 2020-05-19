@@ -48,6 +48,12 @@ int main(int argc, char const *argv[])
         src >> _name >> _anode >> _cathode;
         _circuit.add_component(Diode(_anode,_cathode,_name));
     }
+    else if (tmp == 'V')
+    {
+        double _voltage;
+        src >> _name >> _anode >> _cathode >> _voltage;
+        _circuit.add_component(Voltage_Source(_anode, _cathode, _name, _voltage));
+    }
 
     src.close();
     
