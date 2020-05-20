@@ -60,7 +60,7 @@ public:
 
 
 class Resistor :
-    public Current_Component
+    public Component
 {
 protected:
     double value;

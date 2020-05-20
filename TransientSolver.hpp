@@ -59,7 +59,7 @@ vector<double> TransientSolver(vector<double> voltages, double time, vector<Comp
         }
         //check that max iterations haven't occured
         if(current_iteration >= max_iterations){
-            cout << "Hit maximum iterations in Newton-Raphson";
+            cout << "Hit maximum iterations";
             incomplete = false;
         }
     }
