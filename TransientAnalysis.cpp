@@ -51,10 +51,11 @@ vector<vector<double>> TransientAnalysis(vector<Component*> components, double t
 
 int main(){
     Voltage_Source v1(1,0,"V1",5);
-    Capacitor c1(2,1,"C1",0.00001);
-    Resistor r1(2,0,"R1",100000);
-    vector<Component*> components{&v1,&c1,&r1};
-    vector<vector<double>> output = TransientAnalysis(components, 4, 80);
+    Capacitor c1(2,1,"C1",0.1);
+    Resistor r1(2,0,"R1",100);
+    //Diode d1(3,0,"D1");
+    vector<Component*> components{&v1,&c1,&r1};//,&d1};
+    vector<vector<double>> output = TransientAnalysis(components, 1, 10);
     for(vector<double> vec: output){
         cout << vec[1] - vec[2] << endl;
     }
