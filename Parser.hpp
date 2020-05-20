@@ -47,11 +47,15 @@ double read_power_of_ten(std::istream& src)
 
 
 
-//input file specified as argv[1]
-int main(int argc, char const *argv[])
+/*
+Given a const std::string& specifing the input file
+
+returns a Circuit object with all the components specified in the input
+*/
+Circuit Parse_input(const std::string& input)
 {
     std::fstream src;
-    src.open (argv[1], std::fstream::in);
+    src.open (input, std::fstream::in);
 
     Circuit _circuit;
     char tmp;
@@ -73,8 +77,6 @@ int main(int argc, char const *argv[])
             break;
         }
         
-
-
         //stores type of component in tmp
         tmp = src.peek();
 
@@ -145,5 +147,5 @@ int main(int argc, char const *argv[])
     
     }
     src.close();
-    
+    return _circuit;   
 }
