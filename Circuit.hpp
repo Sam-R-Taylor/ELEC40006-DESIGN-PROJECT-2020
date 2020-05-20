@@ -10,18 +10,16 @@ class Circuit
 protected:
     std::vector<Component> components;
 public:
-    Circuit();
-    virtual ~Circuit();
+    void add_component(const Component& _component)
+    {
+        components.push_back(_component);
+    }
+
+
 };
 
 
-Circuit::Circuit()      //might take a vector<string> as a parameter ?
-{
-}
 
-Circuit::~Circuit()
-{
-}
 
 
 #endif
