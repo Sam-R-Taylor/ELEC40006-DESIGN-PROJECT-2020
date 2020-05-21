@@ -24,6 +24,10 @@ public:
             }
         return tmp;
     }
+    std::vector<std::vector<Component>> node_generator() const
+    {
+        std::vector<std::vector<Component>> tmp(this->biggest_node_index(),std::vector<Component>(5));  //might need optimization
+    }
 
 };
 
