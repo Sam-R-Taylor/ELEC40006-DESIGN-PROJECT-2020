@@ -14,7 +14,15 @@ public:
     {
         components.push_back(_component);
     }
-
+    int number_of_nodes()
+    {
+        int tmp = 0;
+        for(Component i: components)
+            {
+                if(i.get_anode() > tmp){tmp = i.get_anode();}
+                if (i.get_cathode() > tmp){tmp = i.get_cathode();}
+            }
+    }
 
 };
 

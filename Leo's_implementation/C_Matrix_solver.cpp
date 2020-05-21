@@ -4,7 +4,21 @@
 
 
 
+Eigen::MatrixXd return_Conductance_Matrix(const Circuit& input_circuit){}
 
+
+
+
+
+
+
+
+/*
+given a Circuit 
+
+returns a Eigen::VectorXd of voltages (i.e. the solution to the circuit)
+*/
+Eigen::VectorXd Matrix_solver(const Circuit& input_circuit){}
 
 
 
