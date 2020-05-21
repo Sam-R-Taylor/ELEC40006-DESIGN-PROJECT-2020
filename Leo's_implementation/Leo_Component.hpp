@@ -54,6 +54,7 @@ public:
         double current = (nodevoltages[anode]-nodevoltages[cathode])/resistance;
         return current;
     }
+    double get_conductance() const{return 1/resistance;}
 };
 
 
@@ -75,6 +76,7 @@ public:
         current = _current;
     }
     double get_current() const {return current;}
+    double get_conductance() const{return 0;}
 };    
 
 
