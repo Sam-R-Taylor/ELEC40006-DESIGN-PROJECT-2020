@@ -81,18 +81,20 @@ Circuit Parse_input(const std::string& input)
         tmp = src.peek();
 
         if (tmp == 'r')             //Resistor added to _circuit
-        {    
-            src >> _name >> _anode >> _cathode >> _value;
-            _value *= read_power_of_ten(src);
-            _circuit.add_component(Resistor(_anode,_cathode,_name,_value));
-            //std::cerr << _name << _anode << _cathode << _value << std::endl;
+        {   
+             double _resistance;
+            src >> _name >> _anode >> _cathode >> _resistance;
+            _resistance *= read_power_of_ten(src);
+            _circuit.add_component(Resistor(_anode,_cathode,_name,_resistance));
+            //std::cerr << _name << _anode << _cathode << _resistance << std::endl;
         }
         else if (tmp == 'l')            //Inductor added to _circuit
-        {
-            src >> _name >> _anode >> _cathode >> _value;
-            _value *= read_power_of_ten(src);
-            _circuit.add_component(Inductor(_anode,_cathode,_name,_value));
-            //std::cerr << _name << _anode << _cathode << _value << std::endl;
+        {   
+            double _inductance;
+            src >> _name >> _anode >> _cathode >> _inductance;
+            _inductance *= read_power_of_ten(src);
+            _circuit.add_component(Inductor(_anode,_cathode,_name,_inductance));
+            //std::cerr << _name << _anode << _cathode << _inductance << std::endl;
         }
         else if (tmp == 'i')            //Current source added to _circuit
         {
@@ -114,10 +116,11 @@ Circuit Parse_input(const std::string& input)
             _circuit.add_component(Voltage_Source(_anode, _cathode, _name, _voltage));
         }
         else if (tmp == 'c')           //Capacitor added to _circuit
-        {
-            src >> _name >> _anode >> _cathode >> _value;
-            _value *= read_power_of_ten(src);
-            _circuit.add_component(Capacitor(_anode,_cathode,_name,_value));
+        {   
+            double _capacitance;
+            src >> _name >> _anode >> _cathode >> _capacitance;
+            _capacitance *= read_power_of_ten(src);
+            _circuit.add_component(Capacitor(_anode,_cathode,_name,_capacitance));
         }
         else if (tmp == 'e')            //Voltage_Controlled_Voltage_Source added to _circuit
         {
