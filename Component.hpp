@@ -93,7 +93,7 @@ public:
         integral += increment;
     }
     
-    double get_current() const override        //does not need the parameter. modify later
+    double get_current() const        //does not need the parameter. modify later
     {
         return integral/inductance;
     }
@@ -117,7 +117,7 @@ public:
         current = _current;
     }
     ~Current_source(){}
-    double get_current() const override
+    double get_current() const
     {
         return current;
     }
@@ -195,7 +195,7 @@ public:
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
-    virtual double get_current() const override
+    virtual double get_current() const
     {
         return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
     }
@@ -220,7 +220,7 @@ public:
     }
     ~Voltage_Source(){}
 
-    double get_voltage() const override
+    double get_voltage() const
     {
         return voltage;
     }
@@ -249,7 +249,7 @@ public:
     ~Capacitor(){}
 
 
-    double get_voltage() const override
+    double get_voltage() const
     {
         return integral/value;
     }
@@ -284,7 +284,7 @@ public:
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
-    double get_voltage() const override
+    double get_voltage() const
     {
         return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
     }
