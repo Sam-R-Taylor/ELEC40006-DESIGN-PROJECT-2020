@@ -151,28 +151,5 @@ Circuit Parse_input(const std::string& input)
 }
 
 
-vector<Node> NodeGenerator(vector<Component*> components){
-    vector<Node> Nodes;
-    //iterate through the components
-    int index = 0;
-    for(Component* component: components){ 
-        //ensure the node list has a node of high enough index 
-        while(Nodes.size()<=component->get_cathode()){
-            Node node;
-            node.set_index(index);
-            Nodes.push_back(node);
-            index++;
-        }
-        while(Nodes.size()<=component->get_anode()){
-            Node node;
-            node.set_index(index);
-            Nodes.push_back(node);
-            index++;
-        }
-        //add the components to the nodes it is attached to
-        Nodes[component->get_cathode()].add_component(component);
-        Nodes[component->get_anode()].add_component(component);
-    }
-    return Nodes;
-}
+
  
