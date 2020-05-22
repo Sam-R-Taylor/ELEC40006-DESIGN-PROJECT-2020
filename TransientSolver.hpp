@@ -20,7 +20,7 @@ Outputs the new node voltages at that time using multi variable newton raphson i
 /max iterations is the maximum iterations in newton raphson
 /max error represents the maximum voltage error at anyone node
 */
-vector<double> TransientSolver(vector<double> voltages, double time, vector<Component*>& components, int max_iterations, double max_error, vector<Node> *nodes = nullptr){
+vector<double> TransientSolver(vector<double> voltages, double time, vector<Component*> &components, int max_iterations, double max_error, vector<Node> *nodes = nullptr){
     //store the voltages in a new vector that can be adjusted each iteration
     vector<double> current_voltages = voltages;
 

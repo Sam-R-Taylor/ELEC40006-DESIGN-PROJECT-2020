@@ -1,19 +1,18 @@
-#ifndef COMPONENT_HPP
-#define COMPONENT_HPP
-
-#include<iostream>
-#include<string>
-#include<cmath>
-
+#include <chrono>
+#include <iostream>
 class Component
 {
 protected:
     std::string name;
     int anode;
     int cathode;
+    char type = 'C';
 public:
     Component(){}                            //to implement
     virtual ~Component(){}
+    char get_type(){
+        return type;
+    }
     /*
     reurns the anode of the component
     */     
@@ -30,36 +29,56 @@ public:
 
 
 
+class Current_Component:
+    public Component
+{
+
+public:
+    /*
+    given a vector<double> nodevoltages where 
+    -each index of nodevoltages corresponds to a node
+    -each double of nodevoltages corresponds to a voltage at the given node
+    returns the current through the Component going from anode to cathode
+    */ 
+    virtual double get_current() const = 0;
+
+    /*
+    given a vector<double> nodevoltages where 
+    -each index of nodevoltages corresponds to a node
+    -each double of nodevoltages corresponds to a voltage at the given node
+    returns a vector<double> current_derivative where 
+    -each index of current_derivative corresponds to a node
+    -each double of current_derivative corresponds to the partial derivative of the current through the component (from characteristic equation) with respect to the corresponding voltage provided by nodevoltages
+    */ 
+};
+
+
+
+
 
 
 class Resistor :
     public Component
 {
 protected:
-    double resistance;
-    double conductance;
-    
+    double value;
 public:
-    Resistor(int _anode, int _cathode, std:: string _name, double _resistance){
+    Resistor(int _anode, int _cathode, std:: string _name, double _value){
         anode = _anode;
         cathode = _cathode;
-        name = _name; 
-        resistance = _resistance;
-        conductance = 1/resistance;
+        name = _name;
+        value = _value;
     }
     ~Resistor(){}
 
-    double get_value() const{
-        return resistance;
+    double get_value(){
+        return value;
     }
     double get_current(const std::vector<double> &nodevoltages) const
     {
-        double current = (nodevoltages[anode]-nodevoltages[cathode])/resistance;
+        double current = (nodevoltages[anode]-nodevoltages[cathode])/value;
         //std::cout << "Resistor Current" << current << std::endl;
         return current;
-    }
-    double get_conductance() const{
-        return conductance;
     }
 };
 
@@ -69,25 +88,25 @@ public:
 
 
 class Inductor :
-    public Component
+    public Current_Component
 {
 private:
     /*
     integral of voltage wrt time. Voltage is defined as V_anode - V_cathode
     */
     double integral;
-    double inductance;
+    double value;
 public:
-    Inductor(int _anode, int _cathode, std:: string _name, double _inductance){
+    Inductor(int _anode, int _cathode, std:: string _name, double _value){
         anode = _anode;
         cathode = _cathode;
         name = _name;
-        inductance = _inductance;
+        value = _value;
     }
     ~Inductor(){}
     /*
     given an increment computed by "controller" due to a timestep
-    updates the inductance of Inductor::integral
+    updates the value of Inductor::integral
     */
     void update_integral(double increment){
         integral += increment;
@@ -95,14 +114,14 @@ public:
     
     double get_current() const override        //does not need the parameter. modify later
     {
-        return integral/inductance;
+        return integral/value;
     }
 };
 
 
 
 class Current_source :
-    public Component
+    public Current_Component
 {
 private:
     /*
@@ -180,7 +199,7 @@ public:
 
 //added sketch of Voltage_Controlled_Current_Source
 class Voltage_Controlled_Current_Source :                
-    public Component
+    public Current_Component
 {
 private:
     double gain;
@@ -203,8 +222,27 @@ public:
 
 
 
-class Voltage_Source:
+
+
+class Voltage_Component:
     public Component
+{
+
+public:
+    /*
+    given a vector<double> nodevoltages where 
+    -each index of nodevoltages corresponds to a node
+    -each double of nodevoltages corresponds to a voltage at the given node
+    returns the  through the voltage difference across the component from anode to cathode
+    */ 
+    virtual double get_voltage() const =0;
+
+    
+};
+
+
+class Voltage_Source:
+    public Voltage_Component
 {
 private:
     /*
@@ -231,7 +269,7 @@ public:
 
 
 class Capacitor :
-    public Component
+    public Voltage_Component
 {
 private:
     /*
@@ -269,7 +307,7 @@ public:
 
 //added sketch of Voltage_Controlled_Voltage_Source
 class Voltage_Controlled_Voltage_Source :                
-    public Component
+    public Voltage_Component
 {
 private:
     double gain;
@@ -291,6 +329,17 @@ public:
 };
 
 
+int main(){
+    Resistor r{1,2,"R",5};
+    Resitor ptr* = &r;
+    vector<Compnent*> vec{ptr};
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    for(int i=0; i < 1000; i++){
+        if(dynamic_cast<Resistor*>(vec[0])){
 
-
-#endif
+        }
+    }
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point difference = end - begin;
+    std::cout << difference;
+}

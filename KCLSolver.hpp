@@ -11,13 +11,10 @@ using Eigen::MatrixXd;
 //to compile use g++ -I eigen3 KCLSolver.cpp -o ...
 
 struct Node{
-        double voltage = 0;
         int index = 0;
         vector<Component*> components;
         void set_index(int _index){index = _index;}
         int get_index(){return index;}
-        double get_voltage(){return voltage;}
-        void set_voltage(double _voltage){voltage = _voltage;}
         void add_component(Component* component){
             components.push_back(component);
         }
@@ -31,7 +28,7 @@ struct Node{
 //output is a vector of doubles representing each of the coeefiicients {a,b,c...,d}
 //such that ax1 + bx2 + cx3 ...+ d =0
 //if being used for a super node include the component connecting the two nodes as the last parameter
-vector<double> coefficient_generator(Node *node, vector<Node> nodes, Component *source_component = nullptr){
+vector<double> coefficient_generator(Node *node, vector<Node> &nodes, Component *source_component = nullptr){
     //create a vector to store the output coefficients
     vector<double> coefficients(nodes.size() + 1,0);
     //iterate through all the components connected to that node
@@ -108,7 +105,6 @@ vector<double> coefficient_generator(Node *node, vector<Node> nodes, Component *
 //takes a vector of objects (should be components)
 //outputs a vector of objects (should be nodes)
 //each node has a correct vector of components
-//template<typename Component> 
 vector<Node> NodeGenerator(vector<Component*> components){
     vector<Node> Nodes;
     //iterate through the components
@@ -139,7 +135,6 @@ vector<Node> NodeGenerator(vector<Component*> components){
 //constants of a line of a matrix in the form {a,b,c, ... ,d} such that
 //ax1 + bx2 + cx3 .... + d = 0
 //the matrix outputs the solution to the matrix equation in a vector float
-//template<typename Node>
 vector<double> MatrixSolver(vector<Node> input){
     int ground_node = 0;
     //create a matrix with the correct dimensions
@@ -172,7 +167,7 @@ vector<double> MatrixSolver(vector<Node> input){
     return output;
 }
 
-double ComponentCurrent(vector<double> &voltages, vector<Node> nodes, Component* component){
+double ComponentCurrent(vector<double> &voltages, vector<Node> &nodes, Component* component){
     vector<double> coefficients = coefficient_generator(&nodes[component->get_anode()], nodes, component);
     double current = 0;
     for(int i = 0; i<voltages.size(); i++){
@@ -182,7 +177,7 @@ double ComponentCurrent(vector<double> &voltages, vector<Node> nodes, Component*
 }
 
 //outputs the vector of voltages given the vector of components, optional vector of nodes used to increase speed
-vector<double> NodeVoltageSolver(vector<Component*> components, vector<Node> *nodes = nullptr){
+vector<double> NodeVoltageSolver(vector<Component*> &components, vector<Node> *nodes = nullptr){
     if(nodes == nullptr){
         return MatrixSolver(NodeGenerator(components));
     }
