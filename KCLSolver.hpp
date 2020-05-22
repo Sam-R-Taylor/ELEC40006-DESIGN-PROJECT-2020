@@ -1,31 +1,3 @@
-
-Skip to content
-Pull requests
-Issues
-Marketplace
-Explore
-@max-wickham
-Sam-R-Taylor /
-ELEC40006-DESIGN-PROJECT-2020
-
-1
-0
-
-    0
-
-Code
-Issues 0
-Pull requests 0
-Actions
-Projects 0
-Wiki
-Security 0
-
-    Insights
-
-ELEC40006-DESIGN-PROJECT-2020/KCLSolver.hpp
-@maxwickham27 maxwickham27 Joint Work to establish group work 0af12f9 2 hours ago
-188 lines (178 sloc) 8.76 KB
 #ifndef KCLSOLVER_HPP
 #define KCLSOLVER_HPP
 
