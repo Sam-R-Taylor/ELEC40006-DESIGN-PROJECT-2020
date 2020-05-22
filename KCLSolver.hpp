@@ -6,22 +6,10 @@
 #include <Eigen/Dense>
 #include <string>
 #include "Component.hpp"
+#include ""
 using namespace std;
 using Eigen::MatrixXd;
 //to compile use g++ -I eigen3 KCLSolver.cpp -o ...
-
-struct Node{
-        int index = 0;
-        vector<Component*> components;
-        void set_index(int _index){index = _index;}
-        int get_index(){return index;}
-        void add_component(Component* component){
-            components.push_back(component);
-        }
-        vector<Component*> get_components(){
-            return components;
-        }
-};
 
 //creates the kcl equation for a node in the circuit
 //input is the current node and a list of nodes
