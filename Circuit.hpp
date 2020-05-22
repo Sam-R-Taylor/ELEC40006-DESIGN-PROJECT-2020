@@ -3,8 +3,8 @@
 
 
 #include<vector>
-#include"Component.hpp"
-
+#include "Component.hpp"
+using namespace std;
 struct Node{
         int index = 0;
         vector<Component&> components;
