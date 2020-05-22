@@ -14,7 +14,7 @@ public:
     {
         components.push_back(_component);
     }
-    int biggest_node_index() const
+    int number_of_nodes() const
     {
         int tmp = 0;
         for(Component i: components)
@@ -24,9 +24,20 @@ public:
             }
         return tmp;
     }
-    std::vector<std::vector<Component>> node_generator() const
+    int biggest_node_index() const{return this->number_of_nodes()+1;}
+    /*
+    creates an alternative representation of circuit. 
+    Every node (outer vector) has a vector of references to components attached to it.
+    */
+    std::vector<std::vector<Component&>> node_circuit_generator() const //might need optimization to remove node 0
     {
-        std::vector<std::vector<Component>> tmp(this->biggest_node_index(),std::vector<Component>(5));  //might need optimization
+        std::vector<std::vector<Component&>> tmp(this->number_of_nodes());
+        for(Component i: components)
+            {
+                tmp[i.get_anode()].push_back(&i);
+                tmp[i.get_anode()].push_back(&i);
+            }
+        return tmp;
     }
 
 };

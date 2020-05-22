@@ -6,17 +6,27 @@
 
 Eigen::MatrixXd return_Conductance_Matrix(const Circuit& input_circuit)
 {   
-    //initializing a matrix of the right size
-    int Mat_size = input_circuit.biggest_node_index();
+    //initializing a matrix of the right size 
+    //discards node 0
+    int Mat_size = input_circuit.number_of_nodes() - 1;     
     Eigen::MatrixXd Mat(Mat_size,Mat_size);
+    //Fills up the matrix with 0s
+    Mat.Zero(Mat_size,Mat_size);
+
+    std::vector<std::vector<Component&>> node_circuit = input_circuit.node_circuit_generator();
 
     //initializing each element of the matrix
     for (int row = 0; row < Mat_size; row++)
     {
-        for (int column = 0; column < Mat_size; column++)
-        {
-            //find components attached to node "row" and add their conductance
-        }
+        int current_node_index = row + 1;
+        for(Component current_component: node_circuit[current_node_index])
+            {
+                if ()
+                {
+                    /* code */
+                }
+                
+            }
         
     }
     
