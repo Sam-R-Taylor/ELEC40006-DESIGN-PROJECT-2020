@@ -29,6 +29,9 @@ public:
     void set_voltages(vector<double> _voltages){
         voltages = _voltages;
     }
+    vector<double> get_voltages(){
+        return voltages;
+    }
     void add_component(const Component& _component)
     {
         components.push_back(&_component);
@@ -42,6 +45,12 @@ public:
     }
     int get_size() const{
         return nodes.size();
+    }
+    vector<Nodes&> get_nodes(){
+        return nodes;
+    }
+    vector<Component&> get_components(){
+        return components;
     }
 };
 
