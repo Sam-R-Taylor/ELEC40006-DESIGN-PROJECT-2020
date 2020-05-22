@@ -1,13 +1,11 @@
 #ifndef CIRCUIT_HPP
 #define CIRCUIT_HPP
-
-
-#include<vector>
+#include <vector>
 #include "Component.hpp"
 using namespace std;
 struct Node{
         int index = 0;
-        vector<Component&> components;
+        vector<Component*> components;
         /*
         void set_index(int _index){index = _index;}
         int get_index(){return index;}
@@ -22,9 +20,9 @@ struct Node{
 class Circuit
 {
 protected:
-    std::vector<Nodes&> nodes;
-    std::vector<Component&> components;
-    std::vector<double> voltages;
+    vector<Node> nodes;
+    vector<Component*> components;
+    vector<double> voltages;
 public:
     void set_voltages(vector<double> _voltages){
         voltages = _voltages;
@@ -32,49 +30,55 @@ public:
     vector<double> get_voltages(){
         return voltages;
     }
-    void add_component(const Component& _component)
+    void add_component(Component* _component)
     {
-        components.push_back(&_component);
+        components.push_back(_component);
     }
-    void add_node(const Node& _node)
+    void add_node(Node _node)
     {
-        components.push_back(&_node);
+        nodes.push_back(_node);
     }
-    Node& get_node(int index) const{
+    Node get_node(int index) const{
         return nodes[index];
     }
-    int get_size() const{
+    int get_number_of_nodes() const{
         return nodes.size();
     }
-    vector<Nodes&> get_nodes(){
-        return nodes;
+    vector<Node>* get_nodes(){
+        return &nodes;
     }
-    vector<Component&> get_components(){
+    Node* get_node(int index){
+        return &nodes[index];
+    }
+    vector<Component*> get_components(){
         return components;
     }
 };
 
-vector<Node> NodeGenerator(vector<Component&> components){
+//takes a vector of objects (should be components)
+//outputs a vector of objects (should be nodes)
+//each node has a correct vector of components
+vector<Node> NodeGenerator(vector<Component*> components){
     vector<Node> Nodes;
     //iterate through the components
     int index = 0;
-    for(Component component: components){ 
+    for(Component* component: components){ 
         //ensure the node list has a node of high enough index 
-        while(Nodes.size()<=component.get_cathode()){
+        while(Nodes.size()<=component->get_cathode()){
             Node node;
-            node.set_index(index);
+            node.index = (index);
             Nodes.push_back(node);
             index++;
         }
-        while(Nodes.size()<=component.get_anode()){
+        while(Nodes.size()<=component->get_anode()){
             Node node;
-            node.set_index(index);
+            node.index = index;
             Nodes.push_back(node);
             index++;
         }
         //add the components to the nodes it is attached to
-        Nodes[component.get_cathode()].add_component(component);
-        Nodes[component.get_anode()].add_component(component);
+        Nodes[component->get_cathode()].components.push_back(component);
+        Nodes[component->get_anode()].components.push_back(component);
     }
     return Nodes;
 }

@@ -203,8 +203,23 @@ public:
 
 
 
-class Voltage_Source:
+class Voltage_Component:
     public Component
+{
+
+public:
+    /*
+    given a vector<double> nodevoltages where 
+    -each index of nodevoltages corresponds to a node
+    -each double of nodevoltages corresponds to a voltage at the given node
+    returns the  through the voltage difference across the component from anode to cathode
+    */ 
+    virtual double get_voltage() const =0;
+
+    
+};
+class Voltage_Source:
+    public Voltage_Component
 {
 private:
     /*
@@ -231,7 +246,7 @@ public:
 
 
 class Capacitor :
-    public Component
+    public Voltage_Component
 {
 private:
     /*
@@ -269,7 +284,7 @@ public:
 
 //added sketch of Voltage_Controlled_Voltage_Source
 class Voltage_Controlled_Voltage_Source :                
-    public Component
+    public Voltage_Component
 {
 private:
     double gain;
