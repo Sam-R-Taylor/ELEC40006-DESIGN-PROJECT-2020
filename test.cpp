@@ -22,15 +22,14 @@ int main(){
     circuit.set_voltages(v);
 
     auto start = chrono::steady_clock::now();
-    for(int i = 0; i < 100000; i++){
+    for(int i = 0; i < 1000; i++){
         NodeVoltageSolver(circuit);
     }
     auto end = chrono::steady_clock::now();
     auto diff = end - start;
     cout << chrono::duration <double, milli> (diff).count() << " ms" << endl;
     v = circuit.get_voltages();
-
-        //for(auto x: v){
+    //for(auto x: v){
     //    cout << x << endl;
     //}
 }

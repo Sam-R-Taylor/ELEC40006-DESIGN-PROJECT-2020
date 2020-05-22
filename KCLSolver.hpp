@@ -7,6 +7,7 @@
 #include <string>
 #include "Component.hpp"
 #include "Circuit.hpp"
+#include <chrono>
 using namespace std;
 using Eigen::MatrixXd;
 //to compile use g++ -I eigen3 KCLSolver.cpp -o ...
@@ -44,12 +45,12 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 //check with node of the resistor is the current node
                 if(component->get_anode() == node->index){
                     //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
-                    sub_coefficients[component->get_anode()] += 1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += -1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_anode()] += ((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_cathode()] += -((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                 }
                 if(component->get_cathode() == node->index){
-                    sub_coefficients[component->get_anode()] += -1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += 1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_anode()] += -((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_cathode()] += ((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                 }
             }
             //if component type is current source
@@ -117,8 +118,20 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
             constants(i) = -row[circuit.get_number_of_nodes()];
     }
     //invert matrix and solve equation
+
+
+    //MatrixXd matrix2 = matrix;
+    //auto start = chrono::steady_clock::now();
+    //for(int i = 0; i < 1000; i++){
     matrix = matrix.inverse();
     result = matrix * constants;
+    //}
+    //auto end = chrono::steady_clock::now();
+    //auto diff = end - start;
+    //cout << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+    
+    
+    
     //convert the output matrix to vector format
     vector<double> output;
     output.push_back(0);
