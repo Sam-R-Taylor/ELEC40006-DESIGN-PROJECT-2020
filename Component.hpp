@@ -27,6 +27,7 @@ public:
     reurns the name of the component
     */  
     std::string get_name() const {return name;}
+    char get_type() const{return type;}
 };
 
 
