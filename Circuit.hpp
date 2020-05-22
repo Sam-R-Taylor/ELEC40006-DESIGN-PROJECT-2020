@@ -30,7 +30,7 @@ public:
     void set_voltages(std::vector<double> _voltages){
         voltages = _voltages;
     }
-    std::vector<double> get_voltages(){
+    std::vector<double> get_voltages() const{
         return voltages;
     }
     void add_component(const Component& _component)
@@ -47,10 +47,10 @@ public:
     int get_number_of_nodes() const{
         return nodes.size();
     }
-    std::vector<Node> get_nodes(){
+    std::vector<Node> get_nodes() const{
         return nodes;
     }
-    std::vector<Component> get_components(){
+    std::vector<Component> get_components() const{
         return components;
     }
 };
