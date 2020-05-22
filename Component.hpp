@@ -11,6 +11,7 @@ protected:
     std::string name;
     int anode;
     int cathode;
+    char type;
 public:
     Component(){}                            //to implement
     virtual ~Component(){}
@@ -44,6 +45,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name; 
+        type = _name[0];
         resistance = _resistance;
         conductance = 1/resistance;
     }
@@ -82,6 +84,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        type = _name[0];
         inductance = _inductance;
     }
     ~Inductor(){}
@@ -114,6 +117,7 @@ public:
         anode = _anode;
         cathode = _cathode; 
         name = _name;
+        type = _name[0];
         current = _current;
     }
     ~Current_source(){}
@@ -141,6 +145,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        type = _name[0];
     }
     ~Diode(){}
     //set the voltage across the diode
@@ -192,6 +197,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        type = _name[0];
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
@@ -216,6 +222,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        type = _name[0];
         voltage = _voltage;
     }
     ~Voltage_Source(){}
@@ -244,6 +251,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        type = _name[0];
         value = _value;
     }
     ~Capacitor(){}
@@ -281,6 +289,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        type = _name[0];
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
