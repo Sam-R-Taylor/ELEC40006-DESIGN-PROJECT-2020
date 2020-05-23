@@ -29,11 +29,6 @@ void remove_Column(Eigen::MatrixXd& matrix, unsigned int colToRemove)
 
 
 
-
-
-
-
-
 Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
 {   
     //initializing a matrix of the right size 
@@ -126,6 +121,17 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
                 Mat.row(cathode).setZero();
                 Mat(cathode,cathode) = -1;
                 Vec(cathode) = voltage;
+            }
+            else
+            {   
+                //combines KCL equations
+                Mat.row(cathode) += Mat.row(anode);
+                Vec(cathode) += Vec(anode);
+                //sets anode node to V_anode - V_cathode = deltaV
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;
+                Mat(anode,cathode) = -1;
+                Vec(anode) = voltage;
             }
         }
         
