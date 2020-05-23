@@ -51,7 +51,7 @@ Given a const std::string& specifing the input file
 
 returns a Circuit object with all the components specified in the input
 */
-Circuit Parse_input(const std::string& input)
+Circuit parse_input(const std::string& input)
 {
     std::fstream src;
     src.open (input, std::fstream::in);

@@ -7,18 +7,8 @@
 
 
 struct Node{
-        int index = 0;
-        std::vector<Component> components_attached;
-        /*
-        void set_index(int _index){index = _index;}
-        int get_index(){return index;}
-        void add_component(Component* component){
-            components.push_back(component);
-        }
-        vector<Component*> get_components(){
-            return components;
-        }
-        */
+    int index = 0;
+    std::vector<Component> components_attached;
 };
 
 
@@ -70,6 +60,8 @@ public:
     void build_components(const std::vector<Component> _components){components = _components;}
     void build_nodes(const std::vector<Node> _nodes){nodes = _nodes;}
     void set_voltages(std::vector<double> _voltages){voltages = _voltages;}
+
+    Node get_node(int _index){return nodes[_index];}        //might need improvements
 };
 
 
