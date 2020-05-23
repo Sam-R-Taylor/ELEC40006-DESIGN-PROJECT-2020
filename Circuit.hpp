@@ -64,7 +64,23 @@ public:
     {
         components.push_back(_component);
     }
+    void print_components() const
+    {
+        for(Component i: components){
+            std::cerr << i.get_name()<< std::endl;
+        }
 
+    }
+    void print_node_components() const
+    {
+        for(Node i: nodes)
+        {
+            for(Component* j: i.components_attached)
+            {
+                std::cerr << j->get_name()<< std::endl;
+            }
+        }
+    }
     /*
     after a circuit object is constructed by the parser
     updates vector<Node> nodes

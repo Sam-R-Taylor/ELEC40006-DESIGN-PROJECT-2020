@@ -2,6 +2,7 @@
 #include "Component.hpp"
 #include "Parser.hpp"
 #include<Eigen/Dense>
+#include<cassert>
 
 
 //helper functions for Matrix_solver
@@ -30,6 +31,7 @@ void remove_Column(Eigen::MatrixXd& matrix, unsigned int colToRemove)
 
 Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
 { 
+    std::cerr<< "in Matrix_solver" << std::endl;
     //initializing a matrix of the right size 
     int Mat_size = input_circuit.get_number_of_nodes();     
     Eigen::MatrixXd Mat(Mat_size,Mat_size);
@@ -41,7 +43,7 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     Mat.Zero(Mat_size,Mat_size);
 
     //Fills up the vector with 0s
-    Vec.Zero();
+    Vec.Zero(Mat_size);
 
 
     //nodes needed to set up the KCL equations
@@ -109,6 +111,8 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
         int anode = voltage_source->get_anode();
         int cathode = voltage_source->get_cathode();
         double voltage = voltage_source->get_voltage();
+        
+        assert(anode != cathode);
 
         if(cathode == 0)
         {   
@@ -135,14 +139,14 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
         }
     }
     //setting V0 to GND and removing corresponding row and column
-    /* todo
     remove_Row(Mat,0);
     remove_Column(Mat,0);
-    remove_Row(Vec,0);
-    */
+    Vec = Vec.tail(Mat_size-1);
+    
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size -1);
     solution = Mat.colPivHouseholderQr().solve(Vec);
+    std::cout << solution;
     return solution;
 
 }
