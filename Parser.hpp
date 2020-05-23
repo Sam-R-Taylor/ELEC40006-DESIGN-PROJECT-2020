@@ -151,6 +151,7 @@ Circuit& parse_input(const std::string& input)
     }
     src.close();
     _circuit.build_nodes();
+    _circuit.print_components();
     _circuit.print_node_components();
     return _circuit;   
 }
