@@ -43,8 +43,8 @@ std::vector<Node> NodeGenerator(std::vector<Component> components){
             index++;
         }
         //add the components to the nodes it is attached to
-        Nodes[component.get_cathode()].add_component(component);
-        Nodes[component.get_anode()].add_component(component);
+        Nodes[component.get_cathode()].add_component(&component);
+        Nodes[component.get_anode()].add_component(&component);
     }
     return Nodes;
 }
