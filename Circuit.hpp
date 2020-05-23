@@ -15,7 +15,7 @@ struct Node{
     void add_component(Component component){
         components.push_back(component);
     }
-    vector<Component> get_components(){
+    std::vector<Component> get_components(){
         return components;
     }       
 };
