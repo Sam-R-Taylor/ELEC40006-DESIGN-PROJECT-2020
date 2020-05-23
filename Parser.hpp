@@ -78,14 +78,14 @@ Circuit& parse_input(const std::string& input)
         
         //stores type of component in tmp
         tmp = tolower(src.peek());
-        std::cerr << "looking at " << tmp << std::endl;
+        //std::cerr << "looking at " << tmp << std::endl;
         if (tmp == 'r')             //Resistor added to _circuit
         {   
              double _resistance;
             src >> _name >> _anode >> _cathode >> _resistance;
             _resistance *= read_power_of_ten(src);
             _circuit.add_component(Resistor(_anode,_cathode,_name,_resistance));
-            std::cerr << _name << _anode << _cathode << _resistance << std::endl;
+            //std::cerr << _name << _anode << _cathode << _resistance << std::endl;
         }
         else if (tmp == 'l')            //Inductor added to _circuit
         {   
@@ -101,7 +101,7 @@ Circuit& parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _current;
             _current *= read_power_of_ten(src);
             _circuit.add_component(Current_source(_anode, _cathode, _name, _current));
-            std::cerr << _name << _anode << _cathode << _current << std::endl;
+            //std::cerr << _name << _anode << _cathode << _current << std::endl;
         }
         else if (tmp == 'd')            //Diode added to _circuit
         {   
@@ -151,7 +151,7 @@ Circuit& parse_input(const std::string& input)
     }
     src.close();
     _circuit.build_nodes();
-    _circuit.print_components();
+    //_circuit.print_components();
     _circuit.print_node_components();
     return _circuit;   
 }
