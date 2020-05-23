@@ -155,6 +155,7 @@ Circuit Parse_input(const std::string& input)
             exit(1);
         }
     
+    
     }
     src.close();
     return _circuit;   
