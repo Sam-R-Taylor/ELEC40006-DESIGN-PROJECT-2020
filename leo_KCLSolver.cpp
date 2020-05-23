@@ -134,7 +134,16 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
                 Vec(anode) = voltage;
             }
         }
-        
+        //setting V0 to GND and removing corresponding row and column
+        /* todo
+        remove_Row(Mat,0);
+        remove_Column(Mat,0);
+        remove_Row(Vec,0);
+        */
+        //finding the inverse matrix
+        Eigen::VectorXd solution(Mat_size -1);
+        solution = Mat.colPivHouseholderQr().solve(Vec);
+        return solution;
     }
 }
 
