@@ -20,7 +20,7 @@ public:
     {
         components.push_back(_component);
     }
-    void add_node(Component& _node_component)
+    void add_node(Component _node_component)
     {
         int anode = _node_component.get_anode();
         int cathode = _node_component.get_cathode();

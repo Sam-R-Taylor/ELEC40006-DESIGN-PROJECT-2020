@@ -85,6 +85,7 @@ Circuit Parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _resistance;
             _resistance *= read_power_of_ten(src);
             _circuit.add_component(Resistor(_anode,_cathode,_name,_resistance));
+            _circuit.add_node(Resistor(_anode,_cathode,_name,_resistance));
             //std::cerr << _name << _anode << _cathode << _resistance << std::endl;
         }
         else if (tmp == 'l')            //Inductor added to _circuit
@@ -93,6 +94,7 @@ Circuit Parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _inductance;
             _inductance *= read_power_of_ten(src);
             _circuit.add_component(Inductor(_anode,_cathode,_name,_inductance));
+            _circuit.add_node(Inductor(_anode,_cathode,_name,_inductance));
             //std::cerr << _name << _anode << _cathode << _inductance << std::endl;
         }
         else if (tmp == 'i')            //Current source added to _circuit
@@ -101,11 +103,13 @@ Circuit Parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _current;
             _current *= read_power_of_ten(src);
             _circuit.add_component(Current_source(_anode, _cathode, _name, _current));
+            _circuit.add_node(Current_source(_anode, _cathode, _name, _current));
         }
         else if (tmp == 'd')            //Diode added to _circuit
         {   
             src >> _name >> _anode >> _cathode;
             _circuit.add_component(Diode(_anode,_cathode,_name));
+            _circuit.add_node(Diode(_anode,_cathode,_name));
         }
         else if (tmp == 'v')            //Voltage source added to _circuit
         {
@@ -113,6 +117,7 @@ Circuit Parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _voltage;
             _voltage *= read_power_of_ten(src);
             _circuit.add_component(Voltage_Source(_anode, _cathode, _name, _voltage));
+            _circuit.add_node(Voltage_Source(_anode, _cathode, _name, _voltage));
         }
         else if (tmp == 'c')           //Capacitor added to _circuit
         {   
@@ -120,6 +125,7 @@ Circuit Parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _capacitance;
             _capacitance *= read_power_of_ten(src);
             _circuit.add_component(Capacitor(_anode,_cathode,_name,_capacitance));
+            _circuit.add_node(Capacitor(_anode,_cathode,_name,_capacitance));
         }
         else if (tmp == 'e')            //Voltage_Controlled_Voltage_Source added to _circuit
         {
@@ -129,6 +135,7 @@ Circuit Parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _control_voltage_anode >> _control_voltage_cathode >> _gain;
             _gain *= read_power_of_ten(src);
             _circuit.add_component(Voltage_Controlled_Voltage_Source(_anode, _cathode, _name, _gain, _control_voltage_anode, _control_voltage_cathode));
+            _circuit.add_node(Voltage_Controlled_Voltage_Source(_anode, _cathode, _name, _gain, _control_voltage_anode, _control_voltage_cathode));
 
         }
         else if (tmp == 'g')            //Voltage_Controlled_Current_Source added to _circuit
@@ -139,6 +146,7 @@ Circuit Parse_input(const std::string& input)
             src >> _name >> _anode >> _cathode >> _control_voltage_anode >> _control_voltage_cathode >> _gain;
             _gain *= read_power_of_ten(src);
             _circuit.add_component(Voltage_Controlled_Current_Source(_anode, _cathode, _name, _gain, _control_voltage_anode, _control_voltage_cathode));
+            _circuit.add_node(Voltage_Controlled_Current_Source(_anode, _cathode, _name, _gain, _control_voltage_anode, _control_voltage_cathode));
         }
         else
         {
