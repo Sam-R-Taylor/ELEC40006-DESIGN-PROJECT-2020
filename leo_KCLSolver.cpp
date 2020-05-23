@@ -51,7 +51,10 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
 
 
     //nodes needed to set up the KCL equations
-    std::vector<Node> nodes = input_circuit.get_nodes();
+    std::vector<Node> nodes = input_circuit.get_nodes();            //possible optimization here
+
+    //needed to store voltage components
+    std::vector<Voltage_Source*> voltage_sources;
 
     //initializing each element of the conductance matrix
     //sum of currents out of a node = 0
@@ -94,13 +97,39 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
                 {
                     Vec(node_index) -= Currentptr->get_current();
                 }
+            if(dynamic_cast<Voltage_Source*>(component_attached))
+            {
+                int anode = component_attached->get_anode();
+                int cathode = component_attached->get_cathode();
+                Voltage_Source* Vptr = dynamic_cast<Voltage_Source*>(component_attached);
 
+                //needs to be processed at the end
+                voltage_sources.push_back(Vptr);
+            }
+        }
+
+        //processing voltage sources
+        for(Voltage_Source* voltage_source : voltage_sources)
+        {
+            int anode = voltage_source->get_anode();
+            int cathode = voltage_source->get_cathode();
+            double voltage = voltage_source->get_voltage();
+
+            if(cathode == 0)
+            {   
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;                   
+                Vec(anode) = voltage;
+            }
+            else if (anode == 0)
+            {
+                Mat.row(cathode).setZero();
+                Mat(cathode,cathode) = -1;
+                Vec(cathode) = voltage;
             }
         }
         
     }
-    
-
 }
 
 
@@ -111,9 +140,9 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
 
 
 
-
+/*
 
 int main(int argc, char const *argv[])
 {   
     Circuit input_circuit = parse_input(argv[1]);
-}
+}*/
