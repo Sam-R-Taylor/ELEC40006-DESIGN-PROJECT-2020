@@ -8,21 +8,24 @@
 
 struct Node{
     int index = 0;
-    std::vector<Component> components;
+    std::vector<Component*> components_attached;
     
     void set_index(int _index){index = _index;}
     int get_index(){return index;}
-    void add_component(Component component){
-        components.push_back(component);
+    void add_component(Component* component){
+        components_attached.push_back(component);
     }
-    std::vector<Component> get_components(){
-        return components;
+    std::vector<Component*> get_components(){
+        return components_attached;
     }       
 };
 
 
+//modify so that it takes a vector<Component> components and returns a 
+//vector<Node> with Nodes[i].component attached pointing to some "components" in components
 std::vector<Node> NodeGenerator(std::vector<Component> components){
     std::vector<Node> Nodes;
+    //std::vector<Component*> components_attached;
     //iterate through the components
     int index = 0;
     for(Component component: components){ 
