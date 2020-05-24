@@ -40,11 +40,14 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     Eigen::VectorXd Vec(Mat_size);
 
     //Fills up the matrix with 0s
-    Mat.Zero(Mat_size,Mat_size);
+    Mat.setZero(Mat_size,Mat_size);
+    std::cerr<<"initialized Mat is "<<std::endl;
+    std::cerr<< Mat <<std::endl;
 
     //Fills up the vector with 0s
-    Vec.Zero(Mat_size);
-
+    Vec.setZero(Mat_size);
+    std::cerr<<"initialized vec is "<<std::endl;
+    std::cerr<< Vec <<std::endl;
 
     //nodes needed to set up the KCL equations
     std::vector<Node> nodes = input_circuit.get_nodes();            //possible optimization here
@@ -67,8 +70,9 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
         {
 
             std::cerr<<"in loop considering "  << component_attached->get_name() << std::endl;
-            std::cerr<<"ptr is " << component_attached << std::endl;
-            std::cerr<<"dynamic cast gives " << dynamic_cast<Resistor*>(component_attached) << std::endl;
+            //std::cerr<<"ptr is " << component_attached << std::endl;
+            //std::cerr<<"dynamic cast gives " << dynamic_cast<Resistor*>(component_attached) << std::endl;
+
             //checking type of each component and act accordingly
             if(dynamic_cast<Resistor*>(component_attached))
             {
@@ -98,13 +102,17 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
                 int cathode = component_attached->get_cathode();
                 Current_source* Currentptr = dynamic_cast<Current_source*>(component_attached);
 
+                //debug
+                double current = Currentptr->get_current();
+                std::cerr<<"I "<< anode<< " "<< cathode <<" " << current << std::endl;
+
                 if(anode == node_index)
                 {
-                    Vec(node_index) += Currentptr->get_current();
+                    Vec(node_index) -= Currentptr->get_current();
                 }
                 else if (cathode == node_index)
                 {
-                    Vec(node_index) -= Currentptr->get_current();
+                    Vec(node_index) += Currentptr->get_current();
                 }
             }
             if(dynamic_cast<Voltage_Source*>(component_attached))
@@ -157,22 +165,32 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     }
 
     std::cerr<<"added voltage sources to Matrix" << std::endl;
+    std::cerr<<"Mat is " << std::endl;
     std::cerr << Mat << std::endl;
+    std::cerr<<"Vec is " << std::endl;
+    std::cerr<< Vec << std::endl;
     //setting V0 to GND and removing corresponding row and column
     remove_Row(Mat,0);
     remove_Column(Mat,0);
+
     Vec = Vec.tail(Mat_size-1);
 
     std::cerr<<"removed V0" << std::endl;
 
+    std::cerr<<"Mat resized is " << std::endl;
     std::cerr << Mat << std::endl;
+    std::cerr<<"Vec resized is " << std::endl;
+    std::cerr<< Vec << std::endl;
+    std::cerr<< "space" <<std::endl;
     
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size -1);
     solution = Mat.fullPivLu().solve(Vec);
-    std::cout << solution;
+    std::cout << solution << std::endl;
     return solution;
 
+
+    std::cerr<< "end of Matrix solver" << std::endl;
 }
 
 

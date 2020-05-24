@@ -49,11 +49,16 @@ protected:
     std::vector<Component*> components;
     std::vector<double> voltages;
 public:
+    Circuit()
+    {
+        std::cerr<<"Circuit constructed"<<std::endl;
+    }
     ~Circuit()
     {
         for(Component* i:components)
         {
             delete i;
+            std::cerr<<"Circuit destructed"<<std::endl;
         }
     }
     void set_voltages(std::vector<double> _voltages){
