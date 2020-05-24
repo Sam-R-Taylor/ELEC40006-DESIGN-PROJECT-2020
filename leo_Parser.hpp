@@ -1,10 +1,16 @@
+#ifndef LEO_PARSER_HPP
+#define LEO_PARSER_HPP
+
 #include"Circuit.hpp"
 #include"Component.hpp"
+#include"leo_KCLSolver.hpp"
+
 #include<fstream>
 #include<cctype>
 #include<cmath>
 #include<limits>
 #include<cassert>
+
 
 
 
@@ -18,6 +24,8 @@ double kilo = pow(10,3);
 double mega = pow(10,6);
 double giga = pow(10,9);
 double tera = pow(10,12);
+
+double mil = 25.4*pow(10,-6);
 
 //data for read_value
 std::string digits("9876543210");
@@ -48,25 +56,31 @@ double read_value(const std::string& value_str)
     size_t index = value_str.find_first_not_of(digits);
     if (index == std::string::npos)
     {
-        return stoi(value_str);
+        //std::cerr << "if"<< std::endl;
+        //std::cerr << value_str<< std::endl;
+        return stod(value_str);
     }
     else
     {
+        //std::cerr << "else"<< std::endl;
+        //std::cerr << value_str<< std::endl;
+
+
         char c = tolower(value_str[index]);
+        //std::cerr << "char is " << c << std::endl;
+        double number = stod(value_str.substr(0,index));
 
-        if(c == 'f'){return femto;}
-        else if(c == 'p'){return pico;}
-        else if(c == 'n'){return nano;}
-        else if(c == 'u'){return micro;}
-        else if(c == 'k'){return kilo;}
-        else if(c == 'm' && tolower(value_str[index+1]) == 'e' && tolower(value_str[index+2]) == 'g'){return mega;}
-        else if(c == 'g'){return giga;}
-        else if(c == 't'){return tera;}
-        else if(c == 'm' && tolower(value_str[index+1]) == 'i' && tolower(value_str[index+2]) == 'l'){return mil;}
-        else if(c == 'm'){return milli;}
+        if(c == 'f'){return femto*number;}
+        else if(c == 'p'){return pico*number;}
+        else if(c == 'n'){return nano*number;}
+        else if(c == 'u'){return micro*number;}
+        else if(c == 'k'){return kilo*number;}
+        else if(c == 'm' && tolower(value_str[index+1]) == 'e' && tolower(value_str[index+2]) == 'g'){return mega*number;}
+        else if(c == 'g'){return giga*number;}
+        else if(c == 't'){return tera*number;}
+        else if(c == 'm' && tolower(value_str[index+1]) == 'i' && tolower(value_str[index+2]) == 'l'){return mil*number;}
+        else if(c == 'm'){return milli*number;}
     }
-    
-
 }
 
 
@@ -82,7 +96,7 @@ void parse_input(const std::string& input)
     //initializing variables for Circuit and component objects
     Circuit _circuit;
 
-    std:: string _name;
+    std::string _name;
     std::string _anode;
     std::string _cathode;
     
@@ -102,7 +116,6 @@ void parse_input(const std::string& input)
         {
         case '*':
             /* removing comments */
-            src.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
         
         case '.':
@@ -112,47 +125,86 @@ void parse_input(const std::string& input)
             src >> command;
 
             if (command == "end")
-            {
+            {   
+                //close input file
+                src.close();
+
                 std::cout << "terminating program" << std::endl;
                 exit(0);
             }
             else if (command == "tran")
             {
-                double stop_time;
-                double time_step;
-
-                //FIX USING READ VALUE
+                std::string stop_time_str;
+                std::string time_step_str;
 
                 src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
-                src >> stop_time;
+                src >> stop_time_str;
+                double stop_time = read_value(stop_time_str);
                 src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
-                src >> time_step;
+                src >> time_step_str;
+                double time_step = read_value(time_step_str);
+
+                //building Circuit obj
+                _circuit.build_nodes();
+
 
                 //NEEDS CONRTOLLER IMPLEMENTATION
             }
-            else
+            else if (command == "op")
             {
+                //building Circuit obj
+                _circuit.build_nodes();
+                _circuit.print_components();
+
+                Matrix_solver(_circuit);
+            }
+            else
+            {   
                 std::cerr << "uknown command" << std::endl;
                 exit(1);
             }
             break;
         
+
         case 'r':
             {
-            std::string _resistance;
-            
-
-            src >> _name >> _anode >> _cathode >> _resistance;
-            
-
+                //Resistor added to _circuit
+                std::string _resistance;
+                src >> _name >> _anode >> _cathode >> _resistance;
+                _circuit.add_component(new Resistor(node_number(_anode),node_number(_cathode),_name,read_value(_resistance)));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_resistance) << std::endl;
             }
             break;
-            
-            
+
+        case 'i':
+            {
+                //Current source added to _circuit
+                std::string _current;
+                src >> _name >> _anode >> _cathode >> _current;
+                _circuit.add_component(new Current_source(node_number(_anode),node_number(_cathode),_name,read_value(_current)));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) << " "<<read_value(_current) << std::endl;
+            }   
+            break; 
+        case 'v': 
+            {
+                //Voltage source added to _circuit
+                std::string _voltage;
+                src >> _name >> _anode >> _cathode >> _voltage;
+                _circuit.add_component(new Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_voltage)));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
+            }
+            break;
         default:
             std::cerr<< "non-handled case"<< std::endl;
+            std::cerr<<"tmp is "<<tmp<<std::endl;
             exit(1);
             break;
         }
+
+        //ignoring input chars till \n
+        src.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 }
+
+
+#endif

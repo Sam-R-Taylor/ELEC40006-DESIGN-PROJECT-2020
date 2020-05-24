@@ -1,6 +1,9 @@
+#ifndef LEO_KCLSOLVER_HPP
+#define LEO_KCLSOLVER_HPP
+
 #include "Circuit.hpp"
 #include "Component.hpp"
-//#include "Parser.hpp"
+
 #include<Eigen/Dense>
 #include<cassert>
 
@@ -194,6 +197,6 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
 }
 
 
-
+#endif
  
 
