@@ -49,6 +49,13 @@ protected:
     std::vector<Component*> components;
     std::vector<double> voltages;
 public:
+    ~Circuit()
+    {
+        for(Component* i:components)
+        {
+            delete i;
+        }
+    }
     void set_voltages(std::vector<double> _voltages){
         voltages = _voltages;
     }
