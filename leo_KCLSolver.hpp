@@ -185,12 +185,12 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size -1);
-    solution = Mat.fullPivLu().solve(Vec);
+    solution = Mat.colPivHouseholderQr().solve(Vec);
     std::cout << solution << std::endl;
-    return solution;
-
 
     std::cerr<< "end of Matrix solver" << std::endl;
+    return solution;
+  
 }
 
 

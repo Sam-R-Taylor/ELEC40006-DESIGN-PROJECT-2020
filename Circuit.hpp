@@ -58,8 +58,9 @@ public:
         for(Component* i:components)
         {
             delete i;
-            std::cerr<<"Circuit destructed"<<std::endl;
+            std::cerr<<"Component destructed"<<std::endl;
         }
+        std::cerr<<"Circuit destructed"<<std::endl;
     }
     void set_voltages(std::vector<double> _voltages){
         voltages = _voltages;
