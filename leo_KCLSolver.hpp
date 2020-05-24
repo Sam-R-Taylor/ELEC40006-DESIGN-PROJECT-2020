@@ -1,6 +1,6 @@
 #include "Circuit.hpp"
 #include "Component.hpp"
-#include "Parser.hpp"
+//#include "Parser.hpp"
 #include<Eigen/Dense>
 #include<cassert>
 
