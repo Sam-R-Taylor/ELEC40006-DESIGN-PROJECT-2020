@@ -4,6 +4,7 @@
 #include<cctype>
 #include<cmath>
 #include<limits>
+#include<cassert>
 
 //declaring constants
 double femto = pow(10,-15);
@@ -20,6 +21,23 @@ double tera = pow(10,12);
 
 
 
+//helper function
+int node_number(const std::string& node_name)
+{
+    char first_char = node_name[0];
+    assert(first_char == 'N' || first_char == '0');
+
+    if (first_char == 'N')
+    {
+        return stoi(node_name.substr(1,std::string::npos));
+    }
+    else if (first_char == '0')
+    {
+        return stoi(node_name);
+    }
+}
+
+
 
 
 void parse_input(const std::string& input)
@@ -32,9 +50,10 @@ void parse_input(const std::string& input)
     Circuit _circuit;
 
     std:: string _name;
-    int _anode;
-    int _cathode; 
-    double _value;
+    std::string _anode;
+    std::string _cathode;
+    
+     
 
 
     //non-formatted reading
@@ -88,9 +107,11 @@ void parse_input(const std::string& input)
         
         case 'r':
             {
-            double resistance;
-            std::string node_a;
-            std::string node_c;
+            double _resistance;
+            
+
+            src >> _name >> _anode >> _cathode >> _resistance;
+            _resistance *= read_power_of_ten(src);
 
             }
             break;
