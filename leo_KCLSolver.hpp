@@ -52,6 +52,10 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     //needed to store voltage components
     std::vector<Voltage_Source*> voltage_sources;
 
+
+    std::cerr<<"initialized Matrix" << std::endl;
+
+
     //initializing each element of the conductance matrix
     //sum of currents out of a node = 0
     for (int row = 0; row < Mat_size; row++)
@@ -61,12 +65,21 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
         //iterating through each componenet of the node considered
         for(Component* component_attached: nodes[node_index].components_attached)
         {
+
+            std::cerr<<"in loop considering "  << component_attached->get_name() << std::endl;
+            std::cerr<<"ptr is " << component_attached << std::endl;
+            std::cerr<<"dynamic cast gives " << dynamic_cast<Resistor*>(component_attached) << std::endl;
             //checking type of each component and act accordingly
             if(dynamic_cast<Resistor*>(component_attached))
             {
                 int anode = component_attached->get_anode();
                 int cathode = component_attached->get_cathode();
+
                 Resistor* Rptr = dynamic_cast<Resistor*>(component_attached);
+
+                //debug
+                double conductance = Rptr->get_conductance();
+                std::cerr<<"R "<< anode<< " "<< cathode <<" " << conductance << std::endl;
 
                 if(anode == node_index)
                 {
@@ -105,6 +118,10 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
             }
         }
     }
+
+    std::cerr<<"constructed Matrix" << std::endl;
+
+
         //processing voltage sources
     for(Voltage_Source* voltage_source : voltage_sources)
     {
@@ -138,14 +155,21 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
             Vec(anode) = voltage;
         }
     }
+
+    std::cerr<<"added voltage sources to Matrix" << std::endl;
+    std::cerr << Mat << std::endl;
     //setting V0 to GND and removing corresponding row and column
     remove_Row(Mat,0);
     remove_Column(Mat,0);
     Vec = Vec.tail(Mat_size-1);
+
+    std::cerr<<"removed V0" << std::endl;
+
+    std::cerr << Mat << std::endl;
     
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size -1);
-    solution = Mat.colPivHouseholderQr().solve(Vec);
+    solution = Mat.fullPivLu().solve(Vec);
     std::cout << solution;
     return solution;
 
