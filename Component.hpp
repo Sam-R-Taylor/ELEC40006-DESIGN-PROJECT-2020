@@ -192,6 +192,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        gain = _gain;
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
@@ -199,25 +200,19 @@ public:
     {
         return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
     }
+    int get_control_anode(){
+        return control_voltage_anode;
+    }
+    int get_control_cathode(){
+        return control_voltage_cathode;
+    }
 };
 
-
-
-class Voltage_Component:
-    public Component
-{
-
-public:
-    /*
-    given a vector<double> nodevoltages where 
-    -each index of nodevoltages corresponds to a node
-    -each double of nodevoltages corresponds to a voltage at the given node
-    returns the  through the voltage difference across the component from anode to cathode
-    */ 
-    virtual double get_voltage() const =0;
-
-    
+class Voltage_Component:Component{
+    public:
+    virtual double get_voltage() const = 0;
 };
+
 class Voltage_Source:
     public Voltage_Component
 {
@@ -296,12 +291,19 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        gain = _gain;
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
     double get_voltage() const
     {
         return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
+    }
+    int get_control_anode(){
+        return control_voltage_anode;
+    }
+    int get_control_cathode(){
+        return control_voltage_cathode;
     }
 };
 

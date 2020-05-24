@@ -41,7 +41,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 sub_coefficients[nodes->size()] += ((Diode*)component)->get_linear_current() * (component->get_anode() == node->index?1:-1);
             }
             //if component type is resistor
-            if(dynamic_cast<Resistor*>(component)){
+            else if(dynamic_cast<Resistor*>(component)){
                 //check with node of the resistor is the current node
                 if(component->get_anode() == node->index){
                     //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
@@ -54,12 +54,12 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 }
             }
             //if component type is current source
-            if(dynamic_cast<Current_source*>(component)){
+            else if(dynamic_cast<Current_source*>(component)){
                 //add the current source value to the final constant in the list of coefficients
                 sub_coefficients[nodes->size()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
             }
             //if component is a voltage source
-            if(dynamic_cast<Voltage_Component*>(component)){
+            else if(dynamic_cast<Voltage_Component*>(component)){
                 //check which end of the voltage source is connected to the current node
                 if(component->get_anode() == node->index){
                     //generate the coeffiecient for node on the other side of the voltage source
@@ -68,17 +68,35 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                     coefficient_generator(&((*nodes)[component->get_cathode()]), nodes,component);
                     //correct the coefficient by swapping "N2" with "N1 + V" and add the voltage constant
                     //multiplied by the coefficient value to the constant term of the coefficients.
-                    sub_coefficients[node->index] += sub_coefficients[component->get_cathode()];
-                    sub_coefficients[nodes->size()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage() *-1;
+                    if(dynamic_cast<Voltage_Controlled_Voltage_Source*>(component)){
+                        sub_coefficients[node->index] += sub_coefficients[component->get_cathode()];
+                        sub_coefficients[component->get_control_anode()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage() *-1;
+                        sub_coefficients[component->get_control_cathode()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage();
+                    }
+                    else{
+                        sub_coefficients[node->index] += sub_coefficients[component->get_cathode()];
+                        sub_coefficients[nodes->size()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage() *-1;
+                    }
                     sub_coefficients[component->get_cathode()] = 0;
                 }
                 if(component->get_cathode() == node->index){
                     sub_coefficients = 
                     coefficient_generator(&((*nodes)[component->get_anode()]), nodes,component);
-                    sub_coefficients[node->index] += sub_coefficients[component->get_anode()];
-                    sub_coefficients[nodes->size()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage();
+                    if(dynamic_cast<Voltage_Controlled_Voltage_Source*>(component)){
+                        sub_coefficients[node->index] += sub_coefficients[component->get_anode()];
+                        sub_coefficients[component->get_control_anode()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage();
+                        sub_coefficients[component->get_control_cathode()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage() * -1;
+                    }
+                    else{
+                        sub_coefficients[node->index] += sub_coefficients[component->get_anode()];
+                        sub_coefficients[nodes->size()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage();
+                    }
                     sub_coefficients[component->get_anode()] = 0;
                 }
+            }
+            else if(dynamic_cast<Voltage_Controlled_Current_Source*>(component)){
+                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_anode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
+                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_cathode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?1:-1);
             }
             //add the sub coefficients to the output
             for(int i=0; i < coefficients.size(); i++){
