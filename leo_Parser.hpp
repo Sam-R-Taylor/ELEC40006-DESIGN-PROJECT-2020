@@ -6,6 +6,8 @@
 #include<limits>
 #include<cassert>
 
+
+
 //declaring constants
 double femto = pow(10,-15);
 double pico = pow(10,-12);
@@ -16,6 +18,9 @@ double kilo = pow(10,3);
 double mega = pow(10,6);
 double giga = pow(10,9);
 double tera = pow(10,12);
+
+//data for read_value
+std::string digits("9876543210");
 
 
 
@@ -37,6 +42,34 @@ int node_number(const std::string& node_name)
     }
 }
 
+//helper function
+double read_value(const std::string& value_str)
+{
+    size_t index = value_str.find_first_not_of(digits);
+    if (index == std::string::npos)
+    {
+        return stoi(value_str);
+    }
+    else
+    {
+        char c = tolower(value_str[index]);
+
+        if(c == 'f'){return femto;}
+        else if(c == 'p'){return pico;}
+        else if(c == 'n'){return nano;}
+        else if(c == 'u'){return micro;}
+        else if(c == 'k'){return kilo;}
+        else if(c == 'm' && tolower(value_str[index+1]) == 'e' && tolower(value_str[index+2]) == 'g'){return mega;}
+        else if(c == 'g'){return giga;}
+        else if(c == 't'){return tera;}
+        else if(c == 'm' && tolower(value_str[index+1]) == 'i' && tolower(value_str[index+2]) == 'l'){return mil;}
+        else if(c == 'm'){return milli;}
+    }
+    
+
+}
+
+
 
 
 
@@ -53,9 +86,6 @@ void parse_input(const std::string& input)
     std::string _anode;
     std::string _cathode;
     
-     
-
-
     //non-formatted reading
     char tmp;
 
@@ -91,6 +121,8 @@ void parse_input(const std::string& input)
                 double stop_time;
                 double time_step;
 
+                //FIX USING READ VALUE
+
                 src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
                 src >> stop_time;
                 src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
@@ -107,11 +139,11 @@ void parse_input(const std::string& input)
         
         case 'r':
             {
-            double _resistance;
+            std::string _resistance;
             
 
             src >> _name >> _anode >> _cathode >> _resistance;
-            _resistance *= read_power_of_ten(src);
+            
 
             }
             break;
@@ -122,15 +154,5 @@ void parse_input(const std::string& input)
             exit(1);
             break;
         }
-
-        
-
-
-
-
     }
-
-
-
-
 }
