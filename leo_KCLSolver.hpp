@@ -184,11 +184,11 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     std::cerr << Mat << std::endl;
     std::cerr<<"Vec resized is " << std::endl;
     std::cerr<< Vec << std::endl;
-    std::cerr<< "space" <<std::endl;
     
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size -1);
     solution = Mat.colPivHouseholderQr().solve(Vec);
+    std::cerr<< "solution is " <<std::endl;
     std::cout << solution << std::endl;
 
     std::cerr<< "end of Matrix solver" << std::endl;

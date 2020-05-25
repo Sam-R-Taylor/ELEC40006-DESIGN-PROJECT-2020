@@ -1,3 +1,15 @@
-R 1 2 1k
-R 2 0 1k
-I 0 1 1mA
+* C:\Users\Utente\Desktop\ADC\lab4\Amplifier Components\Draft2.asc
+R1 N007 0 3k
+R2 N006 0 5k
+R3 N007 N006 2k
+I1 N007 0 1m
+I2 0 N006 2m
+R4 N003 N006 2k
+V1 N003 N004 3
+V2 N001 N007 2
+R6 N002 N001 5k
+V3 N004 N001 1
+R5 N005 N007 2k
+V4 N002 N005 2k
+.op
+.end
