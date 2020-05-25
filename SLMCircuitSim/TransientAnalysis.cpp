@@ -5,9 +5,11 @@
 #include "Component.hpp"
 #include <memory> 
 #include "Circuit.hpp"
+#include <fstream>
 
 // HAD TO REMOVE BOTH KCL AND TRANSIENT SOLVER FROM THE #INCLUDE AS THEY DID NOT WORK 
 // Both threw compilation errors.
+//included fstream where for file output
 using namespace std;
 using Eigen::MatrixXd;
 
@@ -75,10 +77,34 @@ int main(){
 }
 */
 
-void TransientAnalysis(Circuit CKTIn , double TimePeriod , double TimeStep){
+void NodeVoltagesToFile(Circuit CKTIn){
     
+
+}
+
+void UpdateNodeVoltages(Circuit CKTIn){
+     ofstream myfile ("output.txt");
+  if (myfile.is_open())
+  {
+    CKTIn.get_voltages
+  }
+  else cout << "Unable to open file";
+
+}
+
+void TransientAnalysis(Circuit CKTIn , double TimePeriod , double TimeStep){
+    double CurrentTime = 0;
+    do {
+        NodeVoltagesToFile(CKTIn); //Unimplemented
+        UpdateNodeVoltages(CKTIn); //UNimplemented
+
+        CurrentTime = CurrentTime + TimeStep ; 
+    }
+    while (CurrentTime < TimePeriod);
+
     
 }
+
 
 
 
