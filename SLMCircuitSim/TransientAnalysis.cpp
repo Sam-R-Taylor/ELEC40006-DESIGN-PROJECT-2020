@@ -3,13 +3,15 @@
 #include <Eigen/Dense>
 #include <string>
 #include "Component.hpp"
-#include "KCLSolver.hpp"
-#include "TransientSolver.hpp"
 #include <memory> 
+#include "Circuit.hpp"
+
+// HAD TO REMOVE BOTH KCL AND TRANSIENT SOLVER FROM THE #INCLUDE AS THEY DID NOT WORK 
+// Both threw compilation errors.
 using namespace std;
 using Eigen::MatrixXd;
 
-
+/*{
 vector<vector<double>> TransientAnalysis(vector<Component*> components, double timeperiod, int timesteps){
     //vector to store voltages at each time step
     vector<vector<double>> output;
@@ -69,4 +71,24 @@ int main(){
     for(vector<double> vec: output){
         cout << vec[2] - vec[3] << endl;
     }
+}
+}
+*/
+
+void TransientAnalysis(Circuit CKTIn , double TimePeriod , double TimeStep){
+    
+    
+}
+
+
+
+int main(){
+    double TimePeriod , TimeStep ; 
+    //Circuit CK1 = ;
+    cin >> TimePeriod;
+    cin >> TimeStep ;
+    //TransientAnalysis(CK1 , TimePeriod , TimeStep);
+    cout << "Operation Complete";
+    return 0;  
+
 }
