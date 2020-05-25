@@ -77,25 +77,36 @@ int main(){
 }
 */
 
-void NodeVoltagesToFile(Circuit CKTIn){
-    
-
+void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
+  fstream myfile;
+  myfile.open("output.txt",fstream::app);
+  
+  if (myfile.is_open())
+  {
+        myfile << CurrentTime << "," ;
+    for(int i = 0; i < CKTIn2.size(); i++) {
+        myfile << CKTIn2.at(i) << ",";
+    }
+    //COULD NOT REMOVE THE TRAILING , HOPE no affect?
+    myfile << "\n";
+    myfile.close();
+  }
+  else cout << "Unable to open file";
 }
 
 void UpdateNodeVoltages(Circuit CKTIn){
-     ofstream myfile ("output.txt");
-  if (myfile.is_open())
-  {
-    CKTIn.get_voltages
-  }
-  else cout << "Unable to open file";
+     
+     //NOT IMPLEMENTED
 
 }
 
 void TransientAnalysis(Circuit CKTIn , double TimePeriod , double TimeStep){
     double CurrentTime = 0;
+    remove("output.txt");
+    fstream myfile ("output.txt");
+    
     do {
-        NodeVoltagesToFile(CKTIn); //Unimplemented
+        NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime); 
         UpdateNodeVoltages(CKTIn); //UNimplemented
 
         CurrentTime = CurrentTime + TimeStep ; 
