@@ -52,7 +52,7 @@ class Circuit
 {
 protected:
     std::vector<Node> nodes;
-    std::vector<Component> components;
+    std::vector<Component*> components;
     std::vector<double> voltages;
 public:
     std::vector<double> get_voltages() const{
@@ -61,7 +61,7 @@ public:
     std::vector<Node> get_nodes() const{
         return nodes;
     }
-    std::vector<Component> get_components() const{
+    std::vector<Component*> get_components() const{
         return components;
     }
     int get_number_of_nodes() const{

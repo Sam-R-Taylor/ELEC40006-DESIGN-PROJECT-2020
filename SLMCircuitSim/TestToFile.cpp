@@ -27,7 +27,7 @@ int main(){
     vector<double> vect;
     vect.push_back(10); 
     vect.push_back(20); 
-    vect.push_back(30); 
+    vect.push_back(31); 
     vector<double> vect1;
     vect1.push_back(100); 
     vect1.push_back(200); 
@@ -37,14 +37,15 @@ int main(){
     fstream myfile ("output.txt");
     
     double CurrentTime = 0;
-    double TimeStep = 1;
+    double TimeStep = 20;
     double TimePeriod = 10;
+    double deltaTime = (TimePeriod/TimeStep);
     
-    do {
+    for(double i = 0 ; i <= TimeStep ; i++){
         NodeVoltagesToFile(vect,CurrentTime);
-        CurrentTime = CurrentTime + TimeStep ;
+        CurrentTime = CurrentTime + deltaTime ;
 
     }
-    while (CurrentTime <= TimePeriod);
+    
 
 }

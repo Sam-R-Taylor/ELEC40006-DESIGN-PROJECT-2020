@@ -28,9 +28,11 @@ vector<vector<double>> TransientAnalysis(vector<Component*> components, double t
     vector<Inductor*> inductors;
     for(Component* component: components){
         if(dynamic_cast<Capacitor*>(component)){
+            cout << is cap
             capacitors.push_back(((Capacitor*)component));
         }
         if(dynamic_cast<Inductor*>(component)){
+            cout << is ind
             inductors.push_back(((Inductor*)component));
         }
     }
@@ -94,31 +96,45 @@ void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
   else cout << "Unable to open file";
 }
 
-void UpdateNodeVoltages(Circuit CKTIn){
+void UpdateNodeVoltages(Circuit &CKTIn){
      //All this function does is update the integrals of each component and then passes the updates CKT to Transient Solver. 
-     //NOT IMPLEMENTED
+     //Update Capacitors and inductors integrals
+     double Area;
+     
+     for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
+        if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
+            //Area = ;
+            ((Capacitor*)(CKTIn.get_components()[i]))->update_integral(Area)
+        }
+        else if (dynamic_cast<Inductor*>(CKTIn.get_components().at(i)))
+        {
+            //Area = ;
+            ((Inductor*)(CKTIn.get_components()[i]))->update_integral(Area)  
+        }
+        //IMPLEMENTATION ONLY WORKS FOR RLC 
+        else {
+            //do nothing for R
+        }    
+        }  
 
-
-     /*TransientSolver(CKTIn);*/
+     //Call TransientSolver to return the new CKT with an updated instance of voltages
+     /* TransientSolver(CKTIn); */ 
 
 }
 
-void TransientAnalysis(Circuit CKTIn , double TimePeriod , double TimeStep){
+void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
     double CurrentTime = 0;
+    double deltaTime = (TimePeriod/TimeStep);
     remove("output.txt");
     fstream myfile ("output.txt");
     /* KCLSolver(CKTIn); */ //Not yet defined by the boys but this simply populates the circuit voltages vector with the correct voltages for time = 0
     
-    do {
-        
-        NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime); 
+    for(double i = 0 ; i <= TimeStep ; i++){
+        NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime);
         UpdateNodeVoltages(CKTIn); //UNimplemented
+        CurrentTime = CurrentTime + deltaTime ;
 
-        CurrentTime = CurrentTime + TimeStep ; 
     }
-    while (CurrentTime <= TimePeriod);
-
-    
 }
 
 
