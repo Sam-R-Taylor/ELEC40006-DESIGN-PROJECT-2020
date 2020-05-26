@@ -95,8 +95,11 @@ void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
 }
 
 void UpdateNodeVoltages(Circuit CKTIn){
-     
+     //All this function does is update the integrals of each component and then passes the updates CKT to Transient Solver. 
      //NOT IMPLEMENTED
+
+
+     /*TransientSolver(CKTIn);*/
 
 }
 
@@ -104,14 +107,16 @@ void TransientAnalysis(Circuit CKTIn , double TimePeriod , double TimeStep){
     double CurrentTime = 0;
     remove("output.txt");
     fstream myfile ("output.txt");
+    /* KCLSolver(CKTIn); */ //Not yet defined by the boys but this simply populates the circuit voltages vector with the correct voltages for time = 0
     
     do {
+        
         NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime); 
         UpdateNodeVoltages(CKTIn); //UNimplemented
 
         CurrentTime = CurrentTime + TimeStep ; 
     }
-    while (CurrentTime < TimePeriod);
+    while (CurrentTime <= TimePeriod);
 
     
 }
