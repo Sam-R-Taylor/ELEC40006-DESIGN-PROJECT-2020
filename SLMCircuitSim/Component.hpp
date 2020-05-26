@@ -77,6 +77,8 @@ private:
     */
     double integral;
     double inductance;
+    double conductance;
+    double linear_current;
 public:
     Inductor(int _anode, int _cathode, std:: string _name, double _inductance){
         anode = _anode;
@@ -96,6 +98,23 @@ public:
     double get_current() const        //does not need the parameter. modify later
     {
         return integral/inductance;
+    }
+
+    double get_conductance() const
+    {
+        return conductance;
+    }
+    double get_linear_current() const
+    {
+        return linear_current;
+    }
+    void set_conductance(double deltatime) //Not const as setters
+    {
+        conductance = deltatime/inductance;
+    }
+    void set_linear_current(double VoltageN) 
+    {
+        linear_current = conductance*VoltageN;
     }
 };
 
@@ -237,8 +256,10 @@ private:
     /*
     integral of current wrt time. Current goes from anode to cathode
     */
-    double integral;
+    double conductance;
+    double linear_current;
     double value;
+    double integral;
 public:
     Capacitor(int _anode, int _cathode, std:: string _name, double _value){
         anode = _anode;
@@ -252,6 +273,22 @@ public:
     double get_voltage() const
     {
         return integral/value;
+    }
+    double get_conductance() const
+    {
+        return conductance;
+    }
+    double get_linear_current() const
+    {
+        return linear_current;
+    }
+    void set_conductance(double deltatime) //Not const as setters
+    {
+        conductance = value/deltatime;
+    }
+    void set_linear_current(double VoltageN) 
+    {
+        linear_current = conductance*VoltageN;
     }
     /*
     given an increment computed by "controller" due to a timestep

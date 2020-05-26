@@ -99,17 +99,20 @@ void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
 void UpdateNodeVoltages(Circuit &CKTIn){
      //All this function does is update the integrals of each component and then passes the updates CKT to Transient Solver. 
      //Update Capacitors and inductors integrals
-     double Area;
-     
+     double Vn;
+     double In;
+     TransientSolver(CKTIn);
      for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
         if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
-            //Area = ;
-            ((Capacitor*)(CKTIn.get_components()[i]))->update_integral(Area)
+            Vn = (CKTIn.get_voltages()[CKTIn.get_components()[i]->get_anode()]) - ((CKTIn.get_voltages()[CKTIn.get_components()[i]->get_cathode()])) ;
+            ((Capacitor*)(CKTIn.get_components()[i]))->set_linear_current(Vn);
+
         }
         else if (dynamic_cast<Inductor*>(CKTIn.get_components().at(i)))
         {
-            //Area = ;
-            ((Inductor*)(CKTIn.get_components()[i]))->update_integral(Area)  
+            In = GetCurrent(CKTIn.get_components()[i]); //GETCURRENT WILL BE IMPLEMENTED BY MAX ,
+            
+            ((Inductor*)(CKTIn.get_components()[i]))->set_linear_current(In) ; 
         }
         //IMPLEMENTATION ONLY WORKS FOR RLC 
         else {
@@ -118,7 +121,26 @@ void UpdateNodeVoltages(Circuit &CKTIn){
         }  
 
      //Call TransientSolver to return the new CKT with an updated instance of voltages
-     /* TransientSolver(CKTIn); */ 
+      
+
+}
+
+void SetConductancesForSim(Circuit &CKTIn , double deltatime){
+     for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
+        if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
+           ((Capacitor*)(CKTIn.get_components()[i]))->set_conductance(deltatime);
+            
+        }
+        else if (dynamic_cast<Inductor*>(CKTIn.get_components().at(i)))
+        {
+            ((Inductor*)(CKTIn.get_components()[i]))->set_conductance(deltatime) ;
+             
+        }
+        //IMPLEMENTATION ONLY WORKS FOR RLC 
+        else {
+            //do nothing for R
+        }    
+        }  
 
 }
 
@@ -127,13 +149,13 @@ void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
     double deltaTime = (TimePeriod/TimeStep);
     remove("output.txt");
     fstream myfile ("output.txt");
-    /* KCLSolver(CKTIn); */ //Not yet defined by the boys but this simply populates the circuit voltages vector with the correct voltages for time = 0
+    SetConductancesForSim(CKTIn,deltaTime); //SETS THE CONDUCTANCE FOR EACH INDUCTOR AND CAP THAT DEPENDS ON DELTA TIME (BUT REMAINS CONSTANT THROUGH SIM)
     
     for(double i = 0 ; i <= TimeStep ; i++){
+        UpdateNodeVoltages(CKTIn); 
         NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime);
-        UpdateNodeVoltages(CKTIn); //UNimplemented
         CurrentTime = CurrentTime + deltaTime ;
-
+        //POSSIBLE SHIFT ERROR MAY OCCUR. 
     }
 }
 
