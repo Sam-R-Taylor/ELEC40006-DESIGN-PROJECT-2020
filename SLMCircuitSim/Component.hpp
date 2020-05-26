@@ -328,6 +328,40 @@ public:
 };
 
 
+class AC_Voltage_Source:
+    public Component
+{
+    private:
+    double Voltage_amplitude;
+    double frequency ;
+    double phase;
+
+    public:
+    AC_Voltage_Source(double _Voltage_amplitude, double _frequency, double _phase){
+        Voltage_amplitude = _Voltage_amplitude;
+        frequency = _frequency;
+        phase = _phase;
+
+    }
+    double Get_Voltage_amplitude(){
+        return Voltage_amplitude;
+
+    }
+    double Get_Frequency(){
+        return frequency;
+
+    }
+    double Get_phase(){
+        return phase;
+
+    }
+    void Get_Voltage(double CurrentTime){
+        return (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase))
+        //y(t)=Asin(2pift + phase)
+
+    }
+}
+
 
 
 #endif
