@@ -335,6 +335,7 @@ class AC_Voltage_Source:
     double Voltage_amplitude;
     double frequency ;
     double phase;
+    double currentVoltage;
 
     public:
     AC_Voltage_Source(double _Voltage_amplitude, double _frequency, double _phase){
@@ -355,9 +356,14 @@ class AC_Voltage_Source:
         return phase;
 
     }
-    void Get_Voltage(double CurrentTime){
-        return (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase))
+    
+    void Set_Voltage(double CurrentTime){
+        currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase));
         //y(t)=Asin(2pift + phase)
+
+    }
+    double Get_Voltage(){
+        return currentVoltage;
 
     }
 }

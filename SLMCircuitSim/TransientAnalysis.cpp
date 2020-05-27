@@ -96,12 +96,24 @@ void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
   else cout << "Unable to open file";
 }
 
-void UpdateNodeVoltages(Circuit &CKTIn){
+void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime){
      //All this function does is update the integrals of each component and then passes the updates CKT to Transient Solver. 
      //Update Capacitors and inductors integrals
      double Vn;
      double In;
+     //LOOPS THROUGH TO UPDATE NOT INTEGRAL COMPONENTS I.E AC SOURCE
+      //IMPLEMENTATION ONLY WORKS FOR RLC 
+        for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
+        if (dynamic_cast<AC_Voltage_Source*>(CKTIn.get_components().at(i))){
+            ((AC_Voltage_Source*)(CKTIn.get_components()[i]))->Set_Voltage(CurrentTime);
+
+        }
+        else {
+
+        }
+        }
      TransientSolver(CKTIn);
+     //LOOPS THROUGH TO UPDATE INTEGRAL COMPONENTS
      for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
         if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
             Vn = (CKTIn.get_voltages()[CKTIn.get_components()[i]->get_anode()]) - ((CKTIn.get_voltages()[CKTIn.get_components()[i]->get_cathode()])) ;
@@ -114,13 +126,12 @@ void UpdateNodeVoltages(Circuit &CKTIn){
             
             ((Inductor*)(CKTIn.get_components()[i]))->set_linear_current(In) ; 
         }
-        //IMPLEMENTATION ONLY WORKS FOR RLC 
-        else {
+       else {
             //do nothing for R
         }    
         }  
 
-     //Call TransientSolver to return the new CKT with an updated instance of voltages
+     
       
 
 }
@@ -152,7 +163,7 @@ void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
     SetConductancesForSim(CKTIn,deltaTime); //SETS THE CONDUCTANCE FOR EACH INDUCTOR AND CAP THAT DEPENDS ON DELTA TIME (BUT REMAINS CONSTANT THROUGH SIM)
     
     for(double i = 0 ; i <= TimeStep ; i++){
-        UpdateNodeVoltages(CKTIn); 
+        UpdateNodeVoltages(CKTIn , CurrentTime); 
         NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime);
         CurrentTime = CurrentTime + deltaTime ;
         //POSSIBLE SHIFT ERROR MAY OCCUR. 
