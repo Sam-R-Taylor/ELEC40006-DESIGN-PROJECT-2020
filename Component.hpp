@@ -131,15 +131,16 @@ class Diode:
 private:
     //Thermal Voltage
     double Vt = 0.025;
-    double I_s = 0.0000000000001;
+    double I_s = 2.52* pow(10,-9);
     //Voltage across terminals, used for linear aporximations
     double vd = 0;
     //current at voltage guess, used for linear aproximations
     double id0 = 0;
     //ideality coefficient 
-    double N = 1;
+    double N = 1.752;
     //breakdown voltage
     double BV = -75;
+    double GMIN = pow(10,-12);
 public:
     Diode(int _anode, int _cathode, std:: string _name){
         anode = _anode;
@@ -159,11 +160,11 @@ public:
     double get_conductance(){
         double conductance = GMIN;
         //check if less than break down voltage
-        if(vd < VB){
-            conductance += ((-I_s/Vt)*exp(-(BV+vd)/Vt));
+        if(vd < BV){
+            conductance += ((-I_s/(N*Vt))*exp(-(BV+vd)/(N*Vt)));
         }//check if greater than -5*N*Vt
         else if(vd > -5*N*Vt){
-            conductance += ((I_s/Vt)*exp(vd/Vt));
+            conductance += ((I_s/(N*Vt))*exp(vd/(N*Vt)));
         }
         return conductance;
     }
@@ -175,7 +176,7 @@ public:
     //get the current through the diode
     double get_current(const std::vector<double> &nodevoltages) const
     {
-        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/Vt)-1);
+        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1);
         //current = current>10?10:current;
         //std::cout << "Current  " <<current << std::endl; 
         return current;

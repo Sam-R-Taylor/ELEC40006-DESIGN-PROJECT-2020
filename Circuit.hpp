@@ -52,7 +52,7 @@ public:
     //diodes constants
     double GMIN = pow(10,-12);
     double ABSTOL = pow(10,-12);
-    double RELTOL = pow(10,-3);
+    double RELTOL = pow(10,-4);
     size_t max_iterations = 1000;           //edit after testing
     Circuit()
     {
@@ -102,6 +102,7 @@ public:
     int get_number_of_nodes() const{
         return nodes.size();
     }
+    std::vector<Node> *get_nodes_ptr() {return &nodes;}
     std::vector<Node> get_nodes() const{return nodes;}
     std::vector<Component*> get_components() const{return components;}
     std::vector<double> get_voltages() const{return voltages;}

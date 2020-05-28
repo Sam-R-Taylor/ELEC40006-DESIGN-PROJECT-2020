@@ -21,7 +21,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
     //create a vector to store the output coefficients
     vector<double> coefficients(nodes->size() + 1,0);
     //iterate through all the components connected to that node
-    for(Component* component: node->components){
+    for(Component* component: node->components_attached){
         //if the source component is not included just continue, otherwise only run if teh current component
         //isn't the connecting component
         if(source_component == nullptr || component != source_component){
@@ -126,7 +126,7 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
     //iterate through all the inputs
     for(int i=0; i < circuit.get_number_of_nodes()-1; i++){
             //for each input extract the row data
-            vector<double> row = coefficient_generator(circuit.get_node(i+1),circuit.get_nodes());
+            vector<double> row = coefficient_generator(&circuit.get_nodes_ptr()->at(i+1),circuit.get_nodes_ptr());
             //fill the corresponding matrix row with the input data
             for(int j=1; j<circuit.get_number_of_nodes(); j++){
                 matrix(i,j-1) = row[j];

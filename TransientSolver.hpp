@@ -41,12 +41,13 @@ void TransientSolver(Circuit &circuit){
             }
         }
         //check that max iterations haven't occured
-        if(current_iteration >= max_iterations){
+        if(current_iteration >= circuit.max_iterations){
             std::cerr << "Hit maximum iterations" << std::endl;
             exit(1);
             incomplete = false;
         }
     }
+    std::cout << "Iterations " << current_iteration << std::endl;
 }
 
 #endif
