@@ -192,6 +192,7 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        gain = _gain;
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
@@ -199,12 +200,21 @@ public:
     {
         return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
     }
+    int get_control_anode(){
+        return control_voltage_anode;
+    }
+    int get_control_cathode(){
+        return control_voltage_cathode;
+    }
 };
 
-
+class Voltage_Component: public Component{
+    public:
+    virtual double get_voltage() const = 0;
+};
 
 class Voltage_Source:
-    public Component
+    public Voltage_Component
 {
 private:
     /*
@@ -231,7 +241,7 @@ public:
 
 
 class Capacitor :
-    public Component
+    public Voltage_Component
 {
 private:
     /*
@@ -269,7 +279,7 @@ public:
 
 //added sketch of Voltage_Controlled_Voltage_Source
 class Voltage_Controlled_Voltage_Source :                
-    public Component
+    public Voltage_Component
 {
 private:
     double gain;
@@ -281,12 +291,19 @@ public:
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        gain = _gain;
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
     double get_voltage() const
     {
         return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
+    }
+    int get_control_anode(){
+        return control_voltage_anode;
+    }
+    int get_control_cathode(){
+        return control_voltage_cathode;
     }
 };
 
