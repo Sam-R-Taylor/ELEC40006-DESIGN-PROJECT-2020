@@ -12,7 +12,6 @@ struct Node{
 };
 
 
-
 std::vector<Node> NodeGenerator(std::vector<Component*> components){
     std::vector<Node> Nodes;
     //iterate through the components
@@ -47,7 +46,14 @@ protected:
     std::vector<Node> nodes;
     std::vector<Component*> components;
     std::vector<double> voltages;
+
+    
 public:
+    //diodes constants
+    double GMIN = pow(10,-12);
+    double ABSTOL = pow(10,-12);
+    double RELTOL = pow(10,-3);
+    size_t max_iterations = 1000;           //edit after testing
     Circuit()
     {
         std::cerr<<"Circuit constructed"<<std::endl;

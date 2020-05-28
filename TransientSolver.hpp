@@ -10,7 +10,6 @@
 #include"Circuit.hpp"
 #include "KCLSolver.hpp"
 #include <memory> 
-using namespace std;
 using Eigen::MatrixXd;
 
 
@@ -30,15 +29,21 @@ void TransientSolver(Circuit &circuit){
             }
         }
         //set the voltages to the output of the KCL with the components
-        vector<double> old_voltages = circuit.get_voltages(); 
+        std::vector<double> old_voltages = circuit.get_voltages(); 
         NodeVoltageSolver(circuit);
         //check the error
         
         //set the stored voltages to the new voltages
-        
+        incomplete = false;
+        for(int i = 0; i < old_voltages.size(); i++){
+            if(!(abs(old_voltages[i] - circuit.get_voltages()[i]) < circuit.ABSTOL + circuit.RELTOL*old_voltages[i])){
+                incomplete = true;
+            }
+        }
         //check that max iterations haven't occured
         if(current_iteration >= max_iterations){
-            cout << "Hit maximum iterations";
+            std::cerr << "Hit maximum iterations" << std::endl;
+            exit(1);
             incomplete = false;
         }
     }

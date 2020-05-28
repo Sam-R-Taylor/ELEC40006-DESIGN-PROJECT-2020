@@ -136,6 +136,10 @@ private:
     double vd = 0;
     //current at voltage guess, used for linear aproximations
     double id0 = 0;
+    //ideality coefficient 
+    double N = 1;
+    //breakdown voltage
+    double BV = -75;
 public:
     Diode(int _anode, int _cathode, std:: string _name){
         anode = _anode;
@@ -153,26 +157,27 @@ public:
     }
     //get the linear aproximation of the conductor for the diode
     double get_conductance(){
-        double conductance = ((I_s/Vt)*exp(vd/Vt));
-        conductance = conductance<0.01?0.01:conductance;
-        conductance = conductance>20?20:conductance;
-        std::cout << "conductance " << conductance << std::endl;
-        std::cout << "Vd " << vd << std::endl;
+        double conductance = GMIN;
+        //check if less than break down voltage
+        if(vd < VB){
+            conductance += ((-I_s/Vt)*exp(-(BV+vd)/Vt));
+        }//check if greater than -5*N*Vt
+        else if(vd > -5*N*Vt){
+            conductance += ((I_s/Vt)*exp(vd/Vt));
+        }
         return conductance;
     }
     //get the linear aproximations of the current source from the diode
     double get_linear_current(){
-        std::cout << "current " << (id0 - ((I_s/Vt)*exp(vd/Vt))*vd) << std::endl;
-        double current = (id0 - this->get_conductance()*vd);
-        current = current>10?10:current;
-        return current;
+        //double current = (id0 - this->get_conductance()*vd);
+        return (id0 - this->get_conductance()*vd);
     }
     //get the current through the diode
     double get_current(const std::vector<double> &nodevoltages) const
     {
         double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/Vt)-1);
-        current = current>10?10:current;
-        std::cout << "Current  " <<current << std::endl; 
+        //current = current>10?10:current;
+        //std::cout << "Current  " <<current << std::endl; 
         return current;
     }
     
