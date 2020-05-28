@@ -1,6 +1,9 @@
+#ifndef LEO_KCLSOLVER_HPP
+#define LEO_KCLSOLVER_HPP
+
 #include "Circuit.hpp"
 #include "Component.hpp"
-#include "Parser.hpp"
+
 #include<Eigen/Dense>
 #include<cassert>
 
@@ -172,20 +175,19 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     //setting V0 to GND and removing corresponding row and column
     remove_Row(Mat,0);
     remove_Column(Mat,0);
+    std:: cout << "vec " << Vec(1);
+    Vec = Vec.segment(1,Mat_size-1);
+    //std::cerr<<"removed V0" << std::endl;
 
-    Vec = Vec.tail(Mat_size-1);
-
-    std::cerr<<"removed V0" << std::endl;
-
-    std::cerr<<"Mat resized is " << std::endl;
-    std::cerr << Mat << std::endl;
-    std::cerr<<"Vec resized is " << std::endl;
+    //std::cerr<<"Mat resized is " << std::endl;
+    //std::cerr << Mat << std::endl;
+    //std::cerr<<"Vec resized is " << std::endl;
     std::cerr<< Vec << std::endl;
-    std::cerr<< "space" <<std::endl;
     
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size -1);
     solution = Mat.colPivHouseholderQr().solve(Vec);
+    std::cerr<< "solution is " <<std::endl;
     std::cout << solution << std::endl;
 
     std::cerr<< "end of Matrix solver" << std::endl;
@@ -194,6 +196,4 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
 }
 
 
-
- 
-
+#endif
