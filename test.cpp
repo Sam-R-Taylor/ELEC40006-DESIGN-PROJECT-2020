@@ -9,8 +9,8 @@ int main(){
     
     Voltage_Source v2{1,0,"V1",5};
     //Voltage_Source v1{1,0,"V1",5};
-    Resistor r2{1,2,"R2",100};
-    Resistor r3{2,3,"R2",1};
+    Resistor r2{1,2,"R2",1000};
+    Resistor r3{2,3,"R2",0.568};
     //Resistor r1{3,4,"R1",100};
     //Diode r3{4,5,"R3"};
     //Resistor r4{5,6,"R4",100};

@@ -176,7 +176,7 @@ public:
     //get the current through the diode
     double get_current(const std::vector<double> &nodevoltages) const
     {
-        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1);
+        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1) + (nodevoltages[anode]-nodevoltages[cathode])*GMIN;
         //current = current>10?10:current;
         //std::cout << "Current  " <<current << std::endl; 
         return current;
