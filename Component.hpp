@@ -54,7 +54,7 @@ public:
     }
     ~Resistor(){}
 
-    double get_value() const{
+    double get_resitance() const{
         return resistance;
     }
     double get_current(const std::vector<double> &nodeVoltages) const
@@ -166,21 +166,21 @@ private:
     */
     double conductance;
     double linear_current;
-    double value;
+    double capacitance;
     double integral;
 public:
-    Capacitor(int _anode, int _cathode, std:: string _name, double _value){
+    Capacitor(int _anode, int _cathode, std:: string _name, double _capacitance){
         anode = _anode;
         cathode = _cathode;
         name = _name;
-        value = _value;
+        capacitance = _capacitance;
     }
     ~Capacitor(){}
 
 
     double get_voltage() const
     {
-        return integral/value;
+        return integral/capacitance;
     }
     double get_conductance() const
     {
@@ -192,7 +192,7 @@ public:
     }
     void set_conductance(double deltatime) //Not const as setters
     {
-        conductance = value/deltatime;
+        conductance = capacitance/deltatime;
     }
     void set_linear_current(double VoltageN) 
     {
