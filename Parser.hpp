@@ -221,6 +221,24 @@ void parse_input(const std::string& input)
                 std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<_model_name << std::endl;
             }
             break;
+        case 'c' :
+            {
+                //Capacitor added to circuit
+                std::string _capacitance;
+                src >> _name >> _anode >> _cathode >> _capacitance;
+                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_capacitance)));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_capacitance) << std::endl;
+            }
+            break;
+        case 'l' :
+            {
+                //Capacitor added to circuit
+                std::string _inductance;
+                src >> _name >> _anode >> _cathode >> _inductance;
+                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_inductance)));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
+            }
+            break;
         default:
             std::cerr<< "non-handled case"<< std::endl;
             std::cerr<<"tmp is "<<tmp<<std::endl;
