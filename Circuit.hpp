@@ -91,20 +91,12 @@ public:
             }
         }
     }
-    /*
-    after a circuit object is constructed by the parser
-    updates vector<Node> nodes
-    */
-    void build_nodes()
-    {
-        nodes = NodeGenerator(components);
-    }
     int get_number_of_nodes() const{
         return nodes.size();
     }
     /*
     after a circuit object is constructed by the parser
-    and build_nodes() has been called
+    and NodeGenerator has created the nodes
     
     adds connection_resistors to Diodes
     */
@@ -141,6 +133,17 @@ public:
                 nodes.push_back(extra_node);
             }
         }
+    }
+    /*
+    after a circuit object is constructed by the parser
+    
+    updates vector<Node> nodes
+    adds connection resistors for Diodes
+    */
+    void build_nodes()
+    {
+        nodes = NodeGenerator(components);
+        this->add_connection_resistors();
     }
     std::vector<Node> *get_nodes_ptr() {return &nodes;}
     std::vector<Node> get_nodes() const{return nodes;}
