@@ -46,7 +46,6 @@ protected:
     std::vector<Node> nodes;
     std::vector<Component*> components;
     std::vector<double> voltages;
-
     
 public:
     //diodes constants
@@ -85,6 +84,7 @@ public:
     {
         for(Node i: nodes)
         {
+            std::cerr << "node number "<< i.index << std::endl;
             for(Component* j: i.components_attached)
             {
                 std::cerr << j->get_name()<< std::endl;
@@ -101,6 +101,46 @@ public:
     }
     int get_number_of_nodes() const{
         return nodes.size();
+    }
+    /*
+    after a circuit object is constructed by the parser
+    and build_nodes() has been called
+    
+    adds connection_resistors to Diodes
+    */
+    void add_connection_resistors()
+    {
+        for(Component* i: components)
+        {
+            if(dynamic_cast<Diode*>(i))
+            {   
+                Diode* Dptr = dynamic_cast<Diode*>(i);
+                int extra_node_index = this->get_number_of_nodes();
+                Node* insertion_node = &nodes[Dptr->get_cathode()];
+                
+                //add Resistor
+                Resistor* Rptr = new Resistor(extra_node_index, Dptr->get_cathode(), "R_connection", Dptr->get_rs());
+                insertion_node->components_attached.push_back(Rptr);
+                
+                //remove Diode      
+                for (int j = 0; j < insertion_node->components_attached.size(); j++)
+                {
+                    if(dynamic_cast<Diode*>(insertion_node->components_attached[j]))
+                    {
+                        (insertion_node->components_attached).erase((insertion_node->components_attached).begin() + j);
+                    }
+                }
+                
+                //modify Diode
+                Dptr->set_cathode(extra_node_index);
+
+                //add extra_node connecting Diode and Resistor
+                Node extra_node;
+                extra_node.index = extra_node_index;
+                extra_node.components_attached = {Dptr, Rptr};
+                nodes.push_back(extra_node);
+            }
+        }
     }
     std::vector<Node> *get_nodes_ptr() {return &nodes;}
     std::vector<Node> get_nodes() const{return nodes;}

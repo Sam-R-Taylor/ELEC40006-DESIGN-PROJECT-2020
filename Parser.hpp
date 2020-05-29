@@ -167,7 +167,10 @@ void parse_input(const std::string& input)
             {
                 //building Circuit obj
                 _circuit.build_nodes();
-                _circuit.print_components();
+                _circuit.print_node_components();
+                std::cout << "added connections" <<std::endl;
+                _circuit.add_connection_resistors();
+                _circuit.print_node_components();
 
                 //need to set capacitors as OC and inductors as SC
 
