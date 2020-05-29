@@ -336,12 +336,14 @@ class AC_Voltage_Source:
     double frequency ;
     double phase;
     double currentVoltage;
+    double DC_Offset;
 
     public:
-    AC_Voltage_Source(double _Voltage_amplitude, double _frequency, double _phase){
+    AC_Voltage_Source(double _Voltage_amplitude, double _frequency, double _phase , double _DC_Offset){
         Voltage_amplitude = _Voltage_amplitude;
         frequency = _frequency;
         phase = _phase;
+        DC_Offset = _DC_Offset;
 
     }
     double Get_Voltage_amplitude(){
@@ -358,12 +360,16 @@ class AC_Voltage_Source:
     }
     
     void Set_Voltage(double CurrentTime){
-        currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase));
+        currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase) + DC_Offset ;
         //y(t)=Asin(2pift + phase)
 
     }
     double Get_Voltage(){
         return currentVoltage;
+
+    }
+    double Get_DC_Offset(){
+        return DC_Offset;
 
     }
 }
