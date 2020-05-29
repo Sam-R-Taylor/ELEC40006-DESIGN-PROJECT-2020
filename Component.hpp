@@ -279,7 +279,7 @@ public:
     
 };
 
-//added sketch of Voltage_Controlled_Current_Source
+
 class Voltage_Controlled_Current_Source :                
     public Component
 {
@@ -342,8 +342,6 @@ public:
 };
 
 
-
-//added sketch of Voltage_Controlled_Voltage_Source
 class Voltage_Controlled_Voltage_Source :                
     public Voltage_Component
 {
@@ -422,7 +420,29 @@ class AC_Voltage_Source:
     }
 };
 
+class BJT
+{
+//Ebers-Moll model
+private:
+    //diodes constants
+    double IS;
+    double NF;
+    double NR;
+    double BF;
+    double BR;
 
+    //diodes
+    Diode D1();
+    Diode D2();
+
+    //connection resistances
+    Resistor RE();
+    Resistor RB();
+    Resistor RC();
+public:
+    BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model) {}
+    ~BJT() {}
+};
 
 
 #endif
