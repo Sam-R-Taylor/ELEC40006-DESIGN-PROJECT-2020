@@ -276,7 +276,7 @@ public:
     double get_rs(){
         return Rs;
     }
-    
+    void set_cathode(int _index){cathode = _index;}   
 };
 
 
