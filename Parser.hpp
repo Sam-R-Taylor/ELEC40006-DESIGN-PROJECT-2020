@@ -169,6 +169,8 @@ void parse_input(const std::string& input)
                 _circuit.build_nodes();
                 _circuit.print_components();
 
+                //need to set capacitors as OC and inductors as SC
+
                 Matrix_solver(_circuit);
             }
             else
@@ -205,6 +207,15 @@ void parse_input(const std::string& input)
                 src >> _name >> _anode >> _cathode >> _voltage;
                 _circuit.add_component(new Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_voltage)));
                 std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
+            }
+            break;
+        case 'd': 
+            {
+                //Voltage source added to _circuit
+                std::string _model_name;
+                src >> _name >> _anode >> _cathode >> _model_name;
+                _circuit.add_component(new Diode(node_number(_anode),node_number(_cathode),_name));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<_model_name << std::endl;
             }
             break;
         default:
