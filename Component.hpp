@@ -29,7 +29,9 @@ public:
 };
 
 
-class Current_Component: public Component{
+class Current_Component:
+    public Component
+{
     public:
     virtual double get_current(const std::vector<double> &nodeVoltages) const = 0;
 };
@@ -279,7 +281,7 @@ public:
     
 };
 
-//added sketch of Voltage_Controlled_Current_Source
+
 class Voltage_Controlled_Current_Source :                
     public Component
 {
@@ -297,20 +299,24 @@ public:
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
-    virtual double get_current() const
+    virtual double get_gain() const
     {
-        return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
+        return gain;        
     }
-    int get_control_anode(){
+    int get_control_anode() const
+    {
         return control_voltage_anode;
     }
-    int get_control_cathode(){
+    int get_control_cathode() const
+    {
         return control_voltage_cathode;
     }
 };
 
-class Voltage_Component: public Component{
-    public:
+class Voltage_Component:
+    public Component
+{
+public:
     virtual double get_voltage() const = 0;
 };
 
@@ -338,8 +344,6 @@ public:
 };
 
 
-
-//added sketch of Voltage_Controlled_Voltage_Source
 class Voltage_Controlled_Voltage_Source :                
     public Voltage_Component
 {
@@ -357,14 +361,16 @@ public:
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
-    double get_voltage() const
+    double get_gain() const
     {
-        return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
+        return gain;        
     }
-    int get_control_anode(){
+    int get_control_anode() const
+    {
         return control_voltage_anode;
     }
-    int get_control_cathode(){
+    int get_control_cathode() const
+    {
         return control_voltage_cathode;
     }
 };
@@ -392,34 +398,60 @@ class AC_Voltage_Source:
         DC_Offset = _DC_Offset;
 
     }
-    double Get_Voltage_amplitude(){
+    double Get_Voltage_amplitude() const
+    {
         return Voltage_amplitude;
-
     }
-    double Get_Frequency(){
+    double Get_Frequency() const
+    {
         return frequency;
-
     }
-    double Get_phase(){
+    double Get_phase() const
+    {
         return phase;
-
     }
     void Set_Voltage(double CurrentTime){
         currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase) + DC_Offset ;
         //y(t)=Asin(2pift + phase)
 
     }
+<<<<<<< HEAD
     double get_voltage() const{
+=======
+    double get_voltage() const
+    {
+>>>>>>> 63c3203c1327a538765d342c153a28c8a399410b
         return currentVoltage;
-
     }
-    double Get_DC_Offset(){
+    double Get_DC_Offset() const
+    {
         return DC_Offset;
-
     }
 };
 
+class BJT
+{
+//Ebers-Moll model
+private:
+    //diodes constants
+    double IS;
+    double NF;
+    double NR;
+    double BF;
+    double BR;
 
+    //diodes
+    Diode D1();
+    Diode D2();
+
+    //connection resistances
+    Resistor RE();
+    Resistor RB();
+    Resistor RC();
+public:
+    BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model) {}
+    ~BJT() {}
+};
 
 
 #endif
