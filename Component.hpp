@@ -415,12 +415,8 @@ class AC_Voltage_Source:
         //y(t)=Asin(2pift + phase)
 
     }
-<<<<<<< HEAD
-    double get_voltage() const{
-=======
     double get_voltage() const
     {
->>>>>>> 63c3203c1327a538765d342c153a28c8a399410b
         return currentVoltage;
     }
     double Get_DC_Offset() const
@@ -429,6 +425,8 @@ class AC_Voltage_Source:
     }
 };
 
+
+/*
 class BJT
 {
 //Ebers-Moll model
@@ -451,7 +449,7 @@ private:
 public:
     BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model) {}
     ~BJT() {}
-};
+};*/
 
 
 #endif

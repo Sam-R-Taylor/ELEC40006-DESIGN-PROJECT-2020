@@ -5,13 +5,14 @@
 #include "TransientAnalysis.hpp"
 #include <iostream>
 #include <chrono>
+#include <vector>
 using namespace std;
 int main(){
     
-    AC_Voltage_Source v2{1,0,"V1",5,100,0,0};
-    //Voltage_Source v1{1,0,"V1",5};
+    //AC_Voltage_Source v1{1,0,"V1",5,100,0,0};
+    Voltage_Source v1{1,0,"V1",5};
     Resistor r2{1,2,"R2",1000};
-    Capacitor c1{2,0,"C1",pow(10,-6)};
+    Inductor c1{2,0,"C1",pow(10,-1)};
     //Resistor r3{3,4,"R2",0.568};
     //Voltage_Controlled_Current_Source vccs1{2,3,"VCCS1",-0.001,4,0};
     //Resistor r1{3,4,"R1",100};
@@ -24,7 +25,7 @@ int main(){
     //Diode d1{10,11,"D1"};
     //Diode d2{4,0,"D2"};
     //Resistor r4{3,4,"R4",1000};
-    vector<Component*> components{&v2,&r2,&c1};
+    vector<Component*> components{&v1,&r2,&c1};
     Circuit circuit;
     for(Component* component: components){
         circuit.add_component(component);

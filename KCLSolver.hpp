@@ -59,12 +59,21 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 sub_coefficients[nodes->size()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
             }
             else if(dynamic_cast<Inductor*>(component)){
-                sub_coefficients[nodes->size()] += ((Inductor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
-                sub_coefficients[component->get_anode()] += ((Inductor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
-                sub_coefficients[component->get_cathode()] += -((Inductor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
+                sub_coefficients[nodes->size()] -= ((Inductor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
+                //sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
+                //sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
+                if(component->get_anode() == node->index){
+                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
+                    sub_coefficients[component->get_anode()] += ((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_cathode()] += -((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                }
+                else if(component->get_cathode() == node->index){
+                    sub_coefficients[component->get_anode()] += -((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_cathode()] += ((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                }
             }
             else if(dynamic_cast<Capacitor*>(component)){
-                cout << ((Capacitor*)component)->get_linear_current() << endl;
+                //cout << ((Capacitor*)component)->get_linear_current() << endl;
                 sub_coefficients[nodes->size()] += ((Capacitor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
                 //sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
                 //sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
