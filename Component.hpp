@@ -130,7 +130,7 @@ class Diode:
 {
 private:
     //Thermal Voltage
-    double Vt = 0.025;
+    double Vt = 0.0258641;
     double I_s = 2.52* pow(10,-9);
     //Voltage across terminals, used for linear aporximations
     double vd = 0;
@@ -141,6 +141,8 @@ private:
     //breakdown voltage
     double BV = -75;
     double GMIN = pow(10,-12);
+    //series resistance
+    double Rs = 0.568;
 public:
     Diode(int _anode, int _cathode, std:: string _name){
         anode = _anode;
@@ -178,8 +180,11 @@ public:
     {
         double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1) + (nodevoltages[anode]-nodevoltages[cathode])*GMIN;
         //current = current>10?10:current;
-        //std::cout << "Current  " <<current << std::endl; 
+        std::cout << "Current  " <<current << std::endl; 
         return current;
+    }
+    double get_rs(){
+        return Rs;
     }
     
 };

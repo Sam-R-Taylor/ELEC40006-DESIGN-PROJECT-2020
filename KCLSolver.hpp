@@ -95,8 +95,8 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 }
             }
             else if(dynamic_cast<Voltage_Controlled_Current_Source*>(component)){
-                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_anode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
-                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_cathode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?1:-1);
+                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_control_anode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
+                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_control_cathode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?1:-1);
             }
             //add the sub coefficients to the output
             for(int i=0; i < coefficients.size(); i++){
@@ -160,12 +160,15 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
     //return output
     return output;
 }
-
-double ComponentCurrent(vector<double> &voltages, vector<Node> &nodes, Component* component){
-    vector<double> coefficients = coefficient_generator(&nodes[component->get_anode()], &nodes, component);
+double ComponentCurrent(Circuit &circuit, Component* component){
+//double ComponentCurrent(vector<double> &voltages, vector<Node> &nodes, Component* component){
     double current = 0;
-    for(int i = 0; i<voltages.size(); i++){
-        current += voltages[i] * coefficients[i];
+    if(dynamic_cast<Voltage_Component*>(component)){
+        vector<double> coefficients = coefficient_generator(&(circuit.get_nodes()[component->get_anode()]), &circuit.get_nodes(), component);
+        double current = 0;
+        for(int i = 0; i<voltages.size(); i++){
+            current += voltages[i] * coefficients[i];
+        }
     }
     return -current;
 }
