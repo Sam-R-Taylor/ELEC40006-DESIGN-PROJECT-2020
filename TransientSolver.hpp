@@ -46,12 +46,12 @@ void TransientSolver(Circuit &circuit){
             exit(1);
             incomplete = false;
         }
-        std::vector<double> v = circuit.get_voltages();
-        for(auto x: v){
-            std::cout << x << std::endl;
-        }
+        //std::vector<double> v = circuit.get_voltages();
+        //for(auto x: v){
+        //    std::cout << x << std::endl;
+        //}
     }
-    std::cout << "Iterations " << current_iteration << std::endl;
+    //std::cout << "Iterations " << current_iteration << std::endl;
 }
 
 #endif

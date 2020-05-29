@@ -194,11 +194,13 @@ public:
     }
     void set_linear_current(double VoltageN) 
     {
+        std::cout << "Conductance " << conductance << std::endl;
+        std::cout << "VoltageN " << conductance << std::endl;
         linear_current = conductance*VoltageN;
     }
     double get_current(const std::vector<double> &nodeVoltages) const
     {
-        return linear_current + conductance * -1* (nodeVoltages[anode]-nodeVoltages[cathode]);
+        return linear_current + conductance * -1 * (nodeVoltages[anode]-nodeVoltages[cathode]);
     }
     /*
     given an increment computed by "controller" due to a timestep
@@ -206,7 +208,7 @@ public:
     */
     void update_integral(double increment)
     {
-        std::cout << "Integral " << integral << std::endl;
+        //std::cout << "Integral " << integral << std::endl;
         integral += increment;
     }
 };
@@ -268,7 +270,7 @@ public:
     {
         double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1) + (nodevoltages[anode]-nodevoltages[cathode])*GMIN;
         //current = current>10?10:current;
-        std::cout << "Current  " <<current << std::endl; 
+        //std::cout << "Current  " <<current << std::endl; 
         return current;
     }
     double get_rs(){
@@ -380,7 +382,10 @@ class AC_Voltage_Source:
     double DC_Offset;
 
     public:
-    AC_Voltage_Source(double _Voltage_amplitude, double _frequency, double _phase , double _DC_Offset){
+    AC_Voltage_Source(int _anode, int _cathode, std::string _name,  double _Voltage_amplitude, double _frequency, double _phase , double _DC_Offset){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
         Voltage_amplitude = _Voltage_amplitude;
         frequency = _frequency;
         phase = _phase;
@@ -404,7 +409,7 @@ class AC_Voltage_Source:
         //y(t)=Asin(2pift + phase)
 
     }
-    double get_voltage(){
+    double get_voltage() const{
         return currentVoltage;
 
     }

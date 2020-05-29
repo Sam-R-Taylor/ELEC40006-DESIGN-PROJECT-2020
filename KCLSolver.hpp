@@ -48,7 +48,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                     sub_coefficients[component->get_anode()] += ((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                     sub_coefficients[component->get_cathode()] += -((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                 }
-                if(component->get_cathode() == node->index){
+                else if(component->get_cathode() == node->index){
                     sub_coefficients[component->get_anode()] += -((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                     sub_coefficients[component->get_cathode()] += ((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                 }
@@ -64,9 +64,19 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 sub_coefficients[component->get_cathode()] += -((Inductor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
             }
             else if(dynamic_cast<Capacitor*>(component)){
+                cout << ((Capacitor*)component)->get_linear_current() << endl;
                 sub_coefficients[nodes->size()] += ((Capacitor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
-                sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
-                sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
+                //sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
+                //sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
+                if(component->get_anode() == node->index){
+                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
+                    sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                }
+                else if(component->get_cathode() == node->index){
+                    sub_coefficients[component->get_anode()] += -((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_cathode()] += ((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                }
             }
             //if component is a voltage source
             else if(dynamic_cast<Voltage_Component*>(component)){
@@ -151,6 +161,7 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
     //MatrixXd matrix2 = matrix;
     //auto start = chrono::steady_clock::now();
     //for(int i = 0; i < 1; i++){
+        cout << matrix <<endl;
         matrix = matrix.inverse();
         result = matrix * constants;
     //result = matrix.householderQr().solve(constants);
@@ -182,7 +193,7 @@ double GetCurrent(Circuit &circuit, Component* component){
     }else if(dynamic_cast<Current_Component*>(component)){
         return ((Current_Component*)component)->get_current(circuit.get_voltages());
     }
-    return -current;
+    return current;
 }
 
 //outputs the vector of voltages given the vector of components, optional vector of nodes used to increase speed
