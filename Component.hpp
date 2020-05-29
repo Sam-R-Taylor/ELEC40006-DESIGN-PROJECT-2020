@@ -29,7 +29,9 @@ public:
 };
 
 
-class Current_Component: public Component{
+class Current_Component:
+    public Component
+{
     public:
     virtual double get_current(const std::vector<double> &nodeVoltages) const = 0;
 };
@@ -295,20 +297,24 @@ public:
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
-    virtual double get_current() const
+    virtual double get_gain() const
     {
-        return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
+        return gain;        
     }
-    int get_control_anode(){
+    int get_control_anode() const
+    {
         return control_voltage_anode;
     }
-    int get_control_cathode(){
+    int get_control_cathode() const
+    {
         return control_voltage_cathode;
     }
 };
 
-class Voltage_Component: public Component{
-    public:
+class Voltage_Component:
+    public Component
+{
+public:
     virtual double get_voltage() const = 0;
 };
 
@@ -355,14 +361,16 @@ public:
         control_voltage_anode = _control_voltage_anode;
         control_voltage_cathode = _control_voltage_cathode;
     }
-    double get_voltage() const
+    double get_gain() const
     {
-        return gain;        //todo need something that returns voltage at control_voltage_anode and control_voltage_cathode
+        return gain;        
     }
-    int get_control_anode(){
+    int get_control_anode() const
+    {
         return control_voltage_anode;
     }
-    int get_control_cathode(){
+    int get_control_cathode() const
+    {
         return control_voltage_cathode;
     }
 };
@@ -387,30 +395,30 @@ class AC_Voltage_Source:
         DC_Offset = _DC_Offset;
 
     }
-    double Get_Voltage_amplitude(){
+    double Get_Voltage_amplitude() const
+    {
         return Voltage_amplitude;
-
     }
-    double Get_Frequency(){
+    double Get_Frequency() const
+    {
         return frequency;
-
     }
-    double Get_phase(){
+    double Get_phase() const
+    {
         return phase;
-
     }
     void Set_Voltage(double CurrentTime){
         currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase) + DC_Offset ;
         //y(t)=Asin(2pift + phase)
 
     }
-    double get_voltage(){
+    double get_voltage() const
+    {
         return currentVoltage;
-
     }
-    double Get_DC_Offset(){
+    double Get_DC_Offset() const
+    {
         return DC_Offset;
-
     }
 };
 
