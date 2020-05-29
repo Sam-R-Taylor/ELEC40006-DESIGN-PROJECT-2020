@@ -2,6 +2,7 @@
 #include "Component.hpp"
 #include "KCLSolver.hpp"
 #include "TransientSolver.hpp"
+#include "TransientAnalysis.hpp"
 #include <iostream>
 #include <chrono>
 using namespace std;

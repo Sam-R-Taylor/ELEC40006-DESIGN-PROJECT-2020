@@ -58,6 +58,16 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 //add the current source value to the final constant in the list of coefficients
                 sub_coefficients[nodes->size()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
             }
+            else if(dynamic_cast<Inductor*>(component)){
+                sub_coefficients[nodes->size()] += ((Inductor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
+                sub_coefficients[component->get_anode()] += ((Inductor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
+                sub_coefficients[component->get_cathode()] += -((Inductor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
+            }
+            else if(dynamic_cast<Capacitor*>(component)){
+                sub_coefficients[nodes->size()] += ((Capacitor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
+                sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
+                sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
+            }
             //if component is a voltage source
             else if(dynamic_cast<Voltage_Component*>(component)){
                 //check which end of the voltage source is connected to the current node
@@ -160,15 +170,17 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
     //return output
     return output;
 }
-double ComponentCurrent(Circuit &circuit, Component* component){
+double GetCurrent(Circuit &circuit, Component* component){
 //double ComponentCurrent(vector<double> &voltages, vector<Node> &nodes, Component* component){
     double current = 0;
     if(dynamic_cast<Voltage_Component*>(component)){
-        vector<double> coefficients = coefficient_generator(&(circuit.get_nodes()[component->get_anode()]), &circuit.get_nodes(), component);
+        vector<double> coefficients = coefficient_generator(&(circuit.get_nodes()[component->get_anode()]), circuit.get_nodes_ptr(), component);
         double current = 0;
-        for(int i = 0; i<voltages.size(); i++){
-            current += voltages[i] * coefficients[i];
+        for(int i = 0; i<circuit.get_voltages().size(); i++){
+            current += circuit.get_voltages()[i] * coefficients[i];
         }
+    }else if(dynamic_cast<Current_Component*>(component)){
+        return ((Current_Component*)component)->get_current(circuit.get_voltages());
     }
     return -current;
 }

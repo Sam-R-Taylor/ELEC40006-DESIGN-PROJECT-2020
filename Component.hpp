@@ -29,7 +29,10 @@ public:
 };
 
 
-
+class Current_Component: public Component{
+    public:
+    virtual double get_current(const std::vector<double> &nodeVoltages) const = 0;
+};
 
 
 class Resistor :
@@ -52,9 +55,9 @@ public:
     double get_value() const{
         return resistance;
     }
-    double get_current(const std::vector<double> &nodevoltages) const
+    double get_current(const std::vector<double> &nodeVoltages) const
     {
-        double current = (nodevoltages[anode]-nodevoltages[cathode])/resistance;
+        double current = (nodeVoltages[anode]-nodeVoltages[cathode])/resistance;
         //std::cout << "Resistor Current" << current << std::endl;
         return current;
     }
@@ -77,6 +80,8 @@ private:
     */
     double integral;
     double inductance;
+    double conductance;
+    double linear_current;
 public:
     Inductor(int _anode, int _cathode, std:: string _name, double _inductance){
         anode = _anode;
@@ -97,7 +102,29 @@ public:
     {
         return integral/inductance;
     }
+
+    double get_conductance() const
+    {
+        return conductance;
+    }
+    double get_linear_current() const
+    {
+        return linear_current;
+    }
+    void set_conductance(double deltatime) //Not const as setters
+    {
+        conductance = deltatime/inductance;
+    }
+    void set_linear_current(double VoltageN) 
+    {
+        linear_current = conductance*VoltageN;
+    }
+    double get_current(const std::vector<double> &nodeVoltages) const
+    {
+        return linear_current + conductance * -1 * (nodeVoltages[anode]-nodeVoltages[cathode]);
+    }
 };
+
 
 
 
@@ -117,11 +144,72 @@ public:
         current = _current;
     }
     ~Current_source(){}
+    double get_current(const std::vector<double> &nodeVoltages) const
+    {
+        return current;
+    }
     double get_current() const
     {
         return current;
     }
-};    
+};   
+
+
+class Capacitor :
+    public Current_Component
+{
+private:
+    /*
+    integral of current wrt time. Current goes from anode to cathode
+    */
+    double conductance;
+    double linear_current;
+    double value;
+    double integral;
+public:
+    Capacitor(int _anode, int _cathode, std:: string _name, double _value){
+        anode = _anode;
+        cathode = _cathode;
+        name = _name;
+        value = _value;
+    }
+    ~Capacitor(){}
+
+
+    double get_voltage() const
+    {
+        return integral/value;
+    }
+    double get_conductance() const
+    {
+        return conductance;
+    }
+    double get_linear_current() const
+    {
+        return linear_current;
+    }
+    void set_conductance(double deltatime) //Not const as setters
+    {
+        conductance = value/deltatime;
+    }
+    void set_linear_current(double VoltageN) 
+    {
+        linear_current = conductance*VoltageN;
+    }
+    double get_current(const std::vector<double> &nodeVoltages) const
+    {
+        return linear_current + conductance * -1* (nodeVoltages[anode]-nodeVoltages[cathode]);
+    }
+    /*
+    given an increment computed by "controller" due to a timestep
+    updates the value of Capacitor::integral
+    */
+    void update_integral(double increment)
+    {
+        std::cout << "Integral " << integral << std::endl;
+        integral += increment;
+    }
+};
 
 
 
@@ -249,45 +337,6 @@ public:
 
 
 
-
-
-class Capacitor :
-    public Voltage_Component
-{
-private:
-    /*
-    integral of current wrt time. Current goes from anode to cathode
-    */
-    double integral;
-    double value;
-public:
-    Capacitor(int _anode, int _cathode, std:: string _name, double _value){
-        anode = _anode;
-        cathode = _cathode;
-        name = _name;
-        value = _value;
-    }
-    ~Capacitor(){}
-
-
-    double get_voltage() const
-    {
-        return integral/value;
-    }
-    /*
-    given an increment computed by "controller" due to a timestep
-    updates the value of Capacitor::integral
-    */
-    void update_integral(double increment)
-    {
-        std::cout << "Integral " << integral << std::endl;
-        integral += increment;
-    }
-};
-
-
-
-
 //added sketch of Voltage_Controlled_Voltage_Source
 class Voltage_Controlled_Voltage_Source :                
     public Voltage_Component
@@ -315,6 +364,53 @@ public:
     }
     int get_control_cathode(){
         return control_voltage_cathode;
+    }
+};
+
+
+
+class AC_Voltage_Source:
+    public Voltage_Component
+{
+    private:
+    double Voltage_amplitude;
+    double frequency ;
+    double phase;
+    double currentVoltage;
+    double DC_Offset;
+
+    public:
+    AC_Voltage_Source(double _Voltage_amplitude, double _frequency, double _phase , double _DC_Offset){
+        Voltage_amplitude = _Voltage_amplitude;
+        frequency = _frequency;
+        phase = _phase;
+        DC_Offset = _DC_Offset;
+
+    }
+    double Get_Voltage_amplitude(){
+        return Voltage_amplitude;
+
+    }
+    double Get_Frequency(){
+        return frequency;
+
+    }
+    double Get_phase(){
+        return phase;
+
+    }
+    void Set_Voltage(double CurrentTime){
+        currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase) + DC_Offset ;
+        //y(t)=Asin(2pift + phase)
+
+    }
+    double get_voltage(){
+        return currentVoltage;
+
+    }
+    double Get_DC_Offset(){
+        return DC_Offset;
+
     }
 };
 
