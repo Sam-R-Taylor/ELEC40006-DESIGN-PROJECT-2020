@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFile>
+#include <QFileDialog>
 #include <QTextStream>
 #include <QMessageBox>
 
@@ -16,25 +17,32 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::makeplot(){
 
-void MainWindow::on_pushButton_clicked()
-{
-    QFile file("Output.txt");
-
-    if (!file.open(QFile::WriteOnly | QFile::Text)){
-        QMessageBox::warning(this,"Title","File Not Open");
-
+    // generate some data:
+    QVector<double> x(101), y(101); // initialize with entries 0..100
+    for (int i=0; i<101; ++i)
+    {
+      x[i] = i/50.0 - 1; // x goes from -1 to 1
+      y[i] = x[i]*x[i]; // let's plot a quadratic function
     }
-    QTextStream out(&file);
-    QString text = ui->plainTextEdit_2->toPlainText() ;
-    out << text ;
-    file.flush(); //Flushes stream inside out
-    file.close();
+    // create graph and assign data to it:
+    ui->customPlot->addGraph();
+     ui->customPlot->graph(0)->setData(x, y);
+    // give the axes some labels:
+     ui->customPlot->xAxis->setLabel("Time");
+     ui->customPlot->yAxis->setLabel("Voltage");
+    // set axes ranges, so we see all data:
+     ui->customPlot->xAxis->setRange(-1, 1);
+     ui->customPlot->yAxis->setRange(0, 1);
+     ui->customPlot->replot();
+
 }
+
 
 void MainWindow::on_pushButton_2_clicked()
 {
-    QFile file("Input.txt");
+    QFile file(QFileDialog::getOpenFileName(this,"Select Netlist File","C://"));
 
     if (!file.open(QFile::ReadOnly | QFile::Text)){
         QMessageBox::warning(this,"Title","File Not Open");
@@ -44,4 +52,9 @@ void MainWindow::on_pushButton_2_clicked()
     QString text = in.readAll();
     ui->plainTextEdit_2->setPlainText(text);
     file.close();
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    MainWindow::makeplot();
 }
