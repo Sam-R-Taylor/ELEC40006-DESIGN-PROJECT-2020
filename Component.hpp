@@ -227,17 +227,19 @@ private:
     //current at voltage guess, used for linear aproximations
     double id0 = 0;
     //ideality coefficient 
-    double N = 1.752;
+    double N;;
     //breakdown voltage
     double BV = -75;
     double GMIN = pow(10,-12);
     //series resistance
-    double Rs = 0.568;
+    double Rs;
 public:
-    Diode(int _anode, int _cathode, std:: string _name){
+    Diode(int _anode, int _cathode, std:: string _name, double _Rs = 0.568, double _N = 1.752){
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        Rs =_Rs;
+        N = _N;
     }
     ~Diode(){}
     //set the voltage across the diode
@@ -424,24 +426,68 @@ class BJT
 {
 //Ebers-Moll model
 private:
+    std::string name;
+    int collector;
+    int base;
+    int emitter;
+    std::string model_name;
+
     //diodes constants
     double IS;
-    double NF;
-    double NR;
+    //double NF;      //ideality coefficient of base emitter junction
+    //double NR;      //ideality coefficient of base collector junction
     double BF;
     double BR;
 
+    //connection resistances
+    double RE = 0.2;
+    double RB = 10;
+    double RC = 0.3;
+
+    
+public:
     //diodes
     Diode D1();
     Diode D2();
 
-    //connection resistances
-    Resistor RE();
-    Resistor RB();
-    Resistor RC();
-public:
-    BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model) {}
+    
+
+    //voltage controlled current sources
+    Voltage_Controlled_Current_Source BE();
+    Voltage_Controlled_Current_Source BC();
+
+    BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model_name)
+    {
+        name = _name;
+        collector = _collector;
+        base =_base;
+        emitter = _emitter;
+        model_name = _model_name;
+
+        if(model_name == "NPN")
+        {
+            IS = pow(10,-14);
+            BF = 200;
+            BR = 3;
+
+        }
+        else if(model_name == "PNP")
+        {
+            std::cerr << "not implemented yet" << std::endl;
+        }
+        else
+        {
+            std::cerr << "model not known" << std::endl;
+        }
+    }
     ~BJT() {}
+
+    int get_collector() const{return collector;};
+    int get_base() const{return base;}
+    int get_emitter() const{return emitter;}
+    double get_RE() const{return RE;}
+    double get_RB() const{return RB;}
+    double get_RC() const{return RC;}
 };
 
 

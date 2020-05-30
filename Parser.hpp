@@ -214,7 +214,7 @@ void parse_input(const std::string& input)
             break;
         case 'd': 
             {
-                //Voltage source added to _circuit
+                //Diode source added to _circuit
                 std::string _model_name;
                 src >> _name >> _anode >> _cathode >> _model_name;
                 _circuit.add_component(new Diode(node_number(_anode),node_number(_cathode),_name));
@@ -239,6 +239,17 @@ void parse_input(const std::string& input)
                 std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
             }
             break;
+        case 'q' :
+            {
+                //Ebers-Moll BJT without connection resistances added to circuit
+                std::string _collector;
+                std::string _base;
+                std::string _emitter;
+                std::string _model_name;
+                src >> _name >>_collector >> _base >> _emitter >> _model_name;
+                _circuit.add_BJT(BJT(_name,node_number(_collector),node_number(_base),node_number(_emitter),_model_name));
+                std::cerr<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
+            }
         default:
             std::cerr<< "non-handled case"<< std::endl;
             std::cerr<<"tmp is "<<tmp<<std::endl;

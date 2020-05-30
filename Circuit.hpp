@@ -111,7 +111,7 @@ public:
                 Node* insertion_node = &nodes[Dptr->get_cathode()];
                 
                 //add Resistor
-                Resistor* Rptr = new Resistor(extra_node_index, Dptr->get_cathode(), "R_connection", Dptr->get_rs());
+                Resistor* Rptr = new Resistor(extra_node_index, Dptr->get_cathode(), "R_connectio_diode", Dptr->get_rs());
                 insertion_node->components_attached.push_back(Rptr);
                 
                 //remove Diode      
@@ -145,6 +145,24 @@ public:
         nodes = NodeGenerator(components);
         this->add_connection_resistors();
     }
+
+    void add_BJT(BJT BJT_component)
+    {
+        int collector = BJT_component.get_collector();
+        int base = BJT_component.get_base();
+        int emitter = BJT_component.get_emitter();
+        double RE = BJT_component.get_RE();
+        double RC = BJT_component.get_RC();
+        
+
+        //add diodes
+        this->add_component(new Diode(base,emitter,"BJT_diode_EB",RE));
+        this->add_component(new Diode(base,collector,"BJT_diode_BC",RC));
+
+        //add custom current sources
+        this->add_component(new Voltage_Controlled_Current_Source())
+
+    };
     std::vector<Node> *get_nodes_ptr() {return &nodes;}
     std::vector<Node> get_nodes() const{return nodes;}
     std::vector<Component*> get_components() const{return components;}
