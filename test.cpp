@@ -9,10 +9,10 @@
 using namespace std;
 int main(){
     
-    //AC_Voltage_Source v1{1,0,"V1",5,100,0,0};
-    Voltage_Source v1{1,0,"V1",5};
+    AC_Voltage_Source v1{1,0,"V1",5,100,0,0};
+    //Voltage_Source v1{1,0,"V1",5};
     Resistor r2{1,2,"R2",1000};
-    Inductor c1{2,0,"C1",pow(10,-1)};
+    Inductor c1{2,0,"C1",pow(10,-3)};
     //Resistor r3{3,4,"R2",0.568};
     //Voltage_Controlled_Current_Source vccs1{2,3,"VCCS1",-0.001,4,0};
     //Resistor r1{3,4,"R1",100};
@@ -42,7 +42,7 @@ int main(){
 
     //auto start = chrono::steady_clock::now();
     for(int i = 0; i < 1; i++){
-        TransientAnalysis(circuit,0.01,1000);
+        TransientAnalysis(circuit,0.1,1000);
     }
     //auto end = chrono::steady_clock::now();
     //auto diff = end - start;

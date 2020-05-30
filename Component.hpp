@@ -38,7 +38,7 @@ class Current_Component:
 
 
 class Resistor :
-    public Component
+    public Current_Component
 {
 protected:
     double resistance;
@@ -74,7 +74,7 @@ public:
 
 
 class Inductor :
-    public Component
+    public Current_Component
 {
 private:
     /*
@@ -111,19 +111,24 @@ public:
     }
     double get_linear_current() const
     {
+        //std::cout << "Conductance " << conductance << std::endl;
+        //std::cout << "VoltageN " << conductance << std::endl;
         return linear_current;
     }
     void set_conductance(double deltatime) //Not const as setters
     {
         conductance = deltatime/inductance;
     }
-    void set_linear_current(double VoltageN) 
+    void set_linear_current(double In) 
     {
-        linear_current = conductance*VoltageN;
+        //std::cout << "current " << In << std::endl;
+        linear_current = In;
     }
     double get_current(const std::vector<double> &nodeVoltages) const
     {
-        return linear_current + conductance * -1 * (nodeVoltages[anode]-nodeVoltages[cathode]);
+        std::cout << "Conductance " << conductance << std::endl;
+        std::cout << "Voltage " << (nodeVoltages[anode]-nodeVoltages[cathode]) << std::endl;
+        return linear_current + conductance * (nodeVoltages[anode]-nodeVoltages[cathode]);
     }
 };
 
@@ -131,7 +136,7 @@ public:
 
 
 class Current_source :
-    public Component
+    public Current_Component
 {
 private:
     /*
@@ -196,8 +201,6 @@ public:
     }
     void set_linear_current(double VoltageN) 
     {
-        std::cout << "Conductance " << conductance << std::endl;
-        std::cout << "VoltageN " << conductance << std::endl;
         linear_current = conductance*VoltageN;
     }
     double get_current(const std::vector<double> &nodeVoltages) const

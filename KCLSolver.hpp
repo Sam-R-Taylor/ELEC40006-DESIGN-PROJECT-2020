@@ -68,8 +68,8 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                     sub_coefficients[component->get_cathode()] += -((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                 }
                 else if(component->get_cathode() == node->index){
-                    sub_coefficients[component->get_anode()] += -((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += ((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_anode()] += -((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
+                    sub_coefficients[component->get_cathode()] += ((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
                 }
             }
             else if(dynamic_cast<Capacitor*>(component)){
