@@ -116,6 +116,7 @@ public:
             Node* Emitter = &nodes[i->get_diode_EB()->get_cathode()];
 
             //add connection resistor RB
+            std::cout<<"add connection resistor RB"<< std::endl;
             int extra_node_base_index = this->get_number_of_nodes();
             Resistor* RB = new Resistor(extra_node_base_index, i->get_diode_BC()->get_anode(), "R_connection_base", i->get_RB());
             Base->components_attached.push_back(RB);
@@ -123,6 +124,7 @@ public:
             i->get_diode_BC()->set_anode(extra_node_base_index);
 
             //add extra_node connecting Diodes and RB
+            std::cout<<"add extra_node connecting Diodes and RB"<< std::endl;
             Node extra_node_base;
             extra_node_base.index = extra_node_base_index;
             extra_node_base.components_attached = {i->get_diode_BC(),i->get_diode_EB(), RB};
@@ -130,34 +132,45 @@ public:
 
             
             //add connection resistor RC
+            std::cout<<"add connection resistor RC"<< std::endl;
             int extra_node_collector_index = this->get_number_of_nodes();
             Resistor* RC = new Resistor(extra_node_collector_index, i->get_diode_BC()->get_cathode(), "R_connection_collector", i->get_RC());
             Collector->components_attached.push_back(RB);
             i->get_diode_BC()->set_cathode(extra_node_collector_index);
 
             //add extra_node connecting Diode and RC
+            std::cout<<"add extra_node connecting Diode and RC"<< std::endl;
             Node extra_node_collector;
             extra_node_collector.index = extra_node_collector_index;
-            extra_node_collector.components_attached = {i->get_diode_BC(),RC};
+            extra_node_collector.components_attached = {i->get_diode_BC(),RC,i};
             nodes.push_back(extra_node_collector);
 
             //add connection resistor RE
+            std::cout<<"add connection resistor RE"<< std::endl;
             int extra_node_emitter_index = this->get_number_of_nodes();
             Resistor* RE = new Resistor(extra_node_emitter_index, i->get_diode_EB()->get_cathode(), "R_connection_emitter", i->get_RE());
             Emitter->components_attached.push_back(RE);
             i->get_diode_EB()->set_cathode(extra_node_emitter_index);
 
             //add extra_node connecting Diode and RE
+            std::cout<<"add extra_node connecting Diode and RE"<< std::endl;
             Node extra_node_emitter;
             extra_node_emitter.index=extra_node_emitter_index;
-            extra_node_emitter.components_attached ={i->get_diode_EB(),RE};
+            extra_node_emitter.components_attached ={i->get_diode_EB(),RE,i};
             nodes.push_back(extra_node_emitter);
+
+            //add custom current source
+            i->set_anode(extra_node_collector_index);
+            i->set_cathode(extra_node_emitter_index);
 
 
             //remove diodes from Base, Collector and Emitter nodes
+            std::cout<<"remove diodes from Base, Collector and Emitter nodes"<< std::endl;
             std::vector<Component*>::iterator it; 
             it = std::find(Collector->components_attached.begin(),Collector->components_attached.end(),i->get_diode_BC());
+            std::cout<<(*it)->get_name()<<std::endl;
             Collector->components_attached.erase(it);
+            std::cout<<"hi"<<std::endl;
             it = std::find(Emitter->components_attached.begin(),Emitter->components_attached.end(),i->get_diode_EB());
             Emitter->components_attached.erase(it);
 
@@ -177,7 +190,7 @@ public:
     {
         for(Component* i: components)
         {
-            if(dynamic_cast<Diode*>(i) && i->get_name()[0] == 'd')
+            if(dynamic_cast<Diode*>(i) && i->get_name()[0] == 'D')
             {   
                 Diode* Dptr = dynamic_cast<Diode*>(i);
                 int extra_node_index = this->get_number_of_nodes();
@@ -190,7 +203,7 @@ public:
                 //remove Diode      
                 for (int j = 0; j < insertion_node->components_attached.size(); j++)
                 {
-                    if(dynamic_cast<Diode*>(insertion_node->components_attached[j]) && insertion_node->components_attached[j]->get_name()[0] == 'd')
+                    if(dynamic_cast<Diode*>(insertion_node->components_attached[j]) && insertion_node->components_attached[j]->get_name()[0] == 'D')
                     {
                         (insertion_node->components_attached).erase((insertion_node->components_attached).begin() + j);
                     }
@@ -238,7 +251,6 @@ public:
         BJT_current_source* custom_source = new BJT_current_source(_diode_EB,_diode_BC,"custom_source");
         this->add_BJT_current_source(custom_source);
         this->add_component(custom_source);
-        BJT_current_sources.push_back(custom_source);
     }
     std::vector<Node> *get_nodes_ptr() {return &nodes;}
     std::vector<Node> get_nodes() const{return nodes;}

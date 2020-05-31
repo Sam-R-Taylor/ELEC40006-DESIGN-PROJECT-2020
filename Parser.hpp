@@ -168,9 +168,9 @@ void parse_input(const std::string& input)
                 //building Circuit obj
                 _circuit.build_nodes();
                 _circuit.print_node_components();
-                //std::cout << "added connections" <<std::endl;
-                //_circuit.add_connection_resistors();
-                //_circuit.print_node_components();
+                std::cout << "added connections " <<std::endl;
+                _circuit.add_connection_resistors_BJTs();
+                _circuit.print_node_components();
 
                 //need to set capacitors as OC and inductors as SC
 
@@ -250,13 +250,14 @@ void parse_input(const std::string& input)
                 _circuit.add_BJT(BJT(_name,node_number(_collector),node_number(_base),node_number(_emitter),_model_name));
                 std::cerr<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
             }
+            break;
         default:
             std::cerr<< "non-handled case"<< std::endl;
             std::cerr<<"tmp is "<<tmp<<std::endl;
             exit(1);
             break;
         }
-
+        
         //ignoring input chars till \n
         src.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
