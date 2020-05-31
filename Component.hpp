@@ -278,7 +278,8 @@ public:
     double get_rs(){
         return Rs;
     }
-    void set_cathode(int _index){cathode = _index;}   
+    void set_cathode(int _index){cathode = _index;}
+    void set_anode(int _index){anode = _index;}
 };
 
 
@@ -446,16 +447,6 @@ private:
 
     
 public:
-    //diodes
-    Diode D1();
-    Diode D2();
-
-    
-
-    //voltage controlled current sources
-    Voltage_Controlled_Current_Source BE();
-    Voltage_Controlled_Current_Source BC();
-
     BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model_name)
     {
         name = _name;
@@ -471,14 +462,7 @@ public:
             BR = 3;
 
         }
-        else if(model_name == "PNP")
-        {
-            std::cerr << "not implemented yet" << std::endl;
-        }
-        else
-        {
-            std::cerr << "model not known" << std::endl;
-        }
+        
     }
     ~BJT() {}
 
@@ -490,5 +474,39 @@ public:
     double get_RC() const{return RC;}
 };
 
+class BJT_current_source
+    : public Component
+{
+    //NPN current source
+private:
+    Diode* _diode_EB;
+    Diode* _diode_BC;
+
+    //diodes constants
+    double IS = pow(10,-14);
+    double BF = 200;
+    double BR = 3;
+
+    //connection resistances
+    double RE = 0.2;
+    double RB = 10;
+    double RC = 0.3;
+
+public:
+    BJT_current_source(Diode* EB, Diode* BC, std::string _name)
+    {
+        _diode_EB = EB;
+        _diode_BC = BC;
+        name = _name;
+    }
+    ~BJT_current_source(){}
+    void set_anode(int _anode){anode=_anode;}
+    void set_cathode(int _cathode){cathode=_cathode;}
+    Diode* get_diode_EB() const{return _diode_EB;}
+    Diode* get_diode_BC() const{return _diode_BC;}
+    double get_RE() const{return RE;}
+    double get_RB() const{return RB;}
+    double get_RC() const{return RC;}
+};
 
 #endif
