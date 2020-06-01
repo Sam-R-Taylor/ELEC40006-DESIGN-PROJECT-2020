@@ -83,6 +83,15 @@ public:
         }
 
     }
+    void print_specific_node_components(Node* _node)
+    {
+        std::cerr << "node number "<< _node->index << std::endl;
+        std::cerr << "number of components attached is "<< _node->components_attached.size()<< std::endl;
+        for(Component* i: _node->components_attached)
+        {
+            std::cerr << i->get_name()<< std::endl;
+        }
+    }
     void print_node_components() const
     {
         for(Node i: nodes)
@@ -115,10 +124,15 @@ public:
             Node* Base = &nodes[i->get_diode_BC()->get_anode()];
             Node* Emitter = &nodes[i->get_diode_EB()->get_cathode()];
 
+            std::cout<<"print collector 1"<< std::endl;
+            print_specific_node_components(Collector);
+
             //add connection resistor RB
             std::cout<<"add connection resistor RB"<< std::endl;
             int extra_node_base_index = this->get_number_of_nodes();
             Resistor* RB = new Resistor(extra_node_base_index, i->get_diode_BC()->get_anode(), "R_connection_base", i->get_RB());
+            this->add_component(RB);
+
             Base->components_attached.push_back(RB);
             i->get_diode_EB()->set_anode(extra_node_base_index);
             i->get_diode_BC()->set_anode(extra_node_base_index);
@@ -135,20 +149,32 @@ public:
             std::cout<<"add connection resistor RC"<< std::endl;
             int extra_node_collector_index = this->get_number_of_nodes();
             Resistor* RC = new Resistor(extra_node_collector_index, i->get_diode_BC()->get_cathode(), "R_connection_collector", i->get_RC());
+            this->add_component(RC);
             Collector->components_attached.push_back(RB);
             i->get_diode_BC()->set_cathode(extra_node_collector_index);
+
+            std::cout<<"print collector 2"<< std::endl;
+            print_specific_node_components(Collector);
 
             //add extra_node connecting Diode and RC
             std::cout<<"add extra_node connecting Diode and RC"<< std::endl;
             Node extra_node_collector;
             extra_node_collector.index = extra_node_collector_index;
             extra_node_collector.components_attached = {i->get_diode_BC(),RC,i};
-            nodes.push_back(extra_node_collector);
+            
+            //nodes.push_back(extra_node_collector);
+
+            std::cout<<"print extra node collector "<< std::endl;
+            print_specific_node_components(&extra_node_collector);
+
+            std::cout<<"print collector 3"<< std::endl;
+            print_specific_node_components(Collector);
 
             //add connection resistor RE
             std::cout<<"add connection resistor RE"<< std::endl;
             int extra_node_emitter_index = this->get_number_of_nodes();
             Resistor* RE = new Resistor(extra_node_emitter_index, i->get_diode_EB()->get_cathode(), "R_connection_emitter", i->get_RE());
+            this->add_component(RE);
             Emitter->components_attached.push_back(RE);
             i->get_diode_EB()->set_cathode(extra_node_emitter_index);
 
@@ -164,11 +190,16 @@ public:
             i->set_cathode(extra_node_emitter_index);
 
 
+            std::cout<<"print collector"<< std::endl;
+            print_specific_node_components(Collector);
+            
+
             //remove diodes from Base, Collector and Emitter nodes
             std::cout<<"remove diodes from Base, Collector and Emitter nodes"<< std::endl;
             std::vector<Component*>::iterator it; 
-            it = std::find(Collector->components_attached.begin(),Collector->components_attached.end(),i->get_diode_BC());
-            std::cout<<(*it)->get_name()<<std::endl;
+            it = std::find(Collector->components_attached.begin(),Collector->components_attached.end(),RC);
+            if(it ==Collector->components_attached.end()) std::cout<< "can't find diode"<<std::endl;
+            std::cout<<"hi"<<std::endl;
             Collector->components_attached.erase(it);
             std::cout<<"hi"<<std::endl;
             it = std::find(Emitter->components_attached.begin(),Emitter->components_attached.end(),i->get_diode_EB());
