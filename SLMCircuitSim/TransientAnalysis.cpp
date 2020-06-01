@@ -81,7 +81,7 @@ int main(){
 
 void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
   fstream myfile;
-  myfile.open("output.txt",fstream::app);
+  myfile.open("output_voltage.txt",fstream::app);
   
   if (myfile.is_open())
   {

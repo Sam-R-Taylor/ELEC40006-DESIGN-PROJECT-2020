@@ -4,7 +4,10 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QMessageBox>
-
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <iostream>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -17,8 +20,46 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::makeplot(){
+void MainWindow::makeplotVoltage(){
+    std::string CurrentStr;
+    std::fstream myfile;
+    std::string str;
+    std::stringstream ss;
+    myfile.open("output_voltage.txt");
+    QVector<double> yData, xData;
 
+    ui->customPlot->addGraph();
+    ui->customPlot->graph(0)->setScatterStyle(QCPScatterStyle::ssCircle);
+    ui->customPlot->graph(0)->setLineStyle(QCPGraph::lsLine);
+
+    while (std::getline(myfile, str))
+    {
+        ss << str;
+        std::getline(ss,CurrentStr,',');
+        xData.push_back(atof(CurrentStr.c_str()));
+
+        int PlotSelect = (ui->spinBox->value());
+        for(int i =0; i<PlotSelect ;i++){
+            std::getline(ss,CurrentStr,',');
+        }
+
+        std::getline(ss,CurrentStr,',');
+        yData.push_back(atof(CurrentStr.c_str()));
+        ui->customPlot->graph(0)->setData(xData, yData);
+        ss.str("");
+        ui->customPlot->replot();
+
+    }
+    double xmin = *std::min_element(xData.constBegin(), xData.constEnd());
+    double xmax = *std::max_element(xData.constBegin(), xData.constEnd());
+    double ymin = *std::min_element(yData.constBegin(), yData.constEnd());
+    double ymax = *std::max_element(yData.constBegin(), yData.constEnd());
+    ui->customPlot->xAxis->setRange(xmin - (xmin/2), xmax + (xmax/2));
+    ui->customPlot->yAxis->setRange(ymin - (ymin/2), ymax + (ymax/2));
+    ui->customPlot->replot();
+
+
+    /*
     // generate some data:
     QVector<double> x(101), y(101); // initialize with entries 0..100
     for (int i=0; i<101; ++i)
@@ -36,6 +77,7 @@ void MainWindow::makeplot(){
      ui->customPlot->xAxis->setRange(-1, 1);
      ui->customPlot->yAxis->setRange(0, 1);
      ui->customPlot->replot();
+     */
 
 }
 
@@ -56,5 +98,5 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_pushButton_3_clicked()
 {
-    MainWindow::makeplot();
+    MainWindow::makeplotVoltage();
 }

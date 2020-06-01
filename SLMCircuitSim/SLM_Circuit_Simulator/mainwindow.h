@@ -15,12 +15,15 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void addPoint(double x , double y);
+    void clearData();
+    void plot();
 
 private slots:
 
     void on_pushButton_2_clicked();
 
-    void makeplot();
+    void makeplotVoltage();
     void on_pushButton_3_clicked();
 
 private:
