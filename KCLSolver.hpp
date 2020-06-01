@@ -27,6 +27,20 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
         if(source_component == nullptr || component != source_component){
             //create a vector to store the contributions to the final coefficients of this component
             vector<double> sub_coefficients(nodes->size() + 1,0);
+            if(dynamic_cast<BJT_Component*>(component)){
+                ((BJT_Component*)component)->KCL_setup();
+                if(component->get_anode() == node->index){
+                    sub_coefficients[((BJT_Component*)component)->get_collector()] += ((BJT_Component*)component)->get_collector_coefficient();
+                    sub_coefficients[((BJT_Component*)component)->get_emmitter()] += ((BJT_Component*)component)->get_emmitter_coefficient();
+                    sub_coefficients[((BJT_Component*)component)->get_base()] += ((BJT_Component*)component)->get_base_coefficient();
+                }
+                if(component->get_cathode() == node->index){
+                    sub_coefficients[((BJT_Component*)component)->get_collector()] -= ((BJT_Component*)component)->get_collector_coefficient();
+                    sub_coefficients[((BJT_Component*)component)->get_emmitter()] -= ((BJT_Component*)component)->get_emmitter_coefficient();
+                    sub_coefficients[((BJT_Component*)component)->get_base()] -= ((BJT_Component*)component)->get_base_coefficient();
+                }
+                sub_coefficients[nodes->size()] += ((Diode*)component)->get_constant_coefficient() * (component->get_anode() == node->index?1:-1);
+            }
             //if a component is a diode use its linear properties
             if(dynamic_cast<Diode*>(component)){
                 ((Diode*)component)->set_conductance();

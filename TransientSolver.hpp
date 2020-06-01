@@ -19,7 +19,6 @@ void TransientSolver(Circuit &circuit){
     //iterate adjusting voltages each time
     while(incomplete){
         current_iteration++;
-        //cout << "Iteration " << current_iteration << endl;
         //loop through the components
         for(Component* component: circuit.get_components()){
             //adjust all the diodes for the current voltage guess
@@ -27,9 +26,16 @@ void TransientSolver(Circuit &circuit){
                 ((Diode*)component)->set_vd(circuit.get_voltages()[component->get_anode()] - circuit.get_voltages()[component->get_cathode()]);
                 ((Diode*)component)->set_id0(((Diode*)component)->get_current(circuit.get_voltages()));
             }
+            if(dynamic_cast<BJT_Component*>(component)){
+                //std::cout << "adjusting bjt" << std::endl;
+                ((BJT_Component*)component)->set_op(circuit.get_voltages());
+            }
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
+        for(auto x: old_voltages){
+            std::cout << x << std::endl;
+        }   
         NodeVoltageSolver(circuit);
         //check the error
         
