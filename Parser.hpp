@@ -170,6 +170,7 @@ void parse_input(const std::string& input)
                 _circuit.print_node_components();
                 std::cout << "added connections " <<std::endl;
                 _circuit.add_connection_resistors_BJTs();
+                std::cout << "hiiiiiiiiiiiiiiiiii " <<std::endl;
                 _circuit.print_node_components();
 
                 //need to set capacitors as OC and inductors as SC
