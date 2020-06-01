@@ -220,6 +220,7 @@ public:
 
 
 
+
 class Diode:
     public Component
 {
@@ -232,17 +233,23 @@ private:
     //current at voltage guess, used for linear aproximations
     double id0 = 0;
     //ideality coefficient 
-    double N = 1.752;
+    double N;;
     //breakdown voltage
     double BV = -75;
     double GMIN = pow(10,-12);
     //series resistance
-    double Rs = 0.568;
+    double Rs;
+    //Conductances
+    double G1;
+    double G2;
 public:
-    Diode(int _anode, int _cathode, std:: string _name){
+    Diode(int _anode, int _cathode, std:: string _name, double _Rs = 0.568, double _N = 1.752){
         anode = _anode;
         cathode = _cathode;
         name = _name;
+        Rs =_Rs;
+        N = _N;
+        G1 = 1/Rs;
     }
     ~Diode(){}
     //set the voltage across the diode
@@ -270,6 +277,18 @@ public:
         //double current = (id0 - this->get_conductance()*vd);
         return (id0 - this->get_conductance()*vd);
     }
+    void set_conductance(){
+        G2 = get_conductance();
+    }
+    double get_anode_coefficient(){
+        return (G1 - (G1*G1)/(G1+G2));
+    }
+    double get_cathode_coefficient(){
+        return -1 * ( (G2*G1)/(G1+G2) );
+    }
+    double get_constant_coefficient(){
+        return ((id0 - G2*vd)*(G1/(G1+G2)));
+    }
     //get the current through the diode
     double get_current(const std::vector<double> &nodevoltages) const
     {
@@ -281,9 +300,9 @@ public:
     double get_rs(){
         return Rs;
     }
-    
+    void set_cathode(int _index){cathode = _index;}
+    void set_anode(int _index){anode = _index;}
 };
-
 
 class Voltage_Controlled_Current_Source :                
     public Component

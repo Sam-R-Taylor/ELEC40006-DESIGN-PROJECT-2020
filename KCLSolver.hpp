@@ -29,16 +29,17 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
             vector<double> sub_coefficients(nodes->size() + 1,0);
             //if a component is a diode use its linear properties
             if(dynamic_cast<Diode*>(component)){
+                ((Diode*)component)->set_conductance();
                 if(component->get_anode() == node->index){
                     //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
-                    sub_coefficients[component->get_anode()] += ((Diode*)component)->get_conductance();
-                    sub_coefficients[component->get_cathode()] += -((Diode*)component)->get_conductance();
+                    sub_coefficients[component->get_anode()] += ((Diode*)component)->get_anode_coefficient();
+                    sub_coefficients[component->get_cathode()] += -((Diode*)component)->get_cathode_coefficient();
                 }
                 if(component->get_cathode() == node->index){
-                    sub_coefficients[component->get_anode()] += -((Diode*)component)->get_conductance();
-                    sub_coefficients[component->get_cathode()] += ((Diode*)component)->get_conductance();
+                    sub_coefficients[component->get_anode()] += -((Diode*)component)->get_anode_coefficient();
+                    sub_coefficients[component->get_cathode()] += ((Diode*)component)->get_cathode_coefficient();
                 }
-                sub_coefficients[nodes->size()] += ((Diode*)component)->get_linear_current() * (component->get_anode() == node->index?1:-1);
+                sub_coefficients[nodes->size()] += ((Diode*)component)->get_constant_coefficient() * (component->get_anode() == node->index?1:-1);
             }
             //if component type is resistor
             else if(dynamic_cast<Resistor*>(component)){
@@ -170,7 +171,7 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
     //MatrixXd matrix2 = matrix;
     //auto start = chrono::steady_clock::now();
     //for(int i = 0; i < 1; i++){
-        cout << matrix <<endl;
+        //cout << matrix <<endl;
         matrix = matrix.inverse();
         result = matrix * constants;
     //result = matrix.householderQr().solve(constants);
