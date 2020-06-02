@@ -47,11 +47,11 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 if(component->get_anode() == node->index){
                     //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
                     sub_coefficients[component->get_anode()] += ((Diode*)component)->get_anode_coefficient();
-                    sub_coefficients[component->get_cathode()] += -((Diode*)component)->get_cathode_coefficient();
+                    sub_coefficients[component->get_cathode()] += ((Diode*)component)->get_cathode_coefficient();
                 }
                 if(component->get_cathode() == node->index){
                     sub_coefficients[component->get_anode()] += -((Diode*)component)->get_anode_coefficient();
-                    sub_coefficients[component->get_cathode()] += ((Diode*)component)->get_cathode_coefficient();
+                    sub_coefficients[component->get_cathode()] += -((Diode*)component)->get_cathode_coefficient();
                 }
                 sub_coefficients[nodes->size()] += ((Diode*)component)->get_constant_coefficient() * (component->get_anode() == node->index?1:-1);
             }

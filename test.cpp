@@ -11,7 +11,8 @@ int main(){
     
     Voltage_Source v1{1,0,"V1",5};
     Diode d1{1,2,"D1"};
-    Resistor r1{0,2,"R1",1000};
+    Resistor r1{0,3,"R1",1000};
+    Resistor r2{2,3,"R1",1000};
     //Resistor r1{1,2,"R1",500};
     //Resistor r2{0,2,"R2",500};
     //BJT_Component bj1{1,2,0,"BJ1",false,4.97512*pow(10,-3),0.25,100,10,0.3,0.2};
@@ -19,7 +20,7 @@ int main(){
     //bj1.set_bjt(&bj2);
     //bj2.set_bjt(&bj1);
     //vector<Component*> components{&v1,&r2,&r1,&bj1,&bj2};
-    vector<Component*> components{&v1,&r1,&d1};
+    vector<Component*> components{&v1,&r1,&d1,&r2};
     Circuit circuit;
     for(Component* component: components){
         circuit.add_component(component);
