@@ -25,6 +25,7 @@ private slots:
 
     void makeplotVoltage();
     void on_pushButton_3_clicked();
+    void makeplotCurrent();
 
 private:
     Ui::MainWindow *ui;
