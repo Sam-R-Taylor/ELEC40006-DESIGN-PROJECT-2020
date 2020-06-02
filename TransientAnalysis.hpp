@@ -22,9 +22,9 @@ void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
   
   if (myfile.is_open())
   {
-    //myfile << CurrentTime << "," ;
-    for(int i = CKTIn2.size()-1; i < CKTIn2.size(); i++) {
-        myfile << CKTIn2.at(i) << "";
+    myfile << CurrentTime << "," ;
+    for(int i = 0; i < CKTIn2.size(); i++) {
+        myfile << CKTIn2.at(i) << ",";
     }
     //COULD NOT REMOVE THE TRAILING , HOPE no affect?
     myfile << "\n";
@@ -61,21 +61,15 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime){
 }
 
 void SetConductancesForSim(Circuit &CKTIn , double deltatime){
-     for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
+    for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
         if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
-           ((Capacitor*)(CKTIn.get_components()[i]))->set_conductance(deltatime);
-            
+           ((Capacitor*)(CKTIn.get_components()[i]))->set_conductance(deltatime); 
         }
         else if (dynamic_cast<Inductor*>(CKTIn.get_components().at(i)))
         {
-            ((Inductor*)(CKTIn.get_components()[i]))->set_conductance(deltatime) ;
-             
+            ((Inductor*)(CKTIn.get_components()[i]))->set_conductance(deltatime); 
         }
-        //IMPLEMENTATION ONLY WORKS FOR RLC 
-        else {
-            //do nothing for R
-        }    
-        }  
+    }  
 
 }
 

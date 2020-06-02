@@ -4,34 +4,33 @@
 #include"Circuit.hpp"
 #include"Component.hpp"
 #include"leo_KCLSolver.hpp"
-
+#include"TransientSolver.hpp"
+//#include <Eigen/Dense>
 #include<fstream>
 #include<cctype>
 #include<cmath>
 #include<limits>
 #include<cassert>
 #include<chrono>
-
+//#include <memory>
+//using Eigen::MatrixXd;
 
 
 //declaring constants
-double femto = pow(10,-15);
-double pico = pow(10,-12);
-double nano = pow(10,-9);
-double micro = pow(10,-6);
-double milli = pow(10,-3);
-double kilo = pow(10,3);
-double mega = pow(10,6);
-double giga = pow(10,9);
-double tera = pow(10,12);
+double lfemto = pow(10,-15);
+double lpico = pow(10,-12);
+double lnano = pow(10,-9);
+double lmicro = pow(10,-6);
+double lmilli = pow(10,-3);
+double lkilo = pow(10,3);
+double lmega = pow(10,6);
+double lgiga = pow(10,9);
+double ltera = pow(10,12);
 
-double mil = 25.4*pow(10,-6);
+double lmil = 25.4*pow(10,-6);
 
 //data for read_value
 std::string digits("9876543210");
-
-
-
 
 
 //helper function
@@ -71,16 +70,16 @@ double read_value(const std::string& value_str)
         //std::cerr << "char is " << c << std::endl;
         double number = stod(value_str.substr(0,index));
 
-        if(c == 'f'){return femto*number;}
-        else if(c == 'p'){return pico*number;}
-        else if(c == 'n'){return nano*number;}
-        else if(c == 'u'){return micro*number;}
-        else if(c == 'k'){return kilo*number;}
-        else if(c == 'm' && tolower(value_str[index+1]) == 'e' && tolower(value_str[index+2]) == 'g'){return mega*number;}
-        else if(c == 'g'){return giga*number;}
-        else if(c == 't'){return tera*number;}
-        else if(c == 'm' && tolower(value_str[index+1]) == 'i' && tolower(value_str[index+2]) == 'l'){return mil*number;}
-        else if(c == 'm'){return milli*number;}
+        if(c == 'f'){return lfemto*number;}
+        else if(c == 'p'){return lpico*number;}
+        else if(c == 'n'){return lnano*number;}
+        else if(c == 'u'){return lmicro*number;}
+        else if(c == 'k'){return lkilo*number;}
+        else if(c == 'm' && tolower(value_str[index+1]) == 'e' && tolower(value_str[index+2]) == 'g'){return lmega*number;}
+        else if(c == 'g'){return lgiga*number;}
+        else if(c == 't'){return ltera*number;}
+        else if(c == 'm' && tolower(value_str[index+1]) == 'i' && tolower(value_str[index+2]) == 'l'){return lmil*number;}
+        else if(c == 'm'){return lmilli*number;}
     }
     return 0;
 }
@@ -148,32 +147,13 @@ void parse_input(const std::string& input)
 
                 //building Circuit obj
                 _circuit.build_nodes();
-
-
-                //NEEDS CONRTOLLER IMPLEMENTATION
-                auto start = std::chrono::steady_clock::now();
-                for(int i=0; i<1; i++){
-                    Matrix_solver(_circuit); 
-                }
-                //for(int i = 0; i < 1000; i++){
-                //    NodeVoltageSolver(circuit);
-                //}
-                auto end = std::chrono::steady_clock::now();
-                auto diff = end - start;
-                std::cout << std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
-
+                TransientSolver(_circuit);
             }
             else if (command == "op")
             {
                 //building Circuit obj
-                /*_circuit.build_nodes();
-                _circuit.print_node_components();
-                std::cout << "added connections " <<std::endl;
-                _circuit.add_connection_resistors_BJTs();
-                std::cout << "hiiiiiiiiiiiiiiiiii " <<std::endl;
-                _circuit.print_node_components();
-                */
-                //need to set capacitors as OC and inductors as SC
+                _circuit.build_nodes();
+                _circuit.print_components();
 
                 Matrix_solver(_circuit);
             }
@@ -213,52 +193,13 @@ void parse_input(const std::string& input)
                 std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
             }
             break;
-        case 'd': 
-            {
-                //Diode source added to _circuit
-                std::string _model_name;
-                src >> _name >> _anode >> _cathode >> _model_name;
-                _circuit.add_component(new Diode(node_number(_anode),node_number(_cathode),_name));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<_model_name << std::endl;
-            }
-            break;
-        case 'c' :
-            {
-                //Capacitor added to circuit
-                std::string _capacitance;
-                src >> _name >> _anode >> _cathode >> _capacitance;
-                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_capacitance)));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_capacitance) << std::endl;
-            }
-            break;
-        case 'l' :
-            {
-                //Capacitor added to circuit
-                std::string _inductance;
-                src >> _name >> _anode >> _cathode >> _inductance;
-                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_inductance)));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
-            }
-            break;
-        case 'q' :
-            {
-                //Ebers-Moll BJT without connection resistances added to circuit
-                std::string _collector;
-                std::string _base;
-                std::string _emitter;
-                std::string _model_name;
-                src >> _name >>_collector >> _base >> _emitter >> _model_name;
-                _circuit.add_BJT(BJT(_name,node_number(_collector),node_number(_base),node_number(_emitter),_model_name));
-                std::cerr<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
-            }
-            break;
         default:
             std::cerr<< "non-handled case"<< std::endl;
             std::cerr<<"tmp is "<<tmp<<std::endl;
             exit(1);
             break;
         }
-        
+
         //ignoring input chars till \n
         src.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
