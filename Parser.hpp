@@ -159,8 +159,10 @@ void parse_input(const std::string& input)
             }
             else
             {   
-                std::cerr << "uknown command" << std::endl;
-                exit(1);
+                //don't do anything. Skip over command
+
+                //std::cerr << "uknown command" << std::endl;
+                //exit(1);
             }
             break;
         
