@@ -4,10 +4,13 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QtCore>
 #include <fstream>
+#include <cstdio>
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <Parser.hpp>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -142,19 +145,23 @@ void MainWindow::makeplotCurrent(){
 
 }
 
-
-
 void MainWindow::on_pushButton_2_clicked()
 {
     QFile file(QFileDialog::getOpenFileName(this,"Select Netlist File","C://"));
-
     if (!file.open(QFile::ReadOnly | QFile::Text)){
         QMessageBox::warning(this,"Title","File Not Open");
 
     }
+
     QTextStream in(&file);
     QString text = in.readAll();
     ui->plainTextEdit_2->setPlainText(text);
+    QFileInfo fileInfo(file);
+    QString filedir = fileInfo.absoluteFilePath();
+    string dir = filedir.toLocal8Bit().constData();
+    std::fstream ifs(dir);
+    std::fstream &input = ifs;
+    parse_input(input);
     file.close();
 }
 

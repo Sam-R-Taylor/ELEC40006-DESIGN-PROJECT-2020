@@ -92,7 +92,7 @@ double read_value(const std::string& value_str)
 
 
 
-void parse_input(std::fstream src)
+void parse_input(std::&fstream src)
 {
 
     //initializing variables for Circuit and component objects

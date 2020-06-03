@@ -16,11 +16,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    leo_main.cpp \
     main.cpp \
     mainwindow.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    test.cpp
 
 HEADERS += \
+    Circuit.hpp \
+    Component.hpp \
+    KCLSolver.hpp \
+    Parser.hpp \
+    TransientAnalysis.hpp \
+    TransientSolver.hpp \
+    leo_KCLSolver.hpp \
     mainwindow.h \
     qcustomplot.h
 
@@ -31,3 +40,8 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    SLM_Circuit_Simulator.pro.user \
+    output_voltage.txt \
+    test_parser.txt
