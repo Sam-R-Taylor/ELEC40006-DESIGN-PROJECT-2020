@@ -92,7 +92,7 @@ double read_value(const std::string& value_str)
 
 
 
-void parse_input(std::&fstream src)
+void parse_input(std::fstream & src)
 {
 
     //initializing variables for Circuit and component objects
@@ -151,6 +151,7 @@ void parse_input(std::&fstream src)
 
                 int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
+                cout << "TRANSIENT" ;
                 TransientAnalysis(_circuit,stop_time,num_timestep);
 
             }
