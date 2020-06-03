@@ -33,6 +33,9 @@ double lmil = 25.4*pow(10,-6);
 std::string digits("9876543210");
 
 
+
+
+
 //helper function
 int node_number(const std::string& node_name)
 {
@@ -147,19 +150,27 @@ void parse_input(const std::string& input)
 
                 //building Circuit obj
                 _circuit.build_nodes();
-                TransientSolver(_circuit);
+
+
+                //NEEDS CONRTOLLER IMPLEMENTATION
+
             }
             else if (command == "op")
             {
-                //building Circuit obj
-                _circuit.build_nodes();
-                _circuit.print_components();
+                
+                /*_circuit.build_nodes();
+                _circuit.print_node_components();
+                std::cout << "added connections " <<std::endl;
+                _circuit.add_connection_resistors_BJTs();
+                _circuit.print_node_components();
+                */
+                //need to set capacitors as OC and inductors as SC
 
                 Matrix_solver(_circuit);
             }
             else
             {   
-                //don't do anything. Skip over command
+                //do nothing. Skip over a command
 
                 //std::cerr << "uknown command" << std::endl;
                 //exit(1);
@@ -195,13 +206,52 @@ void parse_input(const std::string& input)
                 std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
             }
             break;
+        case 'd': 
+            {
+                //Diode source added to _circuit
+                std::string _model_name;
+                src >> _name >> _anode >> _cathode >> _model_name;
+                _circuit.add_component(new Diode(node_number(_anode),node_number(_cathode),_name));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<_model_name << std::endl;
+            }
+            break;
+        case 'c' :
+            {
+                //Capacitor added to circuit
+                std::string _capacitance;
+                src >> _name >> _anode >> _cathode >> _capacitance;
+                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_capacitance)));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_capacitance) << std::endl;
+            }
+            break;
+        case 'l' :
+            {
+                //Capacitor added to circuit
+                std::string _inductance;
+                src >> _name >> _anode >> _cathode >> _inductance;
+                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_inductance)));
+                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
+            }
+            break;
+        case 'q' :
+            {
+                //Ebers-Moll BJT without connection resistances added to circuit
+                std::string _collector;
+                std::string _base;
+                std::string _emitter;
+                std::string _model_name;
+                src >> _name >>_collector >> _base >> _emitter >> _model_name;
+                //_circuit.add_BJT(BJT(_name,node_number(_collector),node_number(_base),node_number(_emitter),_model_name));
+                std::cerr<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
+            }
+            break;
         default:
             std::cerr<< "non-handled case"<< std::endl;
             std::cerr<<"tmp is "<<tmp<<std::endl;
             exit(1);
             break;
         }
-
+        
         //ignoring input chars till \n
         src.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
