@@ -5,6 +5,7 @@
 #include"Component.hpp"
 #include"leo_KCLSolver.hpp"
 #include"TransientSolver.hpp"
+#include"TransientAnalysis.hpp"
 //#include <Eigen/Dense>
 #include<fstream>
 #include<cctype>
@@ -148,8 +149,9 @@ void parse_input(std::fstream src)
                 //building Circuit obj
                 _circuit.build_nodes();
 
-
+                int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
+                TransientAnalysis(_circuit,stop_time,num_timestep);
 
             }
             else if (command == "op")
