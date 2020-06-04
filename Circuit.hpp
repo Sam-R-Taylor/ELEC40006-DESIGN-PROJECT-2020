@@ -49,6 +49,7 @@ protected:
     std::vector<Component*> components;
     std::vector<double> voltages;
     std::vector<BJT_current_source*> BJT_current_sources;
+
     
 public:
     //diodes constants
@@ -258,13 +259,20 @@ public:
     after a circuit object is constructed by the parser
     
     updates vector<Node> nodes
+    initializes vector<double> voltages to 0
     adds connection resistors for Diodes
     addd connection resistors for BJTs
     */
     void build_nodes()
     {
         nodes = NodeGenerator(components);
-        this->add_connection_resistors_diodes();
+        //initialize voltages to 0
+        vector<double> tmp(nodes.size(),0);
+        voltages = tmp;
+
+        //add connection resistors
+        //this->add_connection_resistors_diodes();
+        this->add_connection_resistors_BJTs();
     }
     void add_BJT(BJT BJT_component)
     {
@@ -273,12 +281,15 @@ public:
         int emitter = BJT_component.get_emitter();
         double RE = BJT_component.get_RE();
         double RC = BJT_component.get_RC();
+        double BF = BJT_component.get_BF();
+        double BR = BJT_component.get_BR();
+    
         
 
         //add diodes
-        Diode* _diode_EB = new Diode(base,emitter,"BJT_diode_EB",RE);
+        Diode* _diode_EB = new Diode(base,emitter,"BJT_diode_EB",RE,BF);
         this->add_component(_diode_EB);
-        Diode* _diode_BC = new Diode(base,collector,"BJT_diode_BC",RC);
+        Diode* _diode_BC = new Diode(base,collector,"BJT_diode_BC",RC,BR);
         this->add_component(_diode_BC);
 
         //add custom current source

@@ -108,6 +108,11 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_control_anode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
                 sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_control_cathode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?1:-1);
             }
+            else if(dynamic_cast<BJT_current_source*>(component)){
+                double Icc = ((BJT_current_source*)component)->get_diode_EB()->get_linear_current();
+                double Iec = ((BJT_current_source*)component)->get_diode_BC()->get_linear_current();
+                sub_coefficients[nodes->size()] += (Icc - Iec) * (component->get_anode() == node->index?-1:1);
+            }
             //add the sub coefficients to the output
             for(int i=0; i < coefficients.size(); i++){
                 coefficients[i] += sub_coefficients[i];
