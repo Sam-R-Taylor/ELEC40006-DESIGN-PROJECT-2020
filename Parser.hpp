@@ -131,8 +131,8 @@ void parse_input(std::fstream & src)
                 //close input file
                 src.close();
 
-                std::cout << "terminating program" << std::endl;
-                exit(0);
+                std::cout << "terminating parser" << std::endl;
+                return;
             }
             else if (command == "tran")
             {
@@ -142,7 +142,7 @@ void parse_input(std::fstream & src)
                 src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
                 src >> stop_time_str;
                 double stop_time = read_value(stop_time_str);
-                src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
+                src.ignore(std::numeric_limits<std::streamsize>::max(), '0'); //IGNORES 0.1
                 src >> time_step_str;
                 double time_step = read_value(time_step_str);
 
@@ -151,7 +151,10 @@ void parse_input(std::fstream & src)
 
                 int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
-                cout << "TRANSIENT" ;
+                cout << "TRANSIENT" << endl ;
+                //cout << "stop_time" << stop_time << endl ;
+                //cout << "Time Step" << time_step << endl ;
+                //cout << "Num Time Step" << num_timestep << endl ;
                 TransientAnalysis(_circuit,stop_time,num_timestep);
 
             }

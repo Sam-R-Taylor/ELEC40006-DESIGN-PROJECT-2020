@@ -4,7 +4,7 @@
 #include "Circuit.hpp"
 #include "Component.hpp"
 
-#include<Eigen/Dense>
+#include<eigen3/Eigen/Dense>
 #include<cassert>
 
 

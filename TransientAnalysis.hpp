@@ -1,6 +1,6 @@
 #include <vector>
 #include <iostream>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <string>
 #include "Component.hpp"
 #include <memory> 
@@ -76,10 +76,15 @@ void SetConductancesForSim(Circuit &CKTIn , double deltatime){
 void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
     double CurrentTime = 0;
     double deltaTime = (TimePeriod/TimeStep);
-    remove("output.txt");
-    fstream myfile ("output.txt");
+    remove("output_voltage.txt");
+    fstream myfile ("output_voltage.txt");
     SetConductancesForSim(CKTIn,deltaTime); //SETS THE CONDUCTANCE FOR EACH INDUCTOR AND CAP THAT DEPENDS ON DELTA TIME (BUT REMAINS CONSTANT THROUGH SIM)
     for(double i = 0 ; i <= TimeStep ; i++){
+        //outputs for vars in testing
+        //cout << TimePeriod;
+        //std::cout << deltaTime << endl;
+        //std::cout << CurrentTime << endl;
+        //cout << TimeStep << endl;
         UpdateNodeVoltages(CKTIn , CurrentTime); 
         NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime);
         CurrentTime = CurrentTime + deltaTime;
