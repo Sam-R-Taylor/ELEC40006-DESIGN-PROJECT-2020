@@ -267,7 +267,7 @@ public:
     {
         nodes = NodeGenerator(components);
         //initialize voltages to 0
-        vector<double> tmp(nodes.size(),0);
+        std::vector<double> tmp(nodes.size(),0);
         voltages = tmp;
 
         //add connection resistors
