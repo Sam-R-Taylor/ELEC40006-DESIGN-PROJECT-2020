@@ -205,8 +205,23 @@ void parse_input(std::fstream & src)
                 //Voltage source added to _circuit
                 std::string _voltage;
                 src >> _name >> _anode >> _cathode >> _voltage;
-                _circuit.add_component(new Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_voltage)));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
+                if(_voltage.substr(0,3)=="SINE")
+                {
+                    std::string _dc_offset;
+                    std::string _amplitude;
+                    std::string _frequency;
+
+                    std::stringstream ss(_voltage,ios_base::in);
+                    ss.ignore(std::numeric_limits<std::streamsize>::max(), '(');
+                    ss >> _dc_offset >> _amplitude >> _frequency;
+
+
+                }
+                else
+                {
+                    _circuit.add_component(new Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_voltage)));
+                    std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
+                }
             }
             break;
         case 'd': 
