@@ -598,13 +598,13 @@ class AC_Voltage_Source:
     double DC_Offset;
 
     public:
-    AC_Voltage_Source(int _anode, int _cathode, std::string _name,  double _Voltage_amplitude, double _frequency, double _phase , double _DC_Offset){
+    AC_Voltage_Source(int _anode, int _cathode, std::string _name,  double _Voltage_amplitude, double _frequency, double _DC_Offset){
         anode = _anode;
         cathode = _cathode;
         name = _name;
         Voltage_amplitude = _Voltage_amplitude;
         frequency = _frequency;
-        phase = _phase;
+        //phase = _phase;
         DC_Offset = _DC_Offset;
 
     }
@@ -616,10 +616,12 @@ class AC_Voltage_Source:
     {
         return frequency;
     }
+    /*
     double Get_phase() const
     {
         return phase;
     }
+    */
     void Set_Voltage(double CurrentTime){
         currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase) + DC_Offset ;
         //y(t)=Asin(2pift + phase)

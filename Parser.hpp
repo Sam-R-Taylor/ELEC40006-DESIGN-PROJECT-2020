@@ -31,7 +31,7 @@ double ltera = pow(10,12);
 double lmil = 25.4*pow(10,-6);
 
 //data for read_value
-std::string digits("9876543210");
+std::string digits("9876543210.");
 
 
 
@@ -92,8 +92,12 @@ double read_value(const std::string& value_str)
 
 
 
-void parse_input(std::fstream & src)
+//void parse_input(std::fstream & src)
+void parse_input(const std::string& input )
 {
+
+    std::fstream src;
+    src.open(input, ios::base in);
 
     //initializing variables for Circuit and component objects
     Circuit _circuit;
@@ -138,6 +142,7 @@ void parse_input(std::fstream & src)
             {
                 std::string stop_time_str;
                 std::string time_step_str;
+                std::string
 
                 src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
                 src >> stop_time_str;
@@ -169,7 +174,7 @@ void parse_input(std::fstream & src)
                 */
                 //need to set capacitors as OC and inductors as SC
 
-                Matrix_solver(_circuit);
+                //Matrix_solver(_circuit);
             }
             else
             {   
@@ -214,7 +219,8 @@ void parse_input(std::fstream & src)
                     std::stringstream ss(_voltage,ios_base::in);
                     ss.ignore(std::numeric_limits<std::streamsize>::max(), '(');
                     ss >> _dc_offset >> _amplitude >> _frequency;
-
+                    _circuit.add_component(new AC_Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_Voltage_amplitude),read_value(_frequency),read_value(_DC_Offset));
+                    std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<"A " <<read_value(_Voltage_amplitude) << "f " << read_value(_frequency) << "offset " << read_value(_DC_Offset)<< std::endl;
 
                 }
                 else
