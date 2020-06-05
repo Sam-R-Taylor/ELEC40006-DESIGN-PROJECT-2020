@@ -5,6 +5,7 @@
 #include"Component.hpp"
 #include"leo_KCLSolver.hpp"
 #include"TransientSolver.hpp"
+#include"TransientAnalysis.hpp"
 
 #include<fstream>
 #include<cctype>
@@ -151,8 +152,14 @@ void parse_input(const std::string& input)
                 _circuit.build_nodes();
 
 
+                
+                int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
-                TransientSolver(_circuit);
+                cout << "TRANSIENT" << endl ;
+                //cout << "stop_time" << stop_time << endl ;
+                //cout << "Time Step" << time_step << endl ;
+                //cout << "Num Time Step" << num_timestep << endl ;
+                TransientAnalysis(_circuit,stop_time,num_timestep);
 
             }
             else if (command == "op")
