@@ -53,7 +53,7 @@ public:
     }
     ~Resistor(){}
 
-    double get_value() const{
+    double get_resitance() const{
         return resistance;
     }
     double get_current(const std::vector<double> &nodeVoltages) const
@@ -161,21 +161,21 @@ private:
     */
     double conductance;
     double linear_current;
-    double value;
+    double capacitance;
     double integral;
 public:
-    Capacitor(int _anode, int _cathode, std:: string _name, double _value){
+    Capacitor(int _anode, int _cathode, std:: string _name, double _capacitance){
         anode = _anode;
         cathode = _cathode;
         name = _name;
-        value = _value;
+        capacitance = _capacitance;
     }
     ~Capacitor(){}
 
 
     double get_voltage() const
     {
-        return integral/value;
+        return integral/capacitance;
     }
     double get_conductance() const
     {
@@ -187,7 +187,7 @@ public:
     }
     void set_conductance(double deltatime) //Not const as setters
     {
-        conductance = value/deltatime;
+        conductance = capacitance/deltatime;
     }
     void set_linear_current(double VoltageN) 
     {
@@ -220,23 +220,25 @@ private:
     //current at voltage guess, used for linear aproximations
     double id0 = 0;
     //ideality coefficient 
-    double N;;
+    double N;
     //breakdown voltage
     double BV = -75;
     double GMIN = pow(10,-12);
     //series resistance
     double Rs;
-    //Conductances
+    //beta for transistor
+    double Beta;
     double G1;
     double G2;
 public:
-    Diode(int _anode, int _cathode, std:: string _name, double _Rs = 0.568, double _N = 1.752){
+    Diode(int _anode, int _cathode, std:: string _name,double _Beta = 1 ,double _Rs = 0.568, double _N = 1.752){
         anode = _anode;
         cathode = _cathode;
         name = _name;
         Rs =_Rs;
-        N = _N;
-        G1 = 1/Rs;
+        N = _N;  
+        G1 = 1/Rs;     
+        Beta = _Beta;
     }
     ~Diode(){}
     //set the voltage across the diode
@@ -253,10 +255,10 @@ public:
         double conductance = GMIN;
         //check if less than break down voltage
         if(vd < BV){
-            conductance += ((-I_s/(N*Vt))*exp(-(BV+vd)/(N*Vt)));
+            conductance += ((-I_s/(N*Vt))*exp(-(BV+vd)/(N*Vt)));                //needs to be adjusted for BJT
         }//check if greater than -5*N*Vt
         else if(vd > -5*N*Vt){
-            conductance += ((I_s/(N*Vt))*exp(vd/(N*Vt)));
+            conductance += ((I_s/(N*Vt))*exp(vd/(N*Vt)))/Beta;
         }
         return conductance;
     }
@@ -281,11 +283,18 @@ public:
     //get the current through the diode
     double get_current(const std::vector<double> &nodevoltages) const
     {
-        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1) + (nodevoltages[anode]-nodevoltages[cathode])*GMIN;
+        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1)/Beta + (nodevoltages[anode]-nodevoltages[cathode])*GMIN;
         //current = current>10?10:current;
         //std::cout << "Current  " <<current << std::endl; 
         return current;
     }
+    //get the current through the current source of the Diode
+    /*double get_current_through_current_source(const std::vector<double> &nodevoltages) const
+    {
+        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1)/Beta;
+        return current;
+
+    }*/
     double get_rs(){
         return Rs;
     }
@@ -636,30 +645,89 @@ class AC_Voltage_Source:
 };
 
 
-/*
+
 class BJT
 {
 //Ebers-Moll model
 private:
-    //diodes constants
-    double IS;
-    double NF;
-    double NR;
-    double BF;
-    double BR;
+    std::string name;
+    int collector;
+    int base;
+    int emitter;
+    std::string model_name;
 
-    //diodes
-    Diode D1();
-    Diode D2();
+    //diodes constants
+    //double NF;      //ideality coefficient of base emitter junction
+    //double NR;      //ideality coefficient of base collector junction
+    double BF = 200;
+    double BR = 3;
 
     //connection resistances
-    Resistor RE();
-    Resistor RB();
-    Resistor RC();
-public:
-    BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model) {}
-    ~BJT() {}
-};*/
+    double RE = 0.2;
+    double RB = 10;
+    double RC = 0.3;
 
+    
+public:
+    BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model_name)
+    {
+        name = _name;
+        collector = _collector;
+        base =_base;
+        emitter = _emitter;
+        model_name = _model_name;
+
+        if(model_name == "NPN")
+        {
+            BF = 200;
+            BR = 3;
+        }
+        
+    }
+    ~BJT() {}
+
+    int get_collector() const{return collector;};
+    int get_base() const{return base;}
+    int get_emitter() const{return emitter;}
+    double get_RE() const{return RE;}
+    double get_RB() const{return RB;}
+    double get_RC() const{return RC;}
+    double get_BF() const{return BF;}
+    double get_BR() const{return BR;}
+};
+
+class BJT_current_source
+    : public Component
+{
+    //NPN current source
+private:
+    Diode* _diode_EB;
+    Diode* _diode_BC;
+
+
+    //connection resistances
+    double RE = 0.2;
+    double RB = 10;
+    double RC = 0.3;
+
+public:
+    BJT_current_source(Diode* EB, Diode* BC, std::string _name)
+    {
+        _diode_EB = EB;
+        _diode_BC = BC;
+        name = _name;
+    }
+    ~BJT_current_source(){}
+    void set_anode(int _anode){anode=_anode;}
+    void set_cathode(int _cathode){cathode=_cathode;}
+    Diode* get_diode_EB() const{return _diode_EB;}
+    Diode* get_diode_BC() const{return _diode_BC;}
+    double get_RE() const{return RE;}
+    double get_RB() const{return RB;}
+    double get_RC() const{return RC;}
+
+    //dealt with in KCL solver
+    //double get_Ict() const{return _diode_EB->get_current_through_current_source(Circuit::voltages) - _diode_BC->get_current_through_current_source(Circuit::voltages); }
+};
 
 #endif
