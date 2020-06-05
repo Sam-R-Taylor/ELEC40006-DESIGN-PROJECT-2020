@@ -1,3 +1,4 @@
-R 1 2 1k
-R 2 0 1k
-I 0 1 1mA
+R N001 N002 1k
+R N002 0 1k
+I 0 N001 1mA
+.tran 0 1 0 1
