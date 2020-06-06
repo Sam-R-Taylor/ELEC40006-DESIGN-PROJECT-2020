@@ -14,6 +14,7 @@ using Eigen::MatrixXd;
 
 
 void TransientSolver(Circuit &circuit){
+    std::cout<< "in transient solver " << std::endl;
     bool incomplete = true;
     int current_iteration = 0;
     //iterate adjusting voltages each time
@@ -48,7 +49,7 @@ void TransientSolver(Circuit &circuit){
         }
         //check that max iterations haven't occured
         if(current_iteration >= circuit.max_iterations){
-            std::cerr << "Hit maximum iterations" << std::endl;
+            std::cout << "Hit maximum iterations" << std::endl;
             exit(1);
             incomplete = false;
         }

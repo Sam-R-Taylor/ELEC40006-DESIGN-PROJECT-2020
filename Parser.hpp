@@ -60,18 +60,18 @@ double read_value(const std::string& value_str)
     size_t index = value_str.find_first_not_of(digits);
     if (index == std::string::npos)
     {
-        //std::cerr << "if"<< std::endl;
-        //std::cerr << value_str<< std::endl;
+        //std::cout << "if"<< std::endl;
+        //std::cout << value_str<< std::endl;
         return stod(value_str);
     }
     else
     {
-        //std::cerr << "else"<< std::endl;
-        //std::cerr << value_str<< std::endl;
+        //std::cout << "else"<< std::endl;
+        //std::cout << value_str<< std::endl;
 
 
         char c = tolower(value_str[index]);
-        //std::cerr << "char is " << c << std::endl;
+        //std::cout << "char is " << c << std::endl;
         double number = stod(value_str.substr(0,index));
 
         if(c == 'f'){return lfemto*number;}
@@ -84,7 +84,9 @@ double read_value(const std::string& value_str)
         else if(c == 't'){return ltera*number;}
         else if(c == 'm' && tolower(value_str[index+1]) == 'i' && tolower(value_str[index+2]) == 'l'){return lmil*number;}
         else if(c == 'm'){return lmilli*number;}
+        else{return number;}
     }
+    std::cerr << "problem in read_value" << std::endl;
     return 0;
 }
 
@@ -92,12 +94,11 @@ double read_value(const std::string& value_str)
 
 
 
-//void parse_input(std::fstream & src)
-void parse_input(const std::string& input )
+void parse_input(std::fstream & src)
+
 {
 
-    std::fstream src;
-    src.open(input, ios::base in);
+
 
     //initializing variables for Circuit and component objects
     Circuit _circuit;
@@ -130,6 +131,8 @@ void parse_input(const std::string& input )
             src.get();
             src >> command;
 
+            //std::cout << command << std::endl;
+
             if (command == "end")
             {   
                 //close input file
@@ -142,7 +145,7 @@ void parse_input(const std::string& input )
             {
                 std::string stop_time_str;
                 std::string time_step_str;
-                std::string
+
 
                 src.ignore(std::numeric_limits<std::streamsize>::max(), '0');
                 src >> stop_time_str;
@@ -153,10 +156,11 @@ void parse_input(const std::string& input )
 
                 //building Circuit obj
                 _circuit.build_nodes();
+                _circuit.print_node_components();
 
                 int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
-                cout << "TRANSIENT" << endl ;
+                std::cout << "TRANSIENT" << endl ;
                 //cout << "stop_time" << stop_time << endl ;
                 //cout << "Time Step" << time_step << endl ;
                 //cout << "Num Time Step" << num_timestep << endl ;
@@ -180,7 +184,7 @@ void parse_input(const std::string& input )
             {   
                 //do nothing. Skip over a command
 
-                //std::cerr << "uknown command" << std::endl;
+                //std::cout << "uknown command" << std::endl;
                 //exit(1);
             }
             break;
@@ -192,7 +196,7 @@ void parse_input(const std::string& input )
                 std::string _resistance;
                 src >> _name >> _anode >> _cathode >> _resistance;
                 _circuit.add_component(new Resistor(node_number(_anode),node_number(_cathode),_name,read_value(_resistance)));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_resistance) << std::endl;
+                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_resistance) << std::endl;
             }
             break;
 
@@ -202,15 +206,18 @@ void parse_input(const std::string& input )
                 std::string _current;
                 src >> _name >> _anode >> _cathode >> _current;
                 _circuit.add_component(new Current_source(node_number(_anode),node_number(_cathode),_name,read_value(_current)));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) << " "<<read_value(_current) << std::endl;
+                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) << " "<<read_value(_current) << std::endl;
             }   
             break; 
         case 'v': 
             {
                 //Voltage source added to _circuit
                 std::string _voltage;
-                src >> _name >> _anode >> _cathode >> _voltage;
-                if(_voltage.substr(0,3)=="SINE")
+                src >> _name >> _anode >> _cathode;
+                std::getline(src,_voltage);
+                src.putback('\n');
+                //std::cout << _voltage << std::endl;
+                if(_voltage.substr(1,4)=="SINE")
                 {
                     std::string _dc_offset;
                     std::string _amplitude;
@@ -219,14 +226,24 @@ void parse_input(const std::string& input )
                     std::stringstream ss(_voltage,ios_base::in);
                     ss.ignore(std::numeric_limits<std::streamsize>::max(), '(');
                     ss >> _dc_offset >> _amplitude >> _frequency;
-                    _circuit.add_component(new AC_Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_Voltage_amplitude),read_value(_frequency),read_value(_DC_Offset));
-                    std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<"A " <<read_value(_Voltage_amplitude) << "f " << read_value(_frequency) << "offset " << read_value(_DC_Offset)<< std::endl;
+
+                    cout <<  _dc_offset << _amplitude << _frequency<< endl;
+
+                    cout << "frequency read is " << read_value(_frequency) <<endl;
+                    cout << "dc offset read is " << read_value(_dc_offset)<< endl;
+                    cout << "amplitude read is "<< read_value(_amplitude)<< endl;
+
+                    _circuit.add_component(new AC_Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_amplitude),read_value(_frequency),read_value(_dc_offset)));
+                    std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" A " <<read_value(_amplitude) << " f " << read_value(_frequency) << " offset " << read_value(_dc_offset)<< std::endl;
 
                 }
                 else
                 {
+                    size_t index = _voltage.find_first_of(digits);
+                    _voltage = _voltage.substr(index,std::string::npos);
+                    //std::cout << _voltage << std::endl;
                     _circuit.add_component(new Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_voltage)));
-                    std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
+                    std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
                 }
             }
             break;
@@ -236,7 +253,7 @@ void parse_input(const std::string& input )
                 std::string _model_name;
                 src >> _name >> _anode >> _cathode >> _model_name;
                 _circuit.add_component(new Diode(node_number(_anode),node_number(_cathode),_name));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<_model_name << std::endl;
+                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<_model_name << std::endl;
             }
             break;
         case 'c' :
@@ -245,7 +262,7 @@ void parse_input(const std::string& input )
                 std::string _capacitance;
                 src >> _name >> _anode >> _cathode >> _capacitance;
                 _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_capacitance)));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_capacitance) << std::endl;
+                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_capacitance) << std::endl;
             }
             break;
         case 'l' :
@@ -254,7 +271,7 @@ void parse_input(const std::string& input )
                 std::string _inductance;
                 src >> _name >> _anode >> _cathode >> _inductance;
                 _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_inductance)));
-                std::cerr<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
+                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
             }
             break;
         case 'q' :
@@ -266,12 +283,12 @@ void parse_input(const std::string& input )
                 std::string _model_name;
                 src >> _name >>_collector >> _base >> _emitter >> _model_name;
                 //_circuit.add_BJT(BJT(_name,node_number(_collector),node_number(_base),node_number(_emitter),_model_name));
-                std::cerr<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
+                std::cout<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
             }
             break;
         default:
-            std::cerr<< "non-handled case"<< std::endl;
-            std::cerr<<"tmp is "<<tmp<<std::endl;
+            std::cout<< "non-handled case"<< std::endl;
+            std::cout<<"tmp is "<<tmp<<std::endl;
             exit(1);
             break;
         }

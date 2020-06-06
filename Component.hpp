@@ -622,8 +622,12 @@ class AC_Voltage_Source:
         return phase;
     }
     */
-    void Set_Voltage(double CurrentTime){
+    void Set_Voltage(double CurrentTime)
+    {
         currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime)) + DC_Offset ;
+        std::cout << "sin arg is " << (2*M_PI*frequency*CurrentTime) << std::endl;
+
+        std::cout<<"current frequency is " << frequency << std::endl;
         //y(t)=Asin(2pift)
 
     }

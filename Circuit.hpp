@@ -85,6 +85,7 @@ public:
     {
         for(Node i: nodes)
         {
+            std::cerr <<"node number " <<i.index<< std::endl;
             for(Component* j: i.components_attached)
             {
                 std::cerr << j->get_name()<< std::endl;
