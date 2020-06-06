@@ -623,8 +623,8 @@ class AC_Voltage_Source:
     }
     */
     void Set_Voltage(double CurrentTime){
-        currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime) + phase) + DC_Offset ;
-        //y(t)=Asin(2pift + phase)
+        currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime)) + DC_Offset ;
+        //y(t)=Asin(2pift)
 
     }
     double get_voltage() const
