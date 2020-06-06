@@ -34,6 +34,8 @@ void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
 }
 
 void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime){
+
+    //std::cerr <<"in UpdateNodeVoltages"<< std::endl;
      //All this function does is update the integrals of each component and then passes the updates CKT to Transient Solver. 
      //Update Capacitors and inductors integrals
     double Vn;
@@ -45,7 +47,10 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime){
             ((AC_Voltage_Source*)(CKTIn.get_components()[i]))->Set_Voltage(CurrentTime);
         }
     }
-    NodeVoltageSolver(CKTIn);
+
+    //std::cerr <<"before TransientSolver"<< std::endl;
+    TransientSolver(CKTIn);
+    //std::cerr <<"after TransientSolver"<< std::endl;
     //LOOPS THROUGH TO UPDATE INTEGRAL COMPONENTS
     for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
         if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
@@ -74,13 +79,21 @@ void SetConductancesForSim(Circuit &CKTIn , double deltatime){
 }
 
 void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
+
+    //std::cerr<<"in TransientAnalysis" << std::endl;
+
     double CurrentTime = 0;
     double deltaTime = (TimePeriod/TimeStep);
     remove("output.txt");
     fstream myfile ("output.txt");
     SetConductancesForSim(CKTIn,deltaTime); //SETS THE CONDUCTANCE FOR EACH INDUCTOR AND CAP THAT DEPENDS ON DELTA TIME (BUT REMAINS CONSTANT THROUGH SIM)
+
+    //std::cerr<<"setConductances" << std::endl;
+
     for(double i = 0 ; i <= TimeStep ; i++){
+        //std::cerr<<"in for loop" << std::endl;
         UpdateNodeVoltages(CKTIn , CurrentTime); 
+        //std::cerr<<"NodeVoltagesToFile" << std::endl;
         NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime);
         CurrentTime = CurrentTime + deltaTime;
         //POSSIBLE SHIFT ERROR MAY OCCUR. 

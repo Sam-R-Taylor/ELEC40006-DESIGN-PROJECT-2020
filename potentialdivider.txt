@@ -1,5 +1,9 @@
-V1 N001 0 5
-R1 N002 0 1k
-D1 N001 N002 D
-.tran 0 1 0 1
+* C:\Users\Utente\Desktop\ADC\lab4\Amplifier Components\Draft10.asc
+R1 N001 N002 1k
+D1 N002 0 1N914
+V1 N001 0 2
+.model D D
+.lib C:\Users\Utente\Documents\LTspiceXVII\lib\cmp\standard.dio
+.tran 0 1 0 10m
+.backanno
 .end

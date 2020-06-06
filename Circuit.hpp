@@ -56,7 +56,7 @@ public:
     double GMIN = pow(10,-12);
     double ABSTOL = pow(10,-12);
     double RELTOL = pow(10,-3);
-    size_t max_iterations = 1000;           //edit after testing
+    size_t max_iterations = 10;           //edit after testing
     Circuit()
     {
         std::cerr<<"Circuit constructed"<<std::endl;
@@ -266,13 +266,14 @@ public:
     void build_nodes()
     {
         nodes = NodeGenerator(components);
-        //initialize voltages to 0
-        std::vector<double> tmp(nodes.size(),0);
-        voltages = tmp;
         
         //add connection resistors
         //this->add_connection_resistors_diodes();
-        //this->add_connection_resistors_BJTs();
+        this->add_connection_resistors_BJTs();
+
+        //initialize voltages to 0
+        std::vector<double> tmp(nodes.size(),0);
+        voltages = tmp;
     }
     void add_BJT(BJT BJT_component)
     {
@@ -287,9 +288,9 @@ public:
         
 
         //add diodes
-        Diode* _diode_EB = new Diode(base,emitter,"BJT_diode_EB",RE,BF);
+        Diode* _diode_EB = new Diode(base,emitter,"BJT_diode_EB",RE,BF,1);
         this->add_component(_diode_EB);
-        Diode* _diode_BC = new Diode(base,collector,"BJT_diode_BC",RC,BR);
+        Diode* _diode_BC = new Diode(base,collector,"BJT_diode_BC",RC,BR,1);
         this->add_component(_diode_BC);
 
         //add custom current source

@@ -1,0 +1,13 @@
+* C:\Users\Utente\Desktop\ADC\lab4\Amplifier Components\Draft13.asc
+V1 N001 0 10
+Q1 N002 N003 N004 0 NPN
+R1 N001 N003 220k
+R2 N003 0 16.8k
+R3 N001 N002 20k
+R4 N004 0 5k
+.model NPN NPN
+.model PNP PNP
+.lib C:\Users\Utente\Documents\LTspiceXVII\lib\cmp\standard.bjt
+.tran 0 1 0 10m
+.backanno
+.end

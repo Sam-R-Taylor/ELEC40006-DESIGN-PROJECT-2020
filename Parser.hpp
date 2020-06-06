@@ -149,12 +149,13 @@ void parse_input(const std::string& input)
 
                 //building Circuit obj
                 _circuit.build_nodes();
+                _circuit.print_node_components();
 
 
                 
                 int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
-                cout << "TRANSIENT" << endl ;
+                cout << "TransientAnalysis" << endl ;
                 //cout << "stop_time" << stop_time << endl ;
                 //cout << "Time Step" << time_step << endl ;
                 //cout << "Num Time Step" << num_timestep << endl ;
@@ -177,8 +178,7 @@ void parse_input(const std::string& input)
             }
             else
             {   
-                std::cerr << "uknown command" << std::endl;
-                exit(1);
+                //skip
             }
             break;
         
