@@ -14,21 +14,21 @@ using Eigen::MatrixXd;
 
 
 void TransientSolver(Circuit &circuit){
-    std::cout<< "in transient solver " << std::endl;
+    //std::cout<< "in transient solver " << std::endl;
     bool incomplete = true;
     int current_iteration = 0;
     //iterate adjusting voltages each time
     while(incomplete){
         current_iteration++;
-        std::cout<< "in itterater " << std::endl;
+        //std::cout<< "in itterater " << std::endl;
         //loop through the components
         for(Component* component: circuit.get_components()){
             //adjust all the diodes for the current voltage guess
             if(dynamic_cast<Diode*>(component)){
-                std::cout<< "in diode " << std::endl;
+                //std::cout<< "in diode " << std::endl;
                 ((Diode*)component)->set_vd(circuit.get_voltages()[component->get_anode()] - circuit.get_voltages()[component->get_cathode()]);
                 ((Diode*)component)->set_id0(((Diode*)component)->get_current(circuit.get_voltages()));
-                std::cout<< "out of diode " << std::endl;
+                //std::cout<< "out of diode " << std::endl;
             }
             //adjust all the bjts for the current voltage guess
             if(dynamic_cast<BJT*>(component)){
@@ -38,9 +38,9 @@ void TransientSolver(Circuit &circuit){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        for(auto x: old_voltages){
-            std::cout << x << std::endl;
-        }   
+        //for(auto x: old_voltages){
+        //    std::cout << x << std::endl;
+        //}   
         NodeVoltageSolver(circuit);
         //check the error
         
@@ -52,15 +52,6 @@ void TransientSolver(Circuit &circuit){
             }
         }
         //check that max iterations haven't occured
-        if(current_iteration >= circuit.max_iterations){
-            std::cout << "Hit maximum iterations" << std::endl;
-            exit(1);
-            incomplete = false;
-        }
-        //std::vector<double> v = circuit.get_voltages();
-        //for(auto x: v){
-        //    std::cout << x << std::endl;
-        //}
     }
     //std::cout << "Iterations " << current_iteration << std::endl;
 }

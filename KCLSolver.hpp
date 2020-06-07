@@ -208,11 +208,7 @@ double GetCurrent(Circuit &circuit, Component* component){
     }
     return current;
 }
-double GetCurrentBjt(Circuit &circuit, Component* component, int node){
-    double current = 0;
 
-    return current;
-}
 
 //outputs the vector of voltages given the vector of components, optional vector of nodes used to increase speed
 void NodeVoltageSolver(Circuit &circuit){  //vector<Component*> &components, vector<Node> *nodes = nullptr){
