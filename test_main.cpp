@@ -1,6 +1,8 @@
 #include"Parser.hpp"
+#include<fstream>
 int main(int argc, char const *argv[])
 {
-    parse_input(argv[1]);
+    std::fstream input(argv[1]);
+    parse_input(input);
     return 0;
 }

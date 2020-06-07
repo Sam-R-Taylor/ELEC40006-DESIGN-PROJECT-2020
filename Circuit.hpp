@@ -110,6 +110,8 @@ public:
     void build_nodes()
     {
         nodes = NodeGenerator(components);
+        std::vector<double> v(nodes.size(),0);
+        voltages = v;
     }
     int get_number_of_nodes() const{
         return nodes.size();

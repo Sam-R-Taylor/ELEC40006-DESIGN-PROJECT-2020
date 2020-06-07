@@ -8,24 +8,24 @@
 #include <vector>
 using namespace std;
 int main(){
-    
-    Voltage_Source v2{1,0,"V1",5};
-    /*Resistor r2{2,1,"R1",1000};
-    Resistor r5{2,0,"R1",1000};
-    Resistor r6{3,0,"R1",1000};
-    Diode d1{2,4,"D1"};
-    Diode d2{2,5,"D2"};
+    //Voltage_Source v2{1,0,"V1",5};
+    AC_Voltage_Source v2{1,0,"V1",5,1,0};
+    Resistor r2{2,1,"R1",1000};
+    Diode d1{2,0,"D1"};
+    /*Diode d2{2,5,"D2"};
     Resistor r3{4,1,"R3",0.5};
     Resistor r4{5,3,"R4",0.5};
     Voltage_Controlled_Current_Source vc1{2,5,"vc1",0.67/0.5,4,1};
     Voltage_Controlled_Current_Source vc2{2,4,"vc1",0.995/0.5,5,3};
     */
-    BJT bj{1,2,3,"BJ",0.67,0.995,1,10,0.2,0.3};
-    Resistor r2{2,1,"R1",1000};
-    Resistor r5{2,0,"R1",1000};
-    Resistor r6{3,0,"R1",1000};
-    //vector<Component*> components{&v2,&r2,&r3,&r4,&r5,&r6,&d1,&d2,&vc1,&vc2};
-    vector<Component*> components{&v2,&r2,&r5,&r6,&bj};
+    v2.Set_Voltage(-0.2);
+    cout << v2.get_voltage();
+    //BJT bj{1,2,3,"BJ", 0.67, 0.995,1,10,0.2,0.3};
+    //Resistor r2{2,1,"R1",1000};
+    //Resistor r5{2,0,"R1",1000};
+    //Resistor r6{3,0,"R1",1000};
+    vector<Component*> components{&v2,&r2,&d1};
+    //vector<Component*> components{&v2,&r2,&r5,&r6,&bj};
     Circuit circuit;
     for(Component* component: components){
         circuit.add_component(component);

@@ -357,9 +357,9 @@ private:
     double denom;
 
     //store the coefficients for current to work out the current passing through
-    double collector_current_coeff [4]; //current comming into collector c b e i
-    double base_current_coeff [4]; //current coming into base
-    double emmitter_current_coeff [3]; //current coming into emmitter
+    std::vector<double> collector_current_coeff{0,0,0,0}; //current comming into collector c b e i
+    std::vector<double> base_current_coeff{0,0,0,0}; //current coming into base
+    std::vector<double> emmitter_current_coeff{0,0,0,0}; //current coming into emmitter
 public:
     BJT(int _collector, int _base, int _emmitter, std::string _name, double _Af, double _Ar, int _N, double _Rb, double _Rc, double _Re, bool _PNP = false)
     {
@@ -485,7 +485,7 @@ public:
     int get_base(){
         return base;
     }
-    
+    /*
     double get_current(std::vector<double> voltages, int node){
         double current = 0;
         if(node == anode){
@@ -496,8 +496,8 @@ public:
                 emmitter_current_coeff[1] * voltages[base] +
                 emmitter_current_coeff[2] * voltages[cathode] + emmitter_current_coeff[4];
         }
-
-    }
+        return current;
+    }*/
 };
 
 class Voltage_Component:
