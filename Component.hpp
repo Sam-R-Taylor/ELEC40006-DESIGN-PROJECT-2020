@@ -328,6 +328,8 @@ class BJT:
     public Component
 {    
 private:
+    bool PNP;
+
     double Af;//The gain for the BE component current source
     double Ar;//The gain for the BC component current source
     int base;//stores the base node
@@ -359,8 +361,9 @@ private:
     double base_current_coeff [4]; //current coming into base
     double emmitter_current_coeff [3]; //current coming into emmitter
 public:
-    BJT(int _collector, int _base, int _emmitter, std::string _name, double _Af, double _Ar, int _N, double _Rb, double _Rc, double _Re)
+    BJT(int _collector, int _base, int _emmitter, std::string _name, double _Af, double _Ar, int _N, double _Rb, double _Rc, double _Re, bool _PNP = false)
     {
+        PNP = _PNP;
         anode = _collector;
         cathode = _emmitter;
         base = _base;
@@ -399,7 +402,11 @@ public:
         //vd = voltages[base] - voltages[anode];//anode is the collector cathode is emmitter
         //_vd = voltages[base] - voltages[cathode];
         vd = V0 - V1;
-        _vd = V0 - V2; 
+        _vd = V0 - V2;
+        if(PNP){
+            vd = -vd;
+            _vd = -_vd;
+        }
         Gr = get_diode_current_derrivative(vd);
         Gf = get_diode_current_derrivative(_vd);
         Ir = get_diode_current(vd) - vd*Gr;
@@ -478,13 +485,37 @@ public:
     int get_base(){
         return base;
     }
+    
+    double get_current(std::vector<double> voltages, int node){
+        double current = 0;
+        if(node == anode){
+            double current_collector = collector_current_coeff[0] * voltages[anode] + 
+                collector_current_coeff[1] * voltages[base] +
+                collector_current_coeff[2] * voltages[cathode] + collector_current_coeff[4];
+            double current_emmitter = emmitter_current_coeff[0] * voltages[anode] + 
+                emmitter_current_coeff[1] * voltages[base] +
+                emmitter_current_coeff[2] * voltages[cathode] + emmitter_current_coeff[4];
+        }
+
+    }
 };
 
 class Voltage_Component:
     public Component
 {
+    std::vector<double> current_coefficients;
 public:
     virtual double get_voltage() const = 0;
+    void set_coefficients(std::vector<double> _current_coefficients){
+        current_coefficients = _current_coefficients;
+    }
+    double get_current(std::vector<double> voltages){
+        double current;
+        for(int i=0; i< voltages.size(); i++){
+            current += voltages[i] * current_coefficients[i];
+        }
+        return current;
+    }
 };
 
 class Voltage_Source:

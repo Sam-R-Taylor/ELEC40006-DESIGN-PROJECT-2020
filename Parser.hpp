@@ -282,7 +282,8 @@ void parse_input(std::fstream & src)
                 std::string _emitter;
                 std::string _model_name;
                 src >> _name >>_collector >> _base >> _emitter >> _model_name;
-                //_circuit.add_BJT(BJT(_name,node_number(_collector),node_number(_base),node_number(_emitter),_model_name));
+                _circuit.add_component(new BJT(node_number(_collector),node_number(_base),node_number(_emitter),
+                    _name,0.67,0.995,1,10,0.2,0.3));
                 std::cout<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
             }
             break;

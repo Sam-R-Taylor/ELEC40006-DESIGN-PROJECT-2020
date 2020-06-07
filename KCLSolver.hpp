@@ -101,7 +101,8 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                     //generate the coeffiecient for node on the other side of the voltage source
                     //leaving out he connection to the current node by adding the source_component parameter
                     sub_coefficients = 
-                    coefficient_generator(&((*nodes)[component->get_cathode()]), nodes,component);
+                        coefficient_generator(&((*nodes)[component->get_cathode()]), nodes,component);
+                    ((Voltage_Component*)component)->set_coefficients(sub_coefficients);
                     //correct the coefficient by swapping "N2" with "N1 + V" and add the voltage constant
                     //multiplied by the coefficient value to the constant term of the coefficients.
                     if(dynamic_cast<Voltage_Controlled_Voltage_Source*>(component)){
@@ -143,9 +144,6 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
     //return the output
     return coefficients;
 }
-
-
-
 
 //takes a vector of an object (ie nodes)
 //the object type named here as Data must have a method get_data that outputs the 
@@ -197,18 +195,22 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
     //return output
     return output;
 }
+
+
+//returns the current through a component
 double GetCurrent(Circuit &circuit, Component* component){
 //double ComponentCurrent(vector<double> &voltages, vector<Node> &nodes, Component* component){
     double current = 0;
     if(dynamic_cast<Voltage_Component*>(component)){
-        vector<double> coefficients = coefficient_generator(&(circuit.get_nodes()[component->get_anode()]), circuit.get_nodes_ptr(), component);
-        double current = 0;
-        for(int i = 0; i<circuit.get_voltages().size(); i++){
-            current += circuit.get_voltages()[i] * coefficients[i];
-        }
+        current = ((Voltage_Component*)component)->get_current(circuit.get_voltages());
     }else if(dynamic_cast<Current_Component*>(component)){
         return ((Current_Component*)component)->get_current(circuit.get_voltages());
     }
+    return current;
+}
+double GetCurrentBjt(Circuit &circuit, Component* component, int node){
+    double current = 0;
+
     return current;
 }
 
