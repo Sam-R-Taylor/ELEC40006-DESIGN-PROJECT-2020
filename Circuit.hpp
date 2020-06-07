@@ -30,9 +30,20 @@ std::vector<Node> NodeGenerator(std::vector<Component*> components){
             Nodes.push_back(node);
             index++;
         }
+        if(dynamic_cast<BJT*>(components[i])){
+            while(Nodes.size()<=((BJT*)components[i])->get_base()){
+                Node node;
+                node.index = index;
+                Nodes.push_back(node);
+                index++;
+            }
+        }
         //add the components to the nodes it is attached to
         Nodes[components[i]->get_cathode()].components_attached.push_back(components[i]);
         Nodes[components[i]->get_anode()].components_attached.push_back(components[i]);
+        if(dynamic_cast<BJT*>(components[i])){
+            Nodes[((BJT*)components[i])->get_base()].components_attached.push_back(components[i]);
+        }
     }
     return Nodes;
 }

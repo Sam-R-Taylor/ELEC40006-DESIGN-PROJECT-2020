@@ -27,9 +27,10 @@ void TransientSolver(Circuit &circuit){
                 ((Diode*)component)->set_vd(circuit.get_voltages()[component->get_anode()] - circuit.get_voltages()[component->get_cathode()]);
                 ((Diode*)component)->set_id0(((Diode*)component)->get_current(circuit.get_voltages()));
             }
-            if(dynamic_cast<BJT_Component*>(component)){
+            //adjust all the bjts for the current voltage guess
+            if(dynamic_cast<BJT*>(component)){
                 //std::cout << "adjusting bjt" << std::endl;
-                ((BJT_Component*)component)->set_op(circuit.get_voltages());
+                ((BJT*)component)->set_op(circuit.get_voltages());
             }
         }
         //set the voltages to the output of the KCL with the components

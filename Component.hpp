@@ -324,57 +324,46 @@ public:
     }
 };
 
-class BJT_Component:                
+class BJT:                
     public Component
 {    
 private:
-    bool BE;
-    //essentially a diode and current source in parrallel
     double Af;//The gain for the BE component current source
     double Ar;//The gain for the BC component current source
-    BJT_Component* bjt_component;//stroes pointer to other component in BJT
-    int thirdNode;//stores the base node
+    int base;//stores the base node
+
     double Ge;//The emmitter conductance
     double Gc;//The collector conductance
     double Gb;//The base conductance
-    //Conductances
+    //Conductances of linear model
     double Gf;
     double Gr;
+    //Currents of linear model
     double Ir;
     double If;
+    //Current multipliers for linear Model
+    double Br;
+    double Bf;
     //Diode Parameters
-    //Thermal Voltage
-    double Vt = 0.0258641;
+    double Vt = 0.0258641;//Thermal Voltage
     double I_s = 1* pow(10,-14);
-    //Voltage across terminals, used for linear aporximations
-    double vd = 0;
-    //current at voltage guess, used for linear aproximations
-    double id0 = 0;
-    //ideality coefficient 
-    double N;
-    //breakdown voltage
-    double BV = -75;
-    //Min Conductance
-    double GMIN = pow(10,-8);
+    double N;//ideality coefficient 
+    double BV = -75;//breakdown voltage
+    double GMIN = pow(10,-12);//Min Conductance
+    
     //variable to speed things up
-    double GbGcGe;
-    double GbGe;
-    double GbGc;
-    double GcGe;
-    double AfAr;
     double denom;
+
+    //store the coefficients for current to work out the current passing through
+    double collector_current_coeff [4]; //current comming into collector c b e i
+    double base_current_coeff [4]; //current coming into base
+    double emmitter_current_coeff [3]; //current coming into emmitter
 public:
-    //store the coefficients to work out the voltage across diode
-    double CoeC = 0;
-    double CoeE = 0;
-    double CoeB = 0;
-    double CoeI = 0;
-    BJT_Component(int _collector, int _base, int _emmitter, std::string _name, bool _BE, double _Af, double _Ar, int _N, double _Rb, double _Rc, double _Re)
+    BJT(int _collector, int _base, int _emmitter, std::string _name, double _Af, double _Ar, int _N, double _Rb, double _Rc, double _Re)
     {
-        BE = _BE;
-        anode = _base;
-        cathode = BE?_emmitter:_collector;
-        thirdNode = !BE?_emmitter:_collector;
+        anode = _collector;
+        cathode = _emmitter;
+        base = _base;
         name = _name;
         Ar = _Ar;
         Af = _Af;
@@ -384,145 +373,110 @@ public:
         Ge = 1/_Re;
         Af = _Af;
         Ar = _Ar;
-        GbGcGe = Gb*Gc*Ge;
-        GbGe = Gb*Ge;
-        GbGc = Gb*Gc;
-        GcGe = Gc*Ge;
-        AfAr = Af*Ar;
     }
-    void set_bjt(BJT_Component* _bjt_component){
-        bjt_component = _bjt_component;
-    }
-    double get_diode_current(std::vector<double> nodevoltages){
-            double current = I_s*(exp((vd)/(N*Vt))-1) + (vd)*GMIN;
+    //gets the current through the diode with voltage v
+    double get_diode_current(double v){
+            double current = I_s*(exp((v)/(N*Vt))-1) + (v)*GMIN;
             return current;
     }
-    //diode methods
+    double get_diode_current_derrivative(double v){
+        double current = (I_s/(N*Vt))*exp((v)/(N*Vt)) + GMIN;
+        return current;
+    }
     //must be called by transient solver
     void set_op(std::vector<double> voltages){
+        double vd;
         double _vd;
-        if(!BE){
-            double current = voltages[cathode]*CoeC + voltages[anode]*CoeB+ voltages[thirdNode]*CoeE + CoeI;
-            double current2 = voltages[thirdNode]*bjt_component->CoeE + voltages[anode]*bjt_component->CoeB+ voltages[cathode]*bjt_component->CoeC + bjt_component->CoeI;
-            double V0 = voltages[cathode] + current / Gc;
-            double V1 = voltages[anode] - ((current+current2) / Gb);
-            _vd = V1-V0;
-            vd = _vd;
-            id0 = get_diode_current(voltages);
-            std::cout << "Vd " << _vd << " I0 " << id0 << std::endl;
-        }
-        else{
-            double current = voltages[cathode]*CoeE + voltages[anode]*CoeB+ voltages[thirdNode]*CoeC + CoeI;
-            double current2 = voltages[thirdNode]*bjt_component->CoeC + voltages[anode]*bjt_component->CoeB+ voltages[cathode]*bjt_component->CoeE + bjt_component->CoeI;
-            double V0 = voltages[cathode] + current / Ge;
-            double V1 = voltages[anode] - ((current+current2) / Gb);
-            _vd = V1-V0;
-            vd = _vd;
-            id0 = get_diode_current(voltages);
-            std::cout << "Vd " << _vd << " I0 " << id0 << std::endl;
-        }
+        double current_collector = collector_current_coeff[0] * voltages[anode] + 
+            collector_current_coeff[1] * voltages[base] +
+            collector_current_coeff[2] * voltages[cathode] + collector_current_coeff[4];
+        double current_emmitter = emmitter_current_coeff[0] * voltages[anode] + 
+            emmitter_current_coeff[1] * voltages[base] +
+            emmitter_current_coeff[2] * voltages[cathode] + emmitter_current_coeff[4];
+        double V0 = voltages[base] - (current_collector + current_emmitter) / Gb;
+        double V1 = voltages[anode] - (current_collector) / Gc;
+        double V2 = voltages[cathode] - (current_emmitter) / Ge;
+        //vd = voltages[base] - voltages[anode];//anode is the collector cathode is emmitter
+        //_vd = voltages[base] - voltages[cathode];
+        vd = V0 - V1;
+        _vd = V0 - V2; 
+        Gr = get_diode_current_derrivative(vd);
+        Gf = get_diode_current_derrivative(_vd);
+        Ir = get_diode_current(vd) - vd*Gr;
+        If = get_diode_current(_vd) - _vd*Gf;
+
+        denom = Gb*Gc*Ge + Gb*Gc*Gf + Gc*Ge*Gf + Gb*Ge*Gr + Gb*Gf*Gr + Gc*Ge*Gr + Gc*Gf*Gr + Ge*Gf*Gr
+            - Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Gb*Gf*Gr - Af*Ar*Gc*Gf*Gr - Af*Ar*Ge*Gf*Gr;
     }
-    //get the linear aproximation of the conductor for the diode
-    double get_conductance(){
-        double conductance = GMIN;
-        //check if less than break down voltage
-        if(vd < BV){
-            conductance += ((-I_s/(N*Vt))*exp(-(BV+vd)/(N*Vt)));
-        }//check if greater than -5*N*Vt
-        else if(vd > -5*N*Vt){
-            conductance += ((I_s/(N*Vt))*exp(vd/(N*Vt)));
+    //denom = (Gb*Gc*Ge + Gb*Gc*Gf + Gc*Ge*Gf + Gb*Ge*Gr + Gb*Gf*Gr + Gc*Ge*Gr + Gc*Gf*Gr + Ge*Gf*Gr - Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Gb*Gf*Gr - Af*Ar*Gc*Gf*Gr - Af*Ar*Ge*Gf*Gr
+    //V1 = Gb*Ge*Ir + Gb*Gf*Ir + Ge*Gf*Ir - Ge*Gr*If - Ar*Gb*Ge*If + Gb*Gc*Ge*Vc + Gb*Gc*Gf*Vc + Gc*Ge*Gf*Vc + Gb*Ge*Gr*Vb + Gb*Gf*Gr*Vb + Gc*Ge*Gr*Vc + Gc*Gf*Gr*Vc + Ge*Gf*Gr*Ve - Af*Ar*Gb*Gf*Ir - Af*Ar*Ge*Gf*Ir + Af*Ar*Ge*Gr*If - Ar*Gb*Ge*Gf*Vb - Af*Gc*Ge*Gr*Vc - Ar*Gc*Ge*Gf*Vc + Ar*Gb*Ge*Gf*Ve - Af*Ar*Gb*Gf*Gr*Vb - Af*Ar*Gc*Gf*Gr*Vc - Af*Ar*Ge*Gf*Gr*Ve + 
+    //V2 = Gb*Gc*If + Gb*Gr*If - Gc*Gf*Ir + Gc*Gr*If - Af*Gb*Gc*Ir + Gb*Gc*Gf*Vb + Gb*Gc*Ge*Ve + Gc*Ge*Gf*Ve + Gb*Gf*Gr*Vb + Gb*Ge*Gr*Ve + Gc*Gf*Gr*Vc + Gc*Ge*Gr*Ve + Ge*Gf*Gr*Ve - Af*Ar*Gb*Gr*If + Af*Ar*Gc*Gf*Ir - Af*Ar*Gc*Gr*If - Af*Gb*Gc*Gr*Vb + Af*Gb*Gc*Gr*Vc - Af*Gc*Ge*Gr*Ve - Ar*Gc*Ge*Gf*Ve - Af*Ar*Gb*Gf*Gr*Vb - Af*Ar*Gc*Gf*Gr*Vc - Af*Ar*Ge*Gf*Gr*Ve + 
+    //V0 = Af*Gc*Ge*Ir - Gc*Ge*Ir - Gc*Gf*Ir - Ge*Gr*If - Gc*Ge*If + Ar*Gc*Ge*If + Gb*Gc*Ge*Vb + Gb*Gc*Gf*Vb + Gc*Ge*Gf*Ve + Gb*Ge*Gr*Vb + Gb*Gf*Gr*Vb + Gc*Ge*Gr*Vc + Gc*Gf*Gr*Vc + Ge*Gf*Gr*Ve + Af*Ar*Gc*Gf*Ir + Af*Ar*Ge*Gr*If - Af*Gc*Ge*Gr*Vc - Ar*Gc*Ge*Gf*Ve - Af*Ar*Gb*Gf*Gr*Vb - Af*Ar*Gc*Gf*Gr*Vc - Af*Ar*Ge*Gf*Gr*Ve + 
+    double get_collector_coefficient(int node){
+        double response;
+        if(node == anode){//collector
+            response = (1-(Gb*Gc*Ge + Gb*Gc*Gf + Gc*Ge*Gf + Gc*Ge*Gr + Gc*Gf*Gr - 
+                Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Gc*Gf*Gr)/denom)*Gc;
+            collector_current_coeff[0] = response;
+
+        }else if (node == cathode){//emmitter
+            response = -1 * Ge * (Gc*Gf*Gr + Af*Gb*Gc*Gr - Af*Ar*Gc*Gf*Gr)/denom;
+            emmitter_current_coeff[0] = response;
+        }else if (node == base){//base
+            response = -1 * Gb * (Gc*Ge*Gr + Gc*Gf*Gr - Af*Gc*Ge*Gr - Af*Ar*Gc*Gf*Gr)/denom;
+            base_current_coeff[0] = response;
         }
-        return conductance;
+        return response;
     }
-    //get the linear aproximations of the current source from the diode
-    double get_linear_current(){
-        //double current = (id0 - this->get_conductance()*vd);
-        if(!BE){
-            return (id0 - Gr*vd);
+    double get_base_coefficient(int node){
+        double response;
+        if(node == anode){//collector
+            response = -1 * Gc * (Gb*Ge*Gr + Gb*Gf*Gr - Ar*Gb*Ge*Gf - Af*Ar*Gb*Gf*Gr) / denom;
+            collector_current_coeff[1] = response;
+        }else if (node == cathode){//emmitter
+            response = -1 * Ge * (Gb*Gc*Gf + Gb*Gf*Gr - Af*Gb*Gc*Gr - Af*Ar*Gb*Gf*Gr) / denom;
+            emmitter_current_coeff[1] = response;
+        }else if (node == base){//base
+            response = (1 - (Gb*Gc*Ge + Gb*Gc*Gf + Gb*Ge*Gr + Gb*Gf*Gr - Af*Ar*Gb*Gf*Gr) / denom) * Gb;
+            base_current_coeff[1] = response;
         }
-        else{
-           return (id0 - Gf*vd);
+        return response;
+    }
+    double get_emmitter_coefficient(int node){
+        double response;
+        if(node == anode){//collector
+            response = -1 * Gc * (Ge*Gf*Gr + Ar*Gb*Ge*Gf - Af*Ar*Ge*Gf*Gr) / denom;
+            collector_current_coeff[2] = response;
+        }else if (node == cathode){//emmitter
+            response = (1 - (Gb*Gc*Ge + Gc*Ge*Gf + Gb*Ge*Gr + Gc*Ge*Gr + Ge*Gf*Gr -
+                Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Ge*Gf*Gr) / denom) * Ge;
+            emmitter_current_coeff[2] = response;
+        }else if (node == base){//base
+            response = -1 * Gb * (Gc*Ge*Gf + Ge*Gf*Gr - Ar*Gc*Ge*Gf - Af*Ar*Ge*Gf*Gr) / denom;
+            base_current_coeff[2] = response;
         }
+        return response;
     }
-    void set_denominator(){
-        denom = ( GbGcGe + GbGc*Gf + GcGe*Gf + GbGe*Gr + Gb*Gf*Gr + GcGe*Gr + Gc*Gf*Gr + 
-        Ge*Gf*Gr - Af*GcGe*Gr - Ar*GcGe*Gf - AfAr*Gb*Gf*Gr - AfAr*Gc*Gf*Gr - AfAr*Ge*Gf*Gr);
-    }
-    //must be called by the KCL Solver before asking for constants
-    void KCL_setup(){
-        if(!BE){
-            Gr = get_conductance();
-            Gf = bjt_component->get_conductance();
-            Ir = get_linear_current();
-            If = bjt_component->get_linear_current();
-        }else{
-            Gf = get_conductance();
-            Gr = bjt_component->get_conductance();
-            If = get_linear_current();
-            Ir = bjt_component->get_linear_current();
+    double get_constant_coefficient(int node){
+        double response;
+        if(node == anode){//collector
+            response = -1 * Gc * (Gb*Ge*Ir + Gb*Gf*Ir + Ge*Gf*Ir - Ge*Gr*If - Ar*Gb*Ge*If
+                - Af*Ar*Gb*Gf*Ir - Af*Ar*Ge*Gf*Ir + Af*Ar*Ge*Gr*If) / denom;
+            collector_current_coeff[3] = response;
+        }else if (node == cathode){//emmitter
+            response = -1 * Ge * (Gb*Gc*If + Gb*Gr*If - Gc*Gf*Ir + Gc*Gr*If - Af*Gb*Gc*Ir - 
+                Af*Ar*Gb*Gr*If + Af*Ar*Gc*Gf*Ir - Af*Ar*Gc*Gr*If) /denom;
+            emmitter_current_coeff[3] = response;
+        }else if (node == base){//base
+            response = -1 * Gb * (Af*Gc*Ge*Ir - Gc*Ge*Ir - Gc*Gf*Ir - Ge*Gr*If - Gc*Ge*If + 
+                Ar*Gc*Ge*If + Af*Ar*Gc*Gf*Ir + Af*Ar*Ge*Gr*If) /denom;
+            base_current_coeff[3] = response;
         }
-        set_denominator();
-        std::cout << "Gr " << Gr << " Gf " <<Gf<< " Ir " << Ir << " If " << If << " Denom " << denom << std::endl;
+        return response;
     }
-    double get_collector_coefficient(){
-        double ans;
-        if(!BE){
-            ans = Gc*(1 - (GbGcGe + GbGc*Gf + GcGe*Gf + GcGe*Gr + Gc*Gf*Gr - Af*GcGe*Gr - Ar*GcGe*Gf - AfAr*Gc*Gf*Gr)/denom);
-        }else{
-            ans = -1*Ge*(Gc*Gf*Gr + Af*GbGc*Gr - AfAr*Gc*Gf*Gr)/denom;
-        }
-        CoeC = ans;
-        return ans;
-    }
-    double get_base_coefficient(){
-        double ans;
-        if(!BE){
-            ans = -1*Gc*(GbGe*Gr + Gb*Gf*Gr - Ar*GbGe*Gf - AfAr*Gb*Gf*Gr)/denom;
-        }else{
-            ans = -1*Ge*(GbGc*Gf+ Gb*Gf*Gr - Af*GbGc*Gr - AfAr*Gb*Gf*Gr)/denom;
-        }
-        CoeB = ans;
-        return ans;
-    }
-    double get_emmitter_coefficient(){
-        double ans;
-        if(BE){
-            ans = Ge*(1 - (GbGcGe+ Gc*Ge*Gf+ Gb*Ge*Gr+ Gc*Ge*Gr+ Ge*Gf*Gr- Af*Gc*Ge*Gr- Ar*Gc*Ge*Gf- AfAr*Ge*Gf*Gr)/denom);
-        }else{
-            ans = -1*Gc*(Ge*Gf*Gr + Ar*GbGe*Gf - AfAr*Ge*Gf*Gr)/denom;
-        }
-        CoeE = ans;
-        return ans;
-    }
-    double get_constant_coefficient(){
-        double ans;
-        if(!BE){
-            ans = -1*Gc*(Gb*Ge*Ir + Gb*Gf*Ir + Ge*Gf*Ir- Ge*Gr*If- Ar*Gb*Ge*If- Af*Ar*Gb*Gf*Ir- Af*Ar*Ge*Gf*Ir + Af*Ar*Ge*Gr*If)/denom;
-        }else{
-            ans = -1*Ge*(Gb*Gc*If + Gb*Gr*If- Gc*Gf*Ir+ Gc*Gr*If- Af*Gb*Gc*Ir- Af*Ar*Gb*Gr*If+ Af*Ar*Gc*Gf*Ir- Af*Ar*Gc*Gr*If)/denom;
-        }
-        CoeI = ans;
-        return ans;
-    }
-    int get_collector(){
-        if(!BE){
-            return cathode;
-        }else{
-            return thirdNode;
-        }
-    }
-    int get_emmitter(){
-        if(BE){
-            return cathode;
-        }else{
-            return thirdNode;
-        }
-    }
+
     int get_base(){
-        return anode;
-    }
-    bool is_be(){
-        return BE;
+        return base;
     }
 };
 
@@ -640,32 +594,6 @@ class AC_Voltage_Source:
         return DC_Offset;
     }
 };
-
-
-/*
-class BJT
-{
-//Ebers-Moll model
-private:
-    //diodes constants
-    double IS;
-    double NF;
-    double NR;
-    double BF;
-    double BR;
-
-    //diodes
-    Diode D1();
-    Diode D2();
-
-    //connection resistances
-    Resistor RE();
-    Resistor RB();
-    Resistor RC();
-public:
-    BJT(std::string _name,int _collector, int _base, int _emitter, std::string _model) {}
-    ~BJT() {}
-};*/
 
 
 #endif
