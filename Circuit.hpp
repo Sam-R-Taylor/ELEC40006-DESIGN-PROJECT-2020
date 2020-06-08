@@ -64,7 +64,7 @@ public:
     double GMIN = pow(10,-12);
     double ABSTOL = pow(10,-12);
     double RELTOL = pow(10,-6);
-    size_t max_iterations = 1000;           //edit after testing
+    size_t max_iterations = 10;           //edit after testing
     Circuit()
     {
         std::cerr<<"Circuit constructed"<<std::endl;

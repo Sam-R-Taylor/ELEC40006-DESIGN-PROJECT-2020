@@ -176,8 +176,9 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
     //auto start = chrono::steady_clock::now();
     //for(int i = 0; i < 1; i++){
         //cout << matrix <<endl;
-        matrix = matrix.inverse();
-        result = matrix * constants;
+        //cout << "matrix" <<endl; 
+    matrix = matrix.inverse();
+    result = matrix * constants;
     //result = matrix.householderQr().solve(constants);
     //}
     //auto end = chrono::steady_clock::now();

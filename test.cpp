@@ -1,4 +1,4 @@
-/*#include "Circuit.hpp"
+#include "Circuit.hpp"
 #include "Component.hpp"
 #include "KCLSolver.hpp"
 #include "TransientSolver.hpp"
@@ -8,19 +8,19 @@
 #include <vector>
 using namespace std;
 int main(){
-    Voltage_Source v2{1,0,"V1",5};
+    Voltage_Source v2{1,0,"V1",-5};
     //AC_Voltage_Source v2{1,0,"V1",5,1,0};
-    Resistor r2{2,1,"R1",1000};
-    Diode d1{2,0,"D1"};
-    
+    //Resistor r2{2,1,"R1",1000};
+    //Diode d1{2,3,"D1"};
+    //Resistor r3{3,0,"R1",1000};
     //v2.Set_Voltage(-0.2);
     //cout << v2.get_voltage();
-    //BJT bj{1,2,3,"BJ", 0.67, 0.995,1,10,0.2,0.3};
-    //Resistor r2{2,1,"R1",1000};
-    //Resistor r5{2,0,"R1",1000};
-    //Resistor r6{3,0,"R1",1000};
-    vector<Component*> components{&v2,&r2,&d1};
-    //vector<Component*> components{&v2,&r2,&r5,&r6,&bj};
+    BJT bj{3,2,1,"BJ", 0.67, 0.995,1,10,0.2,0.3,true};
+    Resistor r2{2,1,"R1",1000};
+    Resistor r5{2,0,"R1",1000};
+    Resistor r6{3,0,"R1",1000};
+    //vector<Component*> components{&v2,&r2,&d1,&r3};
+    vector<Component*> components{&v2,&r2,&r5,&r6,&bj};
     Circuit circuit;
     for(Component* component: components){
         circuit.add_component(component);
@@ -36,13 +36,13 @@ int main(){
 
     
     //for(int i = 0; i < 1; i++){
-    cout << "running transient" << endl;
-    TransientAnalysis(circuit,1,1);
+    //cout << "running transient" << endl;
+    TransientSolver(circuit);
     
     
     //v = bj.get_current(circuit.get_voltages());
     //cout << v.size() << endl;
-    cout << GetCurrent(circuit,&d1) <<endl;
+   // cout << GetCurrent(circuit,&d1) <<endl;
     //cout << GetCurrent(circuit,&r5);
     //for(auto x: v){
     //    cout << x << endl;
@@ -53,4 +53,4 @@ int main(){
     }
     
 
-}*/
+}
