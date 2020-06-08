@@ -11,8 +11,8 @@ using namespace std;
 int main(){
     
     Voltage_Source v2{1,0,"V1",5};
-    Capacitor c1{2,0,"C1",0.00001};
-    Resistor r2{2,0,"R2",1000};
+    Inductor i1{2,0,"I1",10};
+    Resistor r2{2,1,"R2",1000};
     //Diode d1{2,3,"D1"};
     //Current_source i1{0,2,"I1",0.005};
     /*Resistor r2{2,1,"R1",1000};
@@ -30,7 +30,7 @@ int main(){
     //Resistor r5{3,0,"R1",1000};
     //Resistor r6{3,0,"R1",1000};
     //vector<Component*> components{&v2,&r2,&r3,&r4,&r5,&r6,&d1,&d2,&vc1,&vc2};
-    vector<Component*> components{&v2,&r2,&c1};
+    vector<Component*> components{&v2,&r2,&i1};
     Circuit circuit;
     for(Component* component: components){
         circuit.add_component(component);
@@ -51,7 +51,7 @@ int main(){
     
     for(int i = 0; i < 1; i++){
         cout << "running transient" << endl;
-        TransientAnalysis(circuit,0.2,50);
+        TransientAnalysis(circuit,5,5);
         //TransientSolver(circuit);
         //Matrix_solver(circuit);
     }
