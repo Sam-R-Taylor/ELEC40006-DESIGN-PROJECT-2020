@@ -6,6 +6,7 @@
 
 #include<Eigen/Dense>
 #include<cassert>
+#include<chrono>
 
 
 //helper functions for Matrix_solver
@@ -163,8 +164,8 @@ void Matrix_solver(Circuit& input_circuit)
 
     //std::cerr<<"constructed Matrix" << std::endl;
 
-    std::cerr<<"Mat is " << std::endl;
-    std::cerr << Mat << std::endl;
+    //std::cerr<<"Mat is " << std::endl;
+    //std::cerr << Mat << std::endl;
 
     //processing voltage sources
     for(Voltage_Source* voltage_source : voltage_sources)
@@ -180,12 +181,14 @@ void Matrix_solver(Circuit& input_circuit)
             Mat.row(anode).setZero();
             Mat(anode,anode) = 1;                   
             Vec(anode) = voltage;
+            //std::cout << "Voltage " << Vec(anode) << std::endl;
         }
         else if (anode == 0)
         {
             Mat.row(cathode).setZero();
             Mat(cathode,cathode) = -1;
             Vec(cathode) = voltage;
+            //std::cout << "Voltage cathode " << Vec(cathode) << std::endl;
         }
         else
         {   
@@ -206,10 +209,16 @@ void Matrix_solver(Circuit& input_circuit)
     //std::cerr<<"Vec is " << std::endl;
     //std::cerr<< Vec << std::endl;
     //setting V0 to GND and removing corresponding row and column
+    auto start = std::chrono::steady_clock::now();
+    
     remove_Row(Mat,0);
     remove_Column(Mat,0);
     
     Vec = Vec.tail(Mat_size-1);
+
+    auto end = std::chrono::steady_clock::now();
+    auto diff = end - start;
+    std::cout << std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
     //std::cerr<<"removed V0" << std::endl;
 
     //std::cerr<<"Mat resized is " << std::endl;
@@ -219,7 +228,9 @@ void Matrix_solver(Circuit& input_circuit)
     
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size -1);
-    solution = Mat.colPivHouseholderQr().solve(Vec);
+    Mat = Mat.inverse();
+    //solution = Mat.colPivHouseholderQr().solve(Vec);
+    solution = Mat * Vec;
     //std::cerr<< "solution is " <<std::endl;
     //std::cerr << solution << std::endl;
 

@@ -32,12 +32,12 @@ int main(){
     
     auto start = chrono::steady_clock::now();
     
-    for(int i = 0; i < 1000; i++){
-        NodeVoltageSolver(circuit);
+    for(int i = 0; i < 1; i++){
+        Matrix_solver(circuit);
     }
     auto end = chrono::steady_clock::now();
     auto diff = end - start;
-    cout << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+    //cout << chrono::duration <double, milli> (diff).count() << " ms" << endl;
 
     v = circuit.get_voltages();
     for(auto x: v){
