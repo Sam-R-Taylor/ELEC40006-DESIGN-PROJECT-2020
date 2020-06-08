@@ -70,13 +70,22 @@ void Matrix_solver(Circuit& input_circuit)
             Resistor* Rptr = dynamic_cast<Resistor*>(i);
             double conductance = Rptr->get_conductance();
 
-            //add coefficients for anode
-            Mat(anode,anode)+=conductance;
-            Mat(anode,cathode)-=conductance;
-
-            //add coefficients for cathode
-            Mat(cathode,cathode)+=conductance;
-            Mat(cathode,anode)-=conductance;
+            //add coefficients for anode and cathode
+            if(anode!=0 && cathode!=0)
+            {
+                Mat(anode,cathode)-=conductance;
+                Mat(cathode,anode)-=conductance;
+                Mat(anode,anode)+=conductance;
+                Mat(cathode,cathode)+=conductance;
+            }
+            else if(anode!=0)
+            {
+                Mat(anode,anode)+=conductance;
+            }
+            else
+            {
+                Mat(cathode,cathode)+=conductance;
+            }
         }
         else if(dynamic_cast<Current_source*>(i))
         {
@@ -84,10 +93,10 @@ void Matrix_solver(Circuit& input_circuit)
             double current = Currentptr->get_current();
 
             //add coefficients for anode
-            Vec(anode)-=current;
-
+            if(anode!=0){Vec(anode)-=current;}
+            
             //add coefficients for cathode
-            Vec(cathode)+=current;
+            if(cathode!=0){Vec(cathode)+=current;}
         }
         else if(dynamic_cast<Voltage_Source*>(i))
         {
@@ -105,19 +114,30 @@ void Matrix_solver(Circuit& input_circuit)
             //for Inductor current source
 
             //add coefficients for anode
-            Vec(anode)-=current;
-            //add coefficients for cathode
-            Vec(cathode)+=current;
+            if(anode!=0){Vec(anode)-=current;}
 
+            //add coefficients for cathode
+            if(cathode!=0){Vec(cathode)+=current;}
+
+                                                                //POSSIBLE OPTIMAZATION HERE
             //for Inductor resistor
 
-            //add coefficients for anode
-            Mat(anode,anode)+=conductance;
-            Mat(anode,cathode)-=conductance;
-
-            //add coefficients for cathode
-            Mat(cathode,cathode)+=conductance;
-            Mat(cathode,anode)-=conductance;
+            //add coefficients for anode and cathode
+            if(anode!=0 && cathode!=0)
+            {
+                Mat(anode,cathode)-=conductance;
+                Mat(cathode,anode)-=conductance;
+                Mat(anode,anode)+=conductance;
+                Mat(cathode,cathode)+=conductance;
+            }
+            else if(anode!=0)
+            {
+                Mat(anode,anode)+=conductance;
+            }
+            else
+            {
+                Mat(cathode,cathode)+=conductance;
+            }
         }
         else if(dynamic_cast<Capacitor*>(i))
         {
@@ -127,20 +147,31 @@ void Matrix_solver(Circuit& input_circuit)
 
             //for Capacitor current source
 
-            //add coefficients for anode
-            Vec(anode)-=current;
-            //add coefficients for cathode
-            Vec(cathode)+=current;
+           //add coefficients for anode
+            if(anode!=0){Vec(anode)-=current;}
 
+            //add coefficients for cathode
+            if(cathode!=0){Vec(cathode)+=current;}
+
+                                                                //POSSIBLE OPTIMAZATION HERE
             //for Capacitor resistor
 
-            //add coefficients for anode
-            Mat(anode,anode)+=conductance;
-            Mat(anode,cathode)-=conductance;
-
-            //add coefficients for cathode
-            Mat(cathode,cathode)+=conductance;
-            Mat(cathode,anode)-=conductance;
+            //add coefficients for anode and cathode
+            if(anode!=0 && cathode!=0)
+            {
+                Mat(anode,cathode)-=conductance;
+                Mat(cathode,anode)-=conductance;
+                Mat(anode,anode)+=conductance;
+                Mat(cathode,cathode)+=conductance;
+            }
+            else if(anode!=0)
+            {
+                Mat(anode,anode)+=conductance;
+            }
+            else
+            {
+                Mat(cathode,cathode)+=conductance;
+            }
         }
         else if(dynamic_cast<Diode*>(i))
         {
@@ -164,8 +195,8 @@ void Matrix_solver(Circuit& input_circuit)
 
     //std::cerr<<"constructed Matrix" << std::endl;
 
-    //std::cerr<<"Mat is " << std::endl;
-    //std::cerr << Mat << std::endl;
+    std::cout<<"Mat is " << std::endl;
+    std::cout << Mat << std::endl;
 
     //processing voltage sources
     for(Voltage_Source* voltage_source : voltage_sources)
@@ -209,16 +240,13 @@ void Matrix_solver(Circuit& input_circuit)
     //std::cerr<<"Vec is " << std::endl;
     //std::cerr<< Vec << std::endl;
     //setting V0 to GND and removing corresponding row and column
-    auto start = std::chrono::steady_clock::now();
+    
     
     remove_Row(Mat,0);
     remove_Column(Mat,0);
     
     Vec = Vec.tail(Mat_size-1);
 
-    auto end = std::chrono::steady_clock::now();
-    auto diff = end - start;
-    std::cout << std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
     //std::cerr<<"removed V0" << std::endl;
 
     //std::cerr<<"Mat resized is " << std::endl;

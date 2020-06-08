@@ -4,12 +4,13 @@
 
 #include <vector>
 #include <iostream>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <string>
 #include "Component.hpp"
 #include"Circuit.hpp"
 #include "KCLSolver.hpp"
 #include <memory> 
+#include "leo_KCLSolver2.hpp"
 using Eigen::MatrixXd;
 
 
