@@ -270,7 +270,7 @@ void parse_input(std::fstream & src)
                 //Capacitor added to circuit
                 std::string _inductance;
                 src >> _name >> _anode >> _cathode >> _inductance;
-                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_inductance)));
+                _circuit.add_component(new Inductor(node_number(_anode),node_number(_cathode),_name,read_value(_inductance)));
                 std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
             }
             break;

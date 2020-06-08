@@ -195,7 +195,7 @@ public:
     }
     double get_current(const std::vector<double> &nodeVoltages) const
     {
-        return linear_current + conductance * -1 * (nodeVoltages[anode]-nodeVoltages[cathode]);
+        return conductance * (nodeVoltages[anode]-nodeVoltages[cathode]) - linear_current;
     }
     /*
     given an increment computed by "controller" due to a timestep

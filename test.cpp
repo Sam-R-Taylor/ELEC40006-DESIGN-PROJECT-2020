@@ -1,4 +1,4 @@
-#include "Circuit.hpp"
+/*#include "Circuit.hpp"
 #include "Component.hpp"
 #include "KCLSolver.hpp"
 #include "TransientSolver.hpp"
@@ -53,4 +53,4 @@ int main(){
     }
     
 
-}
+}*/
