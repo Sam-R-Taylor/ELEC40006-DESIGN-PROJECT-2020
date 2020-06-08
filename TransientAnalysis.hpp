@@ -24,17 +24,17 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
     if (myfile.is_open())
     {
         myfile << CurrentTime << "," ;
-        for(int i = 0; i < CKTIn.get_voltages().size()-1; i++) {
+        for(int i = 0; i < CKTIn.get_voltages().size(); i++) {
             myfile << CKTIn.get_voltages().at(i) << ",";
         }
-        myfile << CKTIn.get_voltages().at(CKTIn.get_voltages().size()-1);
+        //myfile << CKTIn.get_voltages().at(CKTIn.get_voltages().size()-1);
         //COULD NOT REMOVE THE TRAILING , HOPE no affect?
         myfile << "\n";
         myfile.close();
     }else cout << "Unable to open voltage file";
     if(myfile2.is_open()){
         if(CurrentTime == 0){
-            for(int i = 0; i < CKTIn.get_components().size()-1; i++){
+            for(int i = 0; i < CKTIn.get_components().size(); i++){
             //for(Component* component: CKTIn.get_components()){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){
                     myfile2 << CKTIn.get_components().at(i)->get_name() << "C" << ", ";
@@ -44,16 +44,16 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
                     myfile2 << CKTIn.get_components().at(i)->get_name() << ", ";
                 }
             }
-            if(dynamic_cast<BJT*>(CKTIn.get_components().at(CKTIn.get_components().size()-1))){
+            /*if(dynamic_cast<BJT*>(CKTIn.get_components().at(CKTIn.get_components().size()-1))){
                 myfile2 << CKTIn.get_components().at(CKTIn.get_components().size()-1)->get_name() << "C" << ", ";
                 myfile2 << CKTIn.get_components().at(CKTIn.get_components().size()-1)->get_name() << "B" << ", ";
                 myfile2 << CKTIn.get_components().at(CKTIn.get_components().size()-1)->get_name() << "E";
             }else{
                 myfile2 << CKTIn.get_components().at(CKTIn.get_components().size()-1)->get_name();
-            }
+            }*/
             myfile2 << "\n";
         }
-        for(int i = 0; i < CKTIn.get_components().size()-1; i++){
+        for(int i = 0; i < CKTIn.get_components().size(); i++){
         //for(Component* component: CKTIn.get_components()){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){
                     std::vector<double> current = ((BJT*)CKTIn.get_components().at(i))->get_current(CKTIn.get_voltages());
@@ -64,14 +64,14 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
                     myfile2 << GetCurrent(CKTIn,CKTIn.get_components().at(i)) << ", ";
                 }
         }
-        if(dynamic_cast<BJT*>(CKTIn.get_components().at(CKTIn.get_components().size()-1))){
+        /*if(dynamic_cast<BJT*>(CKTIn.get_components().at(CKTIn.get_components().size()-1))){
             std::vector<double> current = ((BJT*)CKTIn.get_components().at(CKTIn.get_components().size()-1))->get_current(CKTIn.get_voltages());
             myfile2 << current[0] << ", ";
             myfile2 << current[1] << ", ";
             myfile2 << current[2];
         }else{
             myfile2 << GetCurrent(CKTIn,CKTIn.get_components().at(CKTIn.get_components().size()-1));
-        }
+        }*/
         myfile2 << "\n";
   }
   else cout << "Unable to open current file";
