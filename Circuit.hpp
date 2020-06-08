@@ -4,7 +4,7 @@
 
 #include<vector>
 #include "Component.hpp"
-
+#include "Eigen/Dense"
 
 struct Node{
     int index = 0;
