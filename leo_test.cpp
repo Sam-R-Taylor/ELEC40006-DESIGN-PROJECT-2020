@@ -2,7 +2,7 @@
 #include "Component.hpp"
 #include "KCLSolver.hpp"
 //#include "TransientSolver.hpp"
-//#include "TransientAnalysis.hpp"
+#include "TransientAnalysis.hpp"
 #include <iostream>
 #include <chrono>
 #include <vector>
@@ -11,7 +11,7 @@ using namespace std;
 int main(){
     
     Voltage_Source v2{1,0,"V1",5};
-    //Capacitor c1{2,0,"C1",0.00001};
+    Capacitor c1{2,0,"C1",0.00001};
     Resistor r2{2,0,"R2",1000};
     //Diode d1{2,3,"D1"};
     //Current_source i1{0,2,"I1",0.005};
@@ -26,11 +26,11 @@ int main(){
     Voltage_Controlled_Current_Source vc2{2,4,"vc1",0.995/0.5,5,3};
     */
     //(BJT bj{1,2,3,"BJ",0.67,0.995,1,10,0.2,0.3};
-    Resistor r1{2,1,"R1",1000};
+    //Resistor r1{2,1,"R1",1000};
     //Resistor r5{3,0,"R1",1000};
     //Resistor r6{3,0,"R1",1000};
     //vector<Component*> components{&v2,&r2,&r3,&r4,&r5,&r6,&d1,&d2,&vc1,&vc2};
-    vector<Component*> components{&v2,&r2,&r1};
+    vector<Component*> components{&v2,&r2,&c1};
     Circuit circuit;
     for(Component* component: components){
         circuit.add_component(component);
@@ -51,9 +51,9 @@ int main(){
     
     for(int i = 0; i < 1; i++){
         cout << "running transient" << endl;
-        //TransientAnalysis(circuit,0.2,50);
+        TransientAnalysis(circuit,0.2,50);
         //TransientSolver(circuit);
-        Matrix_solver(circuit);
+        //Matrix_solver(circuit);
     }
     
 

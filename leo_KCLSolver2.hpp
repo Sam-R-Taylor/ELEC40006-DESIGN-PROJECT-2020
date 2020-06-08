@@ -37,7 +37,7 @@ void Matrix_solver(Circuit& input_circuit)
 { 
     //std::cerr<< "in Matrix_solver" << std::endl;
     //initializing a matrix of the right size 
-    int Mat_size = input_circuit.get_number_of_nodes();     
+    int Mat_size = input_circuit.get_number_of_nodes() - 1;     
     Eigen::MatrixXd Mat(Mat_size,Mat_size);
 
     //initializing a vector of the right size
@@ -62,8 +62,8 @@ void Matrix_solver(Circuit& input_circuit)
     //sum of currents out of a node = 0
     for(Component* i: input_circuit.get_components())
     {
-        int anode = i->get_anode();
-        int cathode = i->get_cathode();
+        int anode = i->get_anode() -1;
+        int cathode = i->get_cathode() -1;
 
         if(dynamic_cast<Resistor*>(i))
         {
@@ -71,14 +71,14 @@ void Matrix_solver(Circuit& input_circuit)
             double conductance = Rptr->get_conductance();
 
             //add coefficients for anode and cathode
-            if(anode!=0 && cathode!=0)
+            if(anode!=-1 && cathode!=-1)
             {
                 Mat(anode,cathode)-=conductance;
                 Mat(cathode,anode)-=conductance;
                 Mat(anode,anode)+=conductance;
                 Mat(cathode,cathode)+=conductance;
             }
-            else if(anode!=0)
+            else if(anode!=-1)
             {
                 Mat(anode,anode)+=conductance;
             }
@@ -93,10 +93,10 @@ void Matrix_solver(Circuit& input_circuit)
             double current = Currentptr->get_current();
 
             //add coefficients for anode
-            if(anode!=0){Vec(anode)-=current;}
+            if(anode!=-1){Vec(anode)-=current;}
             
             //add coefficients for cathode
-            if(cathode!=0){Vec(cathode)+=current;}
+            if(cathode!=-1){Vec(cathode)+=current;}
         }
         else if(dynamic_cast<Voltage_Source*>(i))
         {
@@ -114,23 +114,23 @@ void Matrix_solver(Circuit& input_circuit)
             //for Inductor current source
 
             //add coefficients for anode
-            if(anode!=0){Vec(anode)-=current;}
+            if(anode!=-1){Vec(anode)-=current;}
 
             //add coefficients for cathode
-            if(cathode!=0){Vec(cathode)+=current;}
+            if(cathode!=-1){Vec(cathode)+=current;}
 
                                                                 //POSSIBLE OPTIMAZATION HERE
             //for Inductor resistor
 
             //add coefficients for anode and cathode
-            if(anode!=0 && cathode!=0)
+            if(anode!=-1 && cathode!=-1)
             {
                 Mat(anode,cathode)-=conductance;
                 Mat(cathode,anode)-=conductance;
                 Mat(anode,anode)+=conductance;
                 Mat(cathode,cathode)+=conductance;
             }
-            else if(anode!=0)
+            else if(anode!=-1)
             {
                 Mat(anode,anode)+=conductance;
             }
@@ -145,32 +145,32 @@ void Matrix_solver(Circuit& input_circuit)
             double current = Cptr->get_linear_current();
             double conductance = Cptr->get_conductance();
 
-            //for Capacitor current source
-
-           //add coefficients for anode
-            if(anode!=0){Vec(anode)-=current;}
-
-            //add coefficients for cathode
-            if(cathode!=0){Vec(cathode)+=current;}
-
-                                                                //POSSIBLE OPTIMAZATION HERE
-            //for Capacitor resistor
-
+            //for Capacitor current source and resistor
+            //std::cout<<"capacitor"<<std::endl;
             //add coefficients for anode and cathode
-            if(anode!=0 && cathode!=0)
+            if(anode!=-1 && cathode!=-1)
             {
+                
                 Mat(anode,cathode)-=conductance;
                 Mat(cathode,anode)-=conductance;
                 Mat(anode,anode)+=conductance;
                 Mat(cathode,cathode)+=conductance;
+
+                Vec(anode)-=current;
+                Vec(cathode)+=current;
             }
-            else if(anode!=0)
+            else if(anode!=-1)
             {
+                //std::cout<<"here"<<std::endl;
+                //std::cout<<"cap conductance "<<conductance <<std::endl;
+                //std::cout<<"cap current "<<current <<std::endl;
                 Mat(anode,anode)+=conductance;
+                Vec(anode)-=current;
             }
             else
             {
                 Mat(cathode,cathode)+=conductance;
+                Vec(cathode)+=current;
             }
         }
         else if(dynamic_cast<Diode*>(i))
@@ -201,20 +201,20 @@ void Matrix_solver(Circuit& input_circuit)
     //processing voltage sources
     for(Voltage_Source* voltage_source : voltage_sources)
     {
-        int anode = voltage_source->get_anode();
-        int cathode = voltage_source->get_cathode();
+        int anode = voltage_source->get_anode() -1;
+        int cathode = voltage_source->get_cathode() -1;
         double voltage = voltage_source->get_voltage();
         
         assert(anode != cathode);
 
-        if(cathode == 0)
+        if(cathode == -1)
         {   
             Mat.row(anode).setZero();
             Mat(anode,anode) = 1;                   
             Vec(anode) = voltage;
             //std::cout << "Voltage " << Vec(anode) << std::endl;
         }
-        else if (anode == 0)
+        else if (anode == -1)
         {
             Mat.row(cathode).setZero();
             Mat(cathode,cathode) = -1;
@@ -242,10 +242,10 @@ void Matrix_solver(Circuit& input_circuit)
     //setting V0 to GND and removing corresponding row and column
     
     
-    remove_Row(Mat,0);
-    remove_Column(Mat,0);
+    //remove_Row(Mat,0);
+    //remove_Column(Mat,0);
     
-    Vec = Vec.tail(Mat_size-1);
+    //Vec = Vec.tail(Mat_size-1);
 
     //std::cerr<<"removed V0" << std::endl;
 
@@ -255,7 +255,7 @@ void Matrix_solver(Circuit& input_circuit)
     //std::cerr<< Vec << std::endl;
     
     //finding the inverse matrix
-    Eigen::VectorXd solution(Mat_size -1);
+    Eigen::VectorXd solution(Mat_size);
     Mat = Mat.inverse();
     //solution = Mat.colPivHouseholderQr().solve(Vec);
     solution = Mat * Vec;
