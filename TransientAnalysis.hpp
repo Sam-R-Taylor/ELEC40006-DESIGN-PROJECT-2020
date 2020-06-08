@@ -19,7 +19,8 @@ using Eigen::MatrixXd;
 void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
   fstream myfile;
   myfile.open("output_voltage.txt",fstream::app);
-  
+  //fstream myfile2;
+  //myfile2.open("output_current.txt",fstream::app);
   if (myfile.is_open())
   {
     myfile << CurrentTime << "," ;
@@ -34,7 +35,7 @@ void NodeVoltagesToFile(vector<double> CKTIn2 , double CurrentTime){
 }
 
 void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime){
-    std::cout<< "update nodevoltages" << std::endl;
+    //std::cout<< "update nodevoltages" << std::endl;
      //All this function does is update the integrals of each component and then passes the updates CKT to Transient Solver. 
      //Update Capacitors and inductors integrals
     double Vn;
@@ -47,7 +48,7 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime){
         }
     }
     TransientSolver(CKTIn);
-    std::cout<<"out of transientsolver " << std::endl;
+    //std::cout<<"out of transientsolver " << std::endl;
     //LOOPS THROUGH TO UPDATE INTEGRAL COMPONENTS
     for(int i = 0 ; i < static_cast<int>(CKTIn.get_components().size()) ; i++){
         if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
@@ -63,7 +64,7 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime){
 }
 
 void SetConductancesForSim(Circuit &CKTIn , double deltatime){
-    std::cout<< "in setconductances" << std::endl;
+    //std::cout<< "in setconductances" << std::endl;
     for(int i = 0 ; i < CKTIn.get_components().size() ; i++){
         if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
            ((Capacitor*)(CKTIn.get_components()[i]))->set_conductance(deltatime); 
@@ -85,9 +86,9 @@ void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
     SetConductancesForSim(CKTIn,deltaTime); //SETS THE CONDUCTANCE FOR EACH INDUCTOR AND CAP THAT DEPENDS ON DELTA TIME (BUT REMAINS CONSTANT THROUGH SIM)
     for(double i = 0 ; i <= TimeStep ; i++){
         //outputs for vars in testing
-        std::cout << "timeperiod is "<< TimePeriod << std::endl;
-        std::cout << "deltatime is "<<deltaTime << std::endl;
-        std::cout << "current time is"<<CurrentTime << std::endl;
+        //std::cout << "timeperiod is "<< TimePeriod << std::endl;
+        //std::cout << "deltatime is "<<deltaTime << std::endl;
+        //std::cout << "current time is"<<CurrentTime << std::endl;
         //cout << TimeStep << endl;
         UpdateNodeVoltages(CKTIn , CurrentTime); 
         NodeVoltagesToFile(CKTIn.get_voltages(),CurrentTime);

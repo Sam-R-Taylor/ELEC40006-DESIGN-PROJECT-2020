@@ -4,8 +4,7 @@
 
 #include<vector>
 #include "Component.hpp"
-#include<Eigen/Dense>
-
+#include "Eigen/Dense"
 
 struct Node{
     int index = 0;
@@ -64,8 +63,8 @@ public:
     //diodes constants
     double GMIN = pow(10,-12);
     double ABSTOL = pow(10,-12);
-    double RELTOL = pow(10,-3);
-    size_t max_iterations = 1000;           //edit after testing
+    double RELTOL = pow(10,-6);
+    size_t max_iterations = 10;           //edit after testing
     Circuit()
     {
         std::cerr<<"Circuit constructed"<<std::endl;
@@ -111,6 +110,8 @@ public:
     void build_nodes()
     {
         nodes = NodeGenerator(components);
+        std::vector<double> v(nodes.size(),0);
+        voltages = v;
     }
     int get_number_of_nodes() const{
         return nodes.size();

@@ -120,8 +120,8 @@ public:
     }
     double get_current(const std::vector<double> &nodeVoltages) const
     {
-        std::cout << "Conductance " << conductance << std::endl;
-        std::cout << "Voltage " << (nodeVoltages[anode]-nodeVoltages[cathode]) << std::endl;
+        //std::cout << "Conductance " << conductance << std::endl;
+        //std::cout << "Voltage " << (nodeVoltages[anode]-nodeVoltages[cathode]) << std::endl;
         return linear_current + conductance * (nodeVoltages[anode]-nodeVoltages[cathode]);
     }
 };
@@ -209,7 +209,7 @@ public:
 };
 
 class Diode:
-    public Component
+    public Current_Component
 {
 private:
     //Thermal Voltage
@@ -242,7 +242,7 @@ public:
     //set the voltage across the diode
     void set_vd(double _vd){
         vd = _vd;
-        std::cout << "Vd " << vd << std::endl;
+        //std::cout << "Vd " << vd << std::endl;
     }
     //set the current through the diode at operating point
     void set_id0(double _id0){
@@ -266,7 +266,7 @@ public:
         return (id0 - this->get_conductance()*vd);
     }
     void set_conductance(){
-        std::cout << "conductance " << get_conductance() << std::endl;
+        //std::cout << "conductance " << get_conductance() << std::endl;
         G2 = get_conductance();
     }
     double get_anode_coefficient(){
@@ -294,7 +294,7 @@ public:
 };
 
 class Voltage_Controlled_Current_Source :                
-    public Component
+    public Current_Component
 {
 private:
     double gain;
@@ -357,9 +357,9 @@ private:
     double denom;
 
     //store the coefficients for current to work out the current passing through
-    double collector_current_coeff [4]; //current comming into collector c b e i
-    double base_current_coeff [4]; //current coming into base
-    double emmitter_current_coeff [3]; //current coming into emmitter
+    std::vector<double> collector_current_coeff{0,0,0,0}; //current comming into collector c b e i
+    std::vector<double> base_current_coeff{0,0,0,0}; //current coming into base
+    std::vector<double> emmitter_current_coeff{0,0,0,0}; //current coming into emmitter
 public:
     BJT(int _collector, int _base, int _emmitter, std::string _name, double _Af, double _Ar, int _N, double _Rb, double _Rc, double _Re, bool _PNP = false)
     {
@@ -392,11 +392,11 @@ public:
         double _vd;
         double current_collector = collector_current_coeff[0] * voltages[anode] + 
             collector_current_coeff[1] * voltages[base] +
-            collector_current_coeff[2] * voltages[cathode] + collector_current_coeff[4];
+            collector_current_coeff[2] * voltages[cathode] + collector_current_coeff[3];
         double current_emmitter = emmitter_current_coeff[0] * voltages[anode] + 
             emmitter_current_coeff[1] * voltages[base] +
-            emmitter_current_coeff[2] * voltages[cathode] + emmitter_current_coeff[4];
-        double V0 = voltages[base] - (current_collector + current_emmitter) / Gb;
+            emmitter_current_coeff[2] * voltages[cathode] + emmitter_current_coeff[3];
+        double V0 = voltages[base] + (current_collector + current_emmitter) / Gb;
         double V1 = voltages[anode] - (current_collector) / Gc;
         double V2 = voltages[cathode] - (current_emmitter) / Ge;
         //vd = voltages[base] - voltages[anode];//anode is the collector cathode is emmitter
@@ -486,17 +486,21 @@ public:
         return base;
     }
     
-    double get_current(std::vector<double> voltages, int node){
-        double current = 0;
-        if(node == anode){
-            double current_collector = collector_current_coeff[0] * voltages[anode] + 
-                collector_current_coeff[1] * voltages[base] +
-                collector_current_coeff[2] * voltages[cathode] + collector_current_coeff[4];
-            double current_emmitter = emmitter_current_coeff[0] * voltages[anode] + 
-                emmitter_current_coeff[1] * voltages[base] +
-                emmitter_current_coeff[2] * voltages[cathode] + emmitter_current_coeff[4];
-        }
-
+    std::vector<double> get_current(std::vector<double> voltages){
+        std::vector<double> output{0,0,0};
+        double current_collector = collector_current_coeff[0] * voltages[anode] + 
+            collector_current_coeff[1] * voltages[base] +
+            collector_current_coeff[2] * voltages[cathode] + collector_current_coeff[3];
+        double current_emmitter = emmitter_current_coeff[0] * voltages[anode] + 
+            emmitter_current_coeff[1] * voltages[base] +
+            emmitter_current_coeff[2] * voltages[cathode] + emmitter_current_coeff[3];
+        double current_base = base_current_coeff[0] * voltages[anode] + 
+            base_current_coeff[1] * voltages[base] +
+            base_current_coeff[2] * voltages[cathode] + base_current_coeff[3];
+        output[0] = current_collector;
+        output[1] = current_base;
+        output[2] = current_emmitter;
+        return output;
     }
 };
 
@@ -610,9 +614,9 @@ class AC_Voltage_Source:
     void Set_Voltage(double CurrentTime)
     {
         currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime)) + DC_Offset ;
-        std::cout << "sin arg is " << (2*M_PI*frequency*CurrentTime) << std::endl;
+        //std::cout << "sin arg is " << (2*M_PI*frequency*CurrentTime) << std::endl;
 
-        std::cout<<"current frequency is " << frequency << std::endl;
+        //std::cout<<"current frequency is " << frequency << std::endl;
         //y(t)=Asin(2pift)
 
     }
