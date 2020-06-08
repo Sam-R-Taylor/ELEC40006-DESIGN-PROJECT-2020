@@ -53,6 +53,7 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
             }*/
             myfile2 << "\n";
         }
+        myfile << CurrentTime << "," ;
         for(int i = 0; i < CKTIn.get_components().size(); i++){
         //for(Component* component: CKTIn.get_components()){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){
