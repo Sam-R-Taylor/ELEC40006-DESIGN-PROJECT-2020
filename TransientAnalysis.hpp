@@ -17,6 +17,7 @@ using Eigen::MatrixXd;
 
 
 void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
+     
     fstream myfile;
     myfile.open("output_voltage.txt",fstream::app);
     fstream myfile2;
@@ -54,7 +55,10 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
             myfile2 << "\n";
         }
         myfile << CurrentTime << "," ;
+        std::cout << "working" << std::endl;
         for(int i = 0; i < CKTIn.get_components().size(); i++){
+            std::cout << "working" << std::endl;
+            std::cout << CKTIn.get_components().at(i)->get_name () << std::endl;
         //for(Component* component: CKTIn.get_components()){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){
                     std::vector<double> current = ((BJT*)CKTIn.get_components().at(i))->get_current(CKTIn.get_voltages());
@@ -62,9 +66,12 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
                     myfile2 << current[1] << ", ";
                     myfile2 << current[2] << ", ";
                 }else{
+                
                     myfile2 << GetCurrent(CKTIn,CKTIn.get_components().at(i)) << ", ";
                 }
+                std::cout << "working" << std::endl;
         }
+        std::cout << "working" << std::endl;
         /*if(dynamic_cast<BJT*>(CKTIn.get_components().at(CKTIn.get_components().size()-1))){
             std::vector<double> current = ((BJT*)CKTIn.get_components().at(CKTIn.get_components().size()-1))->get_current(CKTIn.get_voltages());
             myfile2 << current[0] << ", ";
@@ -100,6 +107,7 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime,bool isLinear){
     NodeVoltagesToFile(CKTIn,CurrentTime);
     //std::cout<<"out of transientsolver " << std::endl;
     //LOOPS THROUGH TO UPDATE INTEGRAL COMPONENTS
+    
     for(int i = 0 ; i < static_cast<int>(CKTIn.get_components().size()) ; i++){
         if(dynamic_cast<Capacitor*>(CKTIn.get_components().at(i))){ //DETERMINES THAT THE COMPONENT IS A CAPACITOR
             Vn = (CKTIn.get_voltages()[CKTIn.get_components()[i]->get_anode()]) - 
@@ -112,6 +120,7 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime,bool isLinear){
             ((Inductor*)(CKTIn.get_components()[i]))->set_linear_current(In) ; 
         }
     }  
+    
 }
 
 void SetConductancesForSim(Circuit &CKTIn , double deltatime){

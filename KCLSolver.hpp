@@ -80,7 +80,8 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
                 }
             }
             else if(dynamic_cast<Capacitor*>(component)){
-                //cout << ((Capacitor*)component)->get_linear_current() << endl;
+                cout << ((Capacitor*)component)->get_linear_current() << endl;
+                cout << ((Capacitor*)component)->get_conductance() << endl;
                 sub_coefficients[nodes->size()] += ((Capacitor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
                 //sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
                 //sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
@@ -98,6 +99,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
             else if(dynamic_cast<Voltage_Component*>(component)){
                 //check which end of the voltage source is connected to the current node
                 if(component->get_anode() == node->index){
+                    std::cout << "get current "<< std::endl;
                     //generate the coeffiecient for node on the other side of the voltage source
                     //leaving out he connection to the current node by adding the source_component parameter
                     sub_coefficients = 
