@@ -1,6 +1,6 @@
 #include <vector>
 #include <iostream>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <string>
 #include "Component.hpp"
 #include <memory> 

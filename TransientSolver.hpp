@@ -4,12 +4,13 @@
 
 #include <vector>
 #include <iostream>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <string>
 #include "Component.hpp"
 #include"Circuit.hpp"
 #include "KCLSolver.hpp"
 #include <memory> 
+#include "leo_KCLsolver2.hpp"
 using Eigen::MatrixXd;
 
 
@@ -35,9 +36,11 @@ void TransientSolver(Circuit &circuit){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        for(auto x: old_voltages){
+        std::cout <<"old voltages are" << std::endl;
+        for(auto x: old_voltages){          
             std::cout << x << std::endl;
         }   
+        //Matrix_solver(circuit);
         NodeVoltageSolver(circuit);
         //check the error
         
