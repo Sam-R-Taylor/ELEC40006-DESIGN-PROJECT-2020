@@ -3,7 +3,7 @@
 
 #include"Circuit.hpp"
 #include"Component.hpp"
-#include"leo_KCLSolver.hpp"
+#include"leo_KCLSolver2.hpp"
 #include"TransientSolver.hpp"
 #include"TransientAnalysis.hpp"
 //#include <Eigen/Dense>
