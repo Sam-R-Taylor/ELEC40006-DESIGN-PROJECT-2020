@@ -150,6 +150,8 @@ void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
     double deltaTime = (TimePeriod/TimeStep);
     remove("output_voltage.txt");
     fstream myfile ("output_voltage.txt");
+    remove("output_current.txt");
+    fstream myfile2 ("output_current.txt");
     SetConductancesForSim(CKTIn,deltaTime); //SETS THE CONDUCTANCE FOR EACH INDUCTOR AND CAP THAT DEPENDS ON DELTA TIME (BUT REMAINS CONSTANT THROUGH SIM)
     for(double i = 0 ; i <= TimeStep ; i++){
         //outputs for vars in testing

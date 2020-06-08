@@ -39,11 +39,9 @@ void TransientSolver(Circuit &circuit){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        std::cout <<"old voltages are" << std::endl;
-        for(auto x: old_voltages){          
-            std::cout << x << std::endl;
-        }   
-        //Matrix_solver(circuit);
+        //for(auto x: old_voltages){
+        //    std::cout << x << std::endl;
+        //}   
         NodeVoltageSolver(circuit);
         //check the error
         
