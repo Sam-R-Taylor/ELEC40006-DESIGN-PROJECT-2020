@@ -116,6 +116,15 @@ public:
     int get_number_of_nodes() const{
         return nodes.size();
     }
+    void set_voltages_eigen(Eigen::VectorXd& solution)
+    {
+        //std::cerr <<"setting voltages" << std::endl;
+        for(int i = 0; i<solution.size(); i++)
+        {
+            //std::cerr <<"index " << solution(i) << std::endl;
+            voltages[i+1] = solution(i);
+        }
+    }
     std::vector<Node> *get_nodes_ptr() {return &nodes;}
     std::vector<Node> get_nodes() const{return nodes;}
     std::vector<Component*> get_components() const{return components;}
