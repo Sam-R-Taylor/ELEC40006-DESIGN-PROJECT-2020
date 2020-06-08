@@ -10,7 +10,7 @@
 #include"Circuit.hpp"
 #include "KCLSolver.hpp"
 #include <memory> 
-#include "leo_KCLsolver2.hpp"
+#include "leo_KCLSolver2.hpp"
 using Eigen::MatrixXd;
 
 

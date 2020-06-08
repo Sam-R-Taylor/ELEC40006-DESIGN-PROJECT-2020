@@ -4,7 +4,7 @@
 #include "Circuit.hpp"
 #include "Component.hpp"
 
-#include<eigen3/Eigen/Dense>
+#include<Eigen/Dense>
 #include<cassert>
 
 
@@ -131,6 +131,8 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     }
 
     std::cerr<<"constructed Matrix" << std::endl;
+    std::cerr<<"Mat is " << std::endl;
+    std::cerr << Mat << std::endl;
 
 
         //processing voltage sources
