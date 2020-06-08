@@ -95,6 +95,8 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime,bool isLinear){
     }else{
         TransientSolver(CKTIn);
     }
+    //print the voltages and currents to files
+    NodeVoltagesToFile(CKTIn,CurrentTime);
     //std::cout<<"out of transientsolver " << std::endl;
     //LOOPS THROUGH TO UPDATE INTEGRAL COMPONENTS
     for(int i = 0 ; i < static_cast<int>(CKTIn.get_components().size()) ; i++){
@@ -155,7 +157,6 @@ void TransientAnalysis(Circuit &CKTIn , double TimePeriod , int TimeStep){
         //std::cout << "current time is"<<CurrentTime << std::endl;
         //cout << TimeStep << endl;
         UpdateNodeVoltages(CKTIn , CurrentTime,isLinear); 
-        NodeVoltagesToFile(CKTIn,CurrentTime);
         CurrentTime = CurrentTime + deltaTime;
         //POSSIBLE SHIFT ERROR MAY OCCUR. 
     }
