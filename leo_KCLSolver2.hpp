@@ -162,7 +162,7 @@ void Matrix_solver(Circuit& input_circuit)
 
                 Mat(cathode,anode)-=anode_coeff;
                 Mat(cathode,cathode)-=cathode_coeff;
-                //for Diode current source
+
                 Vec(anode)-=current;          
                 Vec(cathode)+=current;
             }
@@ -181,7 +181,6 @@ void Matrix_solver(Circuit& input_circuit)
         {
             BJT* BJTptr = dynamic_cast<BJT*>(i);
             int base = BJTptr->get_base() -1;
-            //std::cout << anode_coeff << " " << cathode_coeff << " " << current << std::endl;
             if(anode!=-1)
             {    
                 //add collector coefficients
@@ -218,13 +217,6 @@ void Matrix_solver(Circuit& input_circuit)
         }
     }
 
-    //std::cerr<<"constructed Matrix" << std::endl;
-
-    //std::cout<<"Mat is " << std::endl;
-    //std::cout << Mat << std::endl;
-    //std::cout<<"Vec is " << std::endl;
-    //std::cout << Vec << std::endl;
-
     //processing voltage sources
     for(Voltage_Source* voltage_source : voltage_sources)
     {
@@ -239,14 +231,12 @@ void Matrix_solver(Circuit& input_circuit)
             Mat.row(anode).setZero();
             Mat(anode,anode) = 1;                   
             Vec(anode) = voltage;
-            //std::cout << "Voltage " << Vec(anode) << std::endl;
         }
         else if (anode == -1)
         {
             Mat.row(cathode).setZero();
             Mat(cathode,cathode) = -1;
             Vec(cathode) = voltage;
-            //std::cout << "Voltage cathode " << Vec(cathode) << std::endl;
         }
         else
         {   
@@ -260,39 +250,14 @@ void Matrix_solver(Circuit& input_circuit)
             Vec(anode) = voltage;
         }
     }
-
-    //std::cerr<<"added voltage sources to Matrix" << std::endl;
-    //std::cerr<<"Mat is " << std::endl;
-    //std::cerr << Mat << std::endl;
-    //std::cerr<<"Vec is " << std::endl;
-    //std::cerr<< Vec << std::endl;
-    //setting V0 to GND and removing corresponding row and column
-    
-    
-    //remove_Row(Mat,0);
-    //remove_Column(Mat,0);
-    
-    //Vec = Vec.tail(Mat_size-1);
-
-    //std::cerr<<"removed V0" << std::endl;
-
-    //std::cerr<<"Mat resized is " << std::endl;
-    //std::cerr << Mat << std::endl;
-    //std::cerr<<"Vec resized is " << std::endl;
-    //std::cerr<< Vec << std::endl;
-    
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size);
     Mat = Mat.inverse();
     //solution = Mat.colPivHouseholderQr().solve(Vec);
     solution = Mat * Vec;
-    //std::cerr<< "solution is " <<std::endl;
-    //std::cerr << solution << std::endl;
-
 
     input_circuit.set_voltages_eigen(solution);
 
-    //std::cerr<< "end of Matrix solver" << std::endl;
     return;
   
 }

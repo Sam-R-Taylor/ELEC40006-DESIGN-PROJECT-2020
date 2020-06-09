@@ -33,6 +33,7 @@ class Current_Component:
     public Component
 {
     public:
+    double current = 0;
     virtual double get_current(const std::vector<double> &nodeVoltages) const = 0;
 };
 
@@ -360,7 +361,9 @@ private:
     std::vector<double> collector_current_coeff{0,0,0,0}; //current comming into collector c b e i
     std::vector<double> base_current_coeff{0,0,0,0}; //current coming into base
     std::vector<double> emmitter_current_coeff{0,0,0,0}; //current coming into emmitter
+
 public:
+    std::vector<double> currents{0,0,0};
     BJT(int _collector, int _base, int _emmitter, std::string _name, double _Af, double _Ar, int _N, double _Rb, double _Rc, double _Re, bool _PNP = false)
     {
         PNP = _PNP;
@@ -509,6 +512,7 @@ class Voltage_Component:
 {
     std::vector<double> current_coefficients;
 public:
+    double current;
     virtual double get_voltage() const = 0;
     void set_coefficients(std::vector<double> _current_coefficients){
         current_coefficients = _current_coefficients;
