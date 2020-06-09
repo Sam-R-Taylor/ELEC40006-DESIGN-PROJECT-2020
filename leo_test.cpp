@@ -1,18 +1,20 @@
 #include "Circuit.hpp"
 #include "Component.hpp"
-#include "KCLSolver.hpp"
+//#include "KCLSolver.hpp"
 //#include "TransientSolver.hpp"
-#include "TransientAnalysis.hpp"
+//#include "TransientAnalysis.hpp"
 #include <iostream>
 #include <chrono>
 #include <vector>
-#include"leo_KCLSolver2.hpp"
+#include"leo_KCLSolver.hpp"
 using namespace std;
 int main(){
     
-    Voltage_Source v2{1,0,"V1",5};
-    Inductor i1{2,0,"I1",10};
-    Resistor r2{2,1,"R2",1000};
+    Voltage_Source v1{1,0,"V1",4};
+    //Inductor i1{2,0,"I1",10};
+    Resistor r1{2,1,"R1",1000};
+    Resistor r2{2,3,"R1",5000};
+    Voltage_Controlled_Voltage_Source v2{0,3,"V2",6,2,0};
     //Diode d1{2,3,"D1"};
     //Current_source i1{0,2,"I1",0.005};
     /*Resistor r2{2,1,"R1",1000};
@@ -30,7 +32,7 @@ int main(){
     //Resistor r5{3,0,"R1",1000};
     //Resistor r6{3,0,"R1",1000};
     //vector<Component*> components{&v2,&r2,&r3,&r4,&r5,&r6,&d1,&d2,&vc1,&vc2};
-    vector<Component*> components{&v2,&r2,&i1};
+    vector<Component*> components{&v2,&r2,&r1,&v1};
     Circuit circuit;
     for(Component* component: components){
         circuit.add_component(component);
@@ -41,7 +43,7 @@ int main(){
     //vector<Node> nodes = NodeGenerator(circuit.get_components());
     circuit.build_nodes();
     //cout << "built node " << endl;
-    vector<double> v{0,0,0};
+    vector<double> v{0,0,0,0};
     circuit.set_voltages(v);
 
 
@@ -51,9 +53,9 @@ int main(){
     
     for(int i = 0; i < 1; i++){
         cout << "running transient" << endl;
-        TransientAnalysis(circuit,5,5);
+        //TransientAnalysis(circuit,5,5);
         //TransientSolver(circuit);
-        //Matrix_solver(circuit);
+        Matrix_solver(circuit);
     }
     
 

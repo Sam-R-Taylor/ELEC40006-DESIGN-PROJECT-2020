@@ -56,7 +56,7 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     std::vector<Node> nodes = input_circuit.get_nodes();            //possible optimization here
 
     //needed to store voltage components
-    std::vector<Voltage_Source*> voltage_sources;
+    std::vector<Voltage_Component*> voltage_components;
 
 
     std::cerr<<"initialized Matrix" << std::endl;
@@ -118,14 +118,14 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
                     Vec(node_index) += Currentptr->get_current();
                 }
             }
-            if(dynamic_cast<Voltage_Source*>(component_attached))
+            if(dynamic_cast<Voltage_Component*>(component_attached))
             {
                 int anode = component_attached->get_anode();
                 int cathode = component_attached->get_cathode();
-                Voltage_Source* Vptr = dynamic_cast<Voltage_Source*>(component_attached);
+                Voltage_Component* Vptr = dynamic_cast<Voltage_Component*>(component_attached);
 
                 //needs to be processed at the end
-                voltage_sources.push_back(Vptr);
+                voltage_components.push_back(Vptr);
             }
         }
     }
@@ -134,40 +134,98 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     std::cerr<<"Mat is " << std::endl;
     std::cerr << Mat << std::endl;
 
-
         //processing voltage sources
-    for(Voltage_Source* voltage_source : voltage_sources)
+    for(Voltage_Component* i : voltage_components)
     {
-        int anode = voltage_source->get_anode();
-        int cathode = voltage_source->get_cathode();
-        double voltage = voltage_source->get_voltage();
-        
-        assert(anode != cathode);
+        std::cerr<<"no of voltage components is "<<voltage_components.size()  << std::endl;
+        std::cerr<<"voltage component is "<<i->get_name()  << std::endl;
+        int anode = i->get_anode() ;
+        int cathode = i->get_cathode() ;
 
-        if(cathode == 0)
-        {   
-            Mat.row(anode).setZero();
-            Mat(anode,anode) = 1;                   
-            Vec(anode) = voltage;
-        }
-        else if (anode == 0)
+        if(dynamic_cast<Voltage_Source*>(i))
         {
-            Mat.row(cathode).setZero();
-            Mat(cathode,cathode) = -1;
-            Vec(cathode) = voltage;
+            std::cerr<<"VS" << std::endl;
+            Voltage_Source* Vptr = dynamic_cast<Voltage_Source*>(i);
+            double voltage = Vptr->get_voltage();
+            
+            assert(anode != cathode);
+
+            if(cathode == 0)
+            {   
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;                   
+                Vec(anode) = voltage;
+                //std::cout << "Voltage " << Vec(anode) << std::endl;
+            }
+            else if (anode == 0)
+            {
+                Mat.row(cathode).setZero();
+                Mat(cathode,cathode) = -1;
+                Vec(cathode) = voltage;
+                //std::cout << "Voltage cathode " << Vec(cathode) << std::endl;
+            }
+            else
+            {   
+                //combines KCL equations
+                Mat.row(cathode) += Mat.row(anode);
+                Vec(cathode) += Vec(anode);
+                //sets anode node to V_anode - V_cathode = deltaV
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;
+                Mat(anode,cathode) = -1;
+                Vec(anode) = voltage;
+            }
         }
-        else
-        {   
-            //combines KCL equations
-            Mat.row(cathode) += Mat.row(anode);
-            Vec(cathode) += Vec(anode);
-            //sets anode node to V_anode - V_cathode = deltaV
-            Mat.row(anode).setZero();
-            Mat(anode,anode) = 1;
-            Mat(anode,cathode) = -1;
-            Vec(anode) = voltage;
+        else if (dynamic_cast<Voltage_Controlled_Voltage_Source*>(i))
+        {
+            Voltage_Controlled_Voltage_Source* Vptr = dynamic_cast<Voltage_Controlled_Voltage_Source*>(i);
+            std::cerr<<"VCVS " << std::endl;
+            double gain = Vptr->get_gain();
+            int control_anode = Vptr->get_control_anode() ;
+            int control_cathode = Vptr->get_control_cathode();
+
+            if(anode == 0)
+            {
+                //sets defining eq of VCVS at row cathode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(cathode).setZero();
+                Vec(cathode) = 0;
+
+                Mat(cathode,anode)+= 1;
+                Mat(cathode,cathode)+= -1;
+                Mat(cathode,control_anode)+= -gain;
+                Mat(cathode,control_cathode)+= gain;
+            }
+            else if (cathode == 0)
+            {
+                //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(anode).setZero();
+                Vec(anode) = 0;
+
+                Mat(anode,anode)+= 1;
+                Mat(anode,cathode)+= -1;
+                Mat(anode,control_anode)+= -gain;
+                Mat(anode,control_cathode)+= gain;
+            }
+            else
+            {
+                //combines KCL equations
+                Mat.row(cathode) += Mat.row(anode);
+                Vec(cathode) += Vec(anode);
+                //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(anode).setZero();
+                Vec(anode) = 0;
+
+                Mat(anode,anode)+= 1;
+                Mat(anode,cathode)+= -1;
+                Mat(anode,control_anode)+= -gain;
+                Mat(anode,control_cathode)+= gain;
+            }
+            
+             
+        
         }
     }
+    
 
     std::cerr<<"added voltage sources to Matrix" << std::endl;
     std::cerr<<"Mat is " << std::endl;
@@ -177,13 +235,13 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
     //setting V0 to GND and removing corresponding row and column
     remove_Row(Mat,0);
     remove_Column(Mat,0);
-    std:: cout << "vec " << Vec(1);
-    Vec = Vec.segment(1,Mat_size-1);
+    //std:: cout << "vec " << Vec(1);
+    Vec = Vec.tail(Mat_size-1);
     //std::cerr<<"removed V0" << std::endl;
 
-    //std::cerr<<"Mat resized is " << std::endl;
-    //std::cerr << Mat << std::endl;
-    //std::cerr<<"Vec resized is " << std::endl;
+    std::cerr<<"Mat resized is " << std::endl;
+    std::cerr << Mat << std::endl;
+    std::cerr<<"Vec resized is " << std::endl;
     std::cerr<< Vec << std::endl;
     
     //finding the inverse matrix

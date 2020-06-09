@@ -574,6 +574,7 @@ public:
     {
         return control_voltage_cathode;
     }
+    double get_voltage() const{};
 };
 
 class AC_Voltage_Source:
