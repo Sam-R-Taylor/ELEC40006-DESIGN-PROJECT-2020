@@ -153,26 +153,69 @@ void Matrix_solver(Circuit& input_circuit)
             double anode_coeff = Dptr->get_anode_coefficient();
             double cathode_coeff = Dptr->get_cathode_coefficient();
             double current = Dptr->get_constant_coefficient();
+            std::cout << anode_coeff << " " << cathode_coeff << " " << current << std::endl;
+            if(anode!=-1 && cathode!=-1)
+            {             
+                //add diode coefficients
+                Mat(anode,anode)+=anode_coeff;
+                Mat(anode,cathode)+=cathode_coeff;
 
-            //add diode coefficients
-            Mat(anode,anode)+=anode_coeff;
-            Mat(cathode,anode)+=anode_coeff;
+                Mat(cathode,anode)-=anode_coeff;
+                Mat(cathode,cathode)-=cathode_coeff;
 
-            Mat(cathode,cathode)-=cathode_coeff;
-            Mat(anode,cathode)-=cathode_coeff;
-
-            //for Diode current source
-            Vec(anode)-=current;          
-            Vec(cathode)+=current;
+                Vec(anode)-=current;          
+                Vec(cathode)+=current;
+            }
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=anode_coeff;
+                Vec(anode)-=current;
+            }
+            else
+            {
+                Mat(cathode,cathode)-=cathode_coeff;
+                Vec(cathode)+=current;
+            }
+        }
+        else if(dynamic_cast<BJT*>(i))
+        {
+            BJT* BJTptr = dynamic_cast<BJT*>(i);
+            int base = BJTptr->get_base() -1;
+            if(anode!=-1)
+            {    
+                //add collector coefficients
+                Mat(anode,anode)+=BJTptr->get_collector_coefficient(anode+1);;
+                if(cathode!=-1){
+                    //collector emmitter
+                    Mat(anode,cathode)+=BJTptr->get_emmitter_coefficient(anode+1);
+                    Mat(cathode,anode)+=BJTptr->get_collector_coefficient(cathode+1);
+                }
+                if(base!=-1){
+                    //collector base
+                    Mat(anode,base)+=BJTptr->get_base_coefficient(anode+1);
+                    Mat(base,anode)+=BJTptr->get_collector_coefficient(base+1);
+                }
+                Vec(anode)-=BJTptr->get_constant_coefficient(anode+1);
+            }
+            if(cathode!=-1)
+            { 
+                //add emmitter coefficients
+                Mat(cathode,cathode)+=BJTptr->get_emmitter_coefficient(cathode+1);
+                if(base!=-1){
+                    //emmitter base 
+                    Mat(cathode,base)+=BJTptr->get_base_coefficient(cathode+1);
+                    Mat(base,cathode)+=BJTptr->get_emmitter_coefficient(base+1);
+                }
+                Vec(cathode)-=BJTptr->get_constant_coefficient(cathode+1);
+            }
+            if(base!=-1)
+            { 
+                //add base coefficients
+                Mat(base,base)+=BJTptr->get_base_coefficient(base+1);
+                Vec(base)-=BJTptr->get_constant_coefficient(base+1);
+            }
         }
     }
-
-    //std::cerr<<"constructed Matrix" << std::endl;
-
-    //std::cout<<"Mat is " << std::endl;
-    //std::cout << Mat << std::endl;
-    //std::cout<<"Vec is " << std::endl;
-    //std::cout << Vec << std::endl;
 
     //processing voltage sources
     for(Voltage_Component* i : voltage_components)
@@ -233,39 +276,14 @@ void Matrix_solver(Circuit& input_circuit)
             Mat(anode,control_cathode)= gain;       
         }
     }
-
-    //std::cerr<<"added voltage sources to Matrix" << std::endl;
-    //std::cerr<<"Mat is " << std::endl;
-    //std::cerr << Mat << std::endl;
-    //std::cerr<<"Vec is " << std::endl;
-    //std::cerr<< Vec << std::endl;
-    //setting V0 to GND and removing corresponding row and column
-    
-    
-    //remove_Row(Mat,0);
-    //remove_Column(Mat,0);
-    
-    //Vec = Vec.tail(Mat_size-1);
-
-    //std::cerr<<"removed V0" << std::endl;
-
-    //std::cerr<<"Mat resized is " << std::endl;
-    //std::cerr << Mat << std::endl;
-    //std::cerr<<"Vec resized is " << std::endl;
-    //std::cerr<< Vec << std::endl;
-    
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size);
     Mat = Mat.inverse();
     //solution = Mat.colPivHouseholderQr().solve(Vec);
     solution = Mat * Vec;
-    //std::cerr<< "solution is " <<std::endl;
-    //std::cerr << solution << std::endl;
-
 
     input_circuit.set_voltages_eigen(solution);
 
-    //std::cerr<< "end of Matrix solver" << std::endl;
     return;
   
 }

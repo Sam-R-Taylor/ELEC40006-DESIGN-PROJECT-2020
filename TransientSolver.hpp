@@ -8,32 +8,31 @@
 #include <string>
 #include "Component.hpp"
 #include"Circuit.hpp"
-#include "KCLSolver.hpp"
+//#include "KCLSolver.hpp"
 #include <memory> 
 #include "leo_KCLSolver2.hpp"
 using Eigen::MatrixXd;
 
 
+
+
+
 void TransientSolver(Circuit &circuit){
-    //std::cout<< "in transient solver " << std::endl;
     bool incomplete = true;
     int current_iteration = 0;
     //iterate adjusting voltages each time
     while(incomplete){
         current_iteration++;
-        //std::cout<< "in itterater " << std::endl;
         //loop through the components
         for(Component* component: circuit.get_components()){
             //adjust all the diodes for the current voltage guess
             if(dynamic_cast<Diode*>(component)){
-                //std::cout<< "in diode " << std::endl;
                 ((Diode*)component)->set_vd(circuit.get_voltages()[component->get_anode()] - circuit.get_voltages()[component->get_cathode()]);
                 ((Diode*)component)->set_id0(((Diode*)component)->get_current(circuit.get_voltages()));
-                //std::cout<< "out of diode " << std::endl;
+                ((Diode*)component)->set_conductance();
             }
             //adjust all the bjts for the current voltage guess
             if(dynamic_cast<BJT*>(component)){
-                //std::cout << "adjusting bjt" << std::endl;
                 ((BJT*)component)->set_op(circuit.get_voltages());
             }
         }
@@ -41,8 +40,9 @@ void TransientSolver(Circuit &circuit){
         std::vector<double> old_voltages = circuit.get_voltages(); 
         //for(auto x: old_voltages){
         //    std::cout << x << std::endl;
-        //}   
-        NodeVoltageSolver(circuit);
+        //}
+        Matrix_solver(circuit);   
+        //NodeVoltageSolver(circuit);
         //check the error
         
         //set the stored voltages to the new voltages
@@ -54,12 +54,10 @@ void TransientSolver(Circuit &circuit){
         }
         //check that max iterations haven't occured
         if(current_iteration >= circuit.max_iterations){
-            cout << "max iterations";
             exit(1);
             incomplete = false;
         }
     }
-    //std::cout << "Iterations " << current_iteration << std::endl;
 }
 
 #endif
