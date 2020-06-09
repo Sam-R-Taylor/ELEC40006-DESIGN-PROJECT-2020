@@ -29,6 +29,7 @@ void TransientSolver(Circuit &circuit){
                 //std::cout<< "in diode " << std::endl;
                 ((Diode*)component)->set_vd(circuit.get_voltages()[component->get_anode()] - circuit.get_voltages()[component->get_cathode()]);
                 ((Diode*)component)->set_id0(((Diode*)component)->get_current(circuit.get_voltages()));
+                ((Diode*)component)->set_conductance();
                 //std::cout<< "out of diode " << std::endl;
             }
             //adjust all the bjts for the current voltage guess
@@ -39,10 +40,11 @@ void TransientSolver(Circuit &circuit){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        //for(auto x: old_voltages){
-        //    std::cout << x << std::endl;
-        //}   
-        NodeVoltageSolver(circuit);
+        for(auto x: old_voltages){
+            std::cout << x << std::endl;
+        }
+        Matrix_solver(circuit);   
+        //NodeVoltageSolver(circuit);
         //check the error
         
         //set the stored voltages to the new voltages

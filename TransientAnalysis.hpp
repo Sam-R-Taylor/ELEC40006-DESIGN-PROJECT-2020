@@ -8,6 +8,7 @@
 #include <fstream>
 #include "TransientSolver.hpp"
 #include "KCLSolver.hpp"
+#include "leo_KCLSolver2.hpp"
 
 // HAD TO REMOVE BOTH KCL AND TRANSIENT SOLVER FROM THE #INCLUDE AS THEY DID NOT WORK 
 // Both threw compilation errors.
@@ -33,6 +34,7 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
         myfile << "\n";
         myfile.close();
     }else cout << "Unable to open voltage file";
+    /*
     if(myfile2.is_open()){
         if(CurrentTime == 0){
             for(int i = 0; i < CKTIn.get_components().size(); i++){
@@ -51,7 +53,7 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
                 myfile2 << CKTIn.get_components().at(CKTIn.get_components().size()-1)->get_name() << "E";
             }else{
                 myfile2 << CKTIn.get_components().at(CKTIn.get_components().size()-1)->get_name();
-            }*/
+            }//
             myfile2 << "\n";
         }
         myfile << CurrentTime << "," ;
@@ -79,10 +81,10 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
             myfile2 << current[2];
         }else{
             myfile2 << GetCurrent(CKTIn,CKTIn.get_components().at(CKTIn.get_components().size()-1));
-        }*/
+        }//
         myfile2 << "\n";
   }
-  else cout << "Unable to open current file";
+  else cout << "Unable to open current file";*/
 }
 
 void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime,bool isLinear){
@@ -99,7 +101,7 @@ void UpdateNodeVoltages(Circuit &CKTIn , double CurrentTime,bool isLinear){
         }
     }
     if(isLinear){
-        NodeVoltageSolver(CKTIn);
+        Matrix_solver(CKTIn);
     }else{
         TransientSolver(CKTIn);
     }

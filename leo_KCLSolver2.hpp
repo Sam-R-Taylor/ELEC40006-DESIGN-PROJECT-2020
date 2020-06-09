@@ -153,17 +153,68 @@ void Matrix_solver(Circuit& input_circuit)
             double anode_coeff = Dptr->get_anode_coefficient();
             double cathode_coeff = Dptr->get_cathode_coefficient();
             double current = Dptr->get_constant_coefficient();
+            std::cout << anode_coeff << " " << cathode_coeff << " " << current << std::endl;
+            if(anode!=-1 && cathode!=-1)
+            {             
+                //add diode coefficients
+                Mat(anode,anode)+=anode_coeff;
+                Mat(anode,cathode)+=cathode_coeff;
 
-            //add diode coefficients
-            Mat(anode,anode)+=anode_coeff;
-            Mat(cathode,anode)+=anode_coeff;
-
-            Mat(cathode,cathode)-=cathode_coeff;
-            Mat(anode,cathode)-=cathode_coeff;
-
-            //for Diode current source
-            Vec(anode)-=current;          
-            Vec(cathode)+=current;
+                Mat(cathode,anode)-=anode_coeff;
+                Mat(cathode,cathode)-=cathode_coeff;
+                //for Diode current source
+                Vec(anode)-=current;          
+                Vec(cathode)+=current;
+            }
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=anode_coeff;
+                Vec(anode)-=current;
+            }
+            else
+            {
+                Mat(cathode,cathode)-=cathode_coeff;
+                Vec(cathode)+=current;
+            }
+        }
+        else if(dynamic_cast<BJT*>(i))
+        {
+            BJT* BJTptr = dynamic_cast<BJT*>(i);
+            int base = BJTptr->get_base() -1;
+            //std::cout << anode_coeff << " " << cathode_coeff << " " << current << std::endl;
+            if(anode!=-1)
+            {    
+                //add collector coefficients
+                Mat(anode,anode)+=BJTptr->get_collector_coefficient(anode+1);;
+                if(cathode!=-1){
+                    //collector emmitter
+                    Mat(anode,cathode)+=BJTptr->get_emmitter_coefficient(anode+1);
+                    Mat(cathode,anode)+=BJTptr->get_collector_coefficient(cathode+1);
+                }
+                if(base!=-1){
+                    //collector base
+                    Mat(anode,base)+=BJTptr->get_base_coefficient(anode+1);
+                    Mat(base,anode)+=BJTptr->get_collector_coefficient(base+1);
+                }
+                Vec(anode)-=BJTptr->get_constant_coefficient(anode+1);
+            }
+            if(cathode!=-1)
+            { 
+                //add emmitter coefficients
+                Mat(cathode,cathode)+=BJTptr->get_emmitter_coefficient(cathode+1);
+                if(base!=-1){
+                    //emmitter base 
+                    Mat(cathode,base)+=BJTptr->get_base_coefficient(cathode+1);
+                    Mat(base,cathode)+=BJTptr->get_emmitter_coefficient(base+1);
+                }
+                Vec(cathode)-=BJTptr->get_constant_coefficient(cathode+1);
+            }
+            if(base!=-1)
+            { 
+                //add base coefficients
+                Mat(base,base)+=BJTptr->get_base_coefficient(base+1);
+                Vec(base)-=BJTptr->get_constant_coefficient(base+1);
+            }
         }
     }
 

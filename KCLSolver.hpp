@@ -35,11 +35,12 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
             }
             //if a component is a diode use its linear properties
             if(dynamic_cast<Diode*>(component)){
-                ((Diode*)component)->set_conductance();
+                //((Diode*)component)->set_conductance();
                 if(component->get_anode() == node->index){
                     //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
                     sub_coefficients[component->get_anode()] += ((Diode*)component)->get_anode_coefficient();
                     sub_coefficients[component->get_cathode()] += ((Diode*)component)->get_cathode_coefficient();
+                    cout << ((Diode*)component)->get_anode_coefficient() << " " << ((Diode*)component)->get_cathode_coefficient() << " " << ((Diode*)component)->get_constant_coefficient() << endl;
                 }
                 if(component->get_cathode() == node->index){
                     sub_coefficients[component->get_anode()] += -((Diode*)component)->get_anode_coefficient();
@@ -99,7 +100,7 @@ vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component 
             else if(dynamic_cast<Voltage_Component*>(component)){
                 //check which end of the voltage source is connected to the current node
                 if(component->get_anode() == node->index){
-                    std::cout << "get current "<< std::endl;
+                    //std::cout << "get current "<< std::endl;
                     //generate the coeffiecient for node on the other side of the voltage source
                     //leaving out he connection to the current node by adding the source_component parameter
                     sub_coefficients = 
