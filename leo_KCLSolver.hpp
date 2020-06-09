@@ -71,7 +71,7 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
         //iterating through each componenet of the node considered
         for(Component* component_attached: nodes[node_index].components_attached)
         {
-
+            std::cerr<<"node index is "  << node_index << std::endl;
             std::cerr<<"in loop considering "  << component_attached->get_name() << std::endl;
             //std::cerr<<"ptr is " << component_attached << std::endl;
             //std::cerr<<"dynamic cast gives " << dynamic_cast<Resistor*>(component_attached) << std::endl;
@@ -126,6 +126,7 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
 
                 //needs to be processed at the end
                 voltage_components.push_back(Vptr);
+                std::cerr<<"voltage component added is "<<component_attached->get_name()  << std::endl;
             }
         }
     }
@@ -211,14 +212,19 @@ Eigen::VectorXd Matrix_solver(const Circuit& input_circuit)
                 //combines KCL equations
                 Mat.row(cathode) += Mat.row(anode);
                 Vec(cathode) += Vec(anode);
+                
                 //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
                 Mat.row(anode).setZero();
                 Vec(anode) = 0;
-
+                
                 Mat(anode,anode)+= 1;
                 Mat(anode,cathode)+= -1;
+                std::cerr<<"hello"<<std::endl;              
                 Mat(anode,control_anode)+= -gain;
                 Mat(anode,control_cathode)+= gain;
+                
+                
+                
             }
             
              
