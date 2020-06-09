@@ -35,7 +35,7 @@ void Matrix_solver(Circuit& input_circuit)
     //std::cerr<<"initialized Matrix" << std::endl;
 
     //needed to store voltage components
-    std::vector<Voltage_Source*> voltage_sources;
+    std::vector<Voltage_Component*> voltage_components;
 
     //initializing each element of the conductance matrix
     //sum of currents out of a node = 0
@@ -77,12 +77,12 @@ void Matrix_solver(Circuit& input_circuit)
             //add coefficients for cathode
             if(cathode!=-1){Vec(cathode)+=current;}
         }
-        else if(dynamic_cast<Voltage_Source*>(i))
+        else if(dynamic_cast<Voltage_Component*>(i))
         {
-            Voltage_Source* Vptr = dynamic_cast<Voltage_Source*>(i);
+            Voltage_Component* Vptr = dynamic_cast<Voltage_Component*>(i);
 
             //needs to be processed at the end
-            voltage_sources.push_back(Vptr);
+            voltage_components.push_back(Vptr);
         }
         else if(dynamic_cast<Inductor*>(i))
         {
@@ -175,38 +175,62 @@ void Matrix_solver(Circuit& input_circuit)
     //std::cout << Vec << std::endl;
 
     //processing voltage sources
-    for(Voltage_Source* voltage_source : voltage_sources)
+    for(Voltage_Component* i : voltage_components)
     {
-        int anode = voltage_source->get_anode() -1;
-        int cathode = voltage_source->get_cathode() -1;
-        double voltage = voltage_source->get_voltage();
-        
-        assert(anode != cathode);
+        int anode = i->get_anode() -1;
+        int cathode = i->get_cathode() -1;
 
-        if(cathode == -1)
-        {   
-            Mat.row(anode).setZero();
-            Mat(anode,anode) = 1;                   
-            Vec(anode) = voltage;
-            //std::cout << "Voltage " << Vec(anode) << std::endl;
-        }
-        else if (anode == -1)
+        if(dynamic_cast<Voltage_Source*>(i))
         {
-            Mat.row(cathode).setZero();
-            Mat(cathode,cathode) = -1;
-            Vec(cathode) = voltage;
-            //std::cout << "Voltage cathode " << Vec(cathode) << std::endl;
+            Voltage_Source* Vptr = dynamic_cast<Voltage_Source*>(i);
+            double voltage = Vptr->get_voltage();
+            
+            assert(anode != cathode);
+
+            if(cathode == -1)
+            {   
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;                   
+                Vec(anode) = voltage;
+                //std::cout << "Voltage " << Vec(anode) << std::endl;
+            }
+            else if (anode == -1)
+            {
+                Mat.row(cathode).setZero();
+                Mat(cathode,cathode) = -1;
+                Vec(cathode) = voltage;
+                //std::cout << "Voltage cathode " << Vec(cathode) << std::endl;
+            }
+            else
+            {   
+                //combines KCL equations
+                Mat.row(cathode) += Mat.row(anode);
+                Vec(cathode) += Vec(anode);
+                //sets anode node to V_anode - V_cathode = deltaV
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;
+                Mat(anode,cathode) = -1;
+                Vec(anode) = voltage;
+            }
         }
-        else
-        {   
+        else if (dynamic_cast<Voltage_Controlled_Voltage_Source*>(i))
+        {
+            Voltage_Controlled_Voltage_Source* Vptr = dynamic_cast<Voltage_Controlled_Voltage_Source*>(i);
+            double gain = Vptr->get_gain();
+            int control_anode = Vptr->get_control_anode() -1;
+            int control_cathode = Vptr->get_control_cathode() -1;
+
             //combines KCL equations
             Mat.row(cathode) += Mat.row(anode);
             Vec(cathode) += Vec(anode);
-            //sets anode node to V_anode - V_cathode = deltaV
+            //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
             Mat.row(anode).setZero();
-            Mat(anode,anode) = 1;
-            Mat(anode,cathode) = -1;
-            Vec(anode) = voltage;
+            Vec(anode) = 0;
+
+            Mat(anode,anode)= 1;
+            Mat(anode,cathode)= -1;
+            Mat(anode,control_anode)= -gain;
+            Mat(anode,control_cathode)= gain;       
         }
     }
 
