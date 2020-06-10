@@ -223,10 +223,9 @@ void Matrix_solver(Circuit& input_circuit)
         int anode = i->get_anode() -1;
         int cathode = i->get_cathode() -1;
 
-        if(dynamic_cast<Voltage_Source*>(i))
-        {
-            Voltage_Source* Vptr = dynamic_cast<Voltage_Source*>(i);
-            double voltage = Vptr->get_voltage();
+        if(dynamic_cast<Voltage_Source*>(i) || dynamic_cast<AC_Voltage_Source*>(i))
+        {            
+            double voltage = i->get_voltage();
             
             assert(anode != cathode);
 
@@ -263,19 +262,53 @@ void Matrix_solver(Circuit& input_circuit)
             int control_anode = Vptr->get_control_anode() -1;
             int control_cathode = Vptr->get_control_cathode() -1;
 
-            //combines KCL equations
-            Mat.row(cathode) += Mat.row(anode);
-            Vec(cathode) += Vec(anode);
-            //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
-            Mat.row(anode).setZero();
-            Vec(anode) = 0;
+            assert(anode != cathode);
 
-            Mat(anode,anode)= 1;
-            Mat(anode,cathode)= -1;
-            Mat(anode,control_anode)= -gain;
-            Mat(anode,control_cathode)= gain;       
+            if(anode == -1)
+            {
+                //sets defining eq of VCVS at row cathode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(cathode).setZero();
+                Vec(cathode) = 0;
+
+                //Mat(cathode,anode)+= 1;
+                Mat(cathode,cathode)+= -1;
+                if(control_anode != -1) Mat(cathode,control_anode)+= -gain;
+                if(control_cathode!=-1) Mat(cathode,control_cathode)+= gain;
+            }
+            else if (cathode == -1)
+            {
+                //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(anode).setZero();
+                Vec(anode) = 0;
+
+                Mat(anode,anode)+= 1;
+                //Mat(anode,cathode)+= -1;
+                if(control_anode != -1) Mat(anode,control_anode)+= -gain;
+                if(control_cathode!=-1) Mat(anode,control_cathode)+= gain;
+            }
+            else
+            {
+                //combines KCL equations
+                Mat.row(cathode) += Mat.row(anode);
+                Vec(cathode) += Vec(anode);
+                
+                //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(anode).setZero();
+                Vec(anode) = 0;
+                
+                Mat(anode,anode)+= 1;
+                Mat(anode,cathode)+= -1;              
+                if(control_anode != -1) Mat(anode,control_anode)+= -gain;
+                if(control_cathode!=-1) Mat(anode,control_cathode)+= gain;             
+            }       
         }
     }
+
+    //std::cerr<<"mat is"<< std::endl;
+    //std::cerr<< Mat << std::endl;
+    //std::cerr <<"vec is"<< std::endl;
+    //std::cerr<< Vec << std::endl;
+
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size);
     Mat = Mat.inverse();
