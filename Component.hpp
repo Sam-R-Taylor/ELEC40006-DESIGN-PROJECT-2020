@@ -282,7 +282,15 @@ public:
     //get the current through the diode
     double get_current(const std::vector<double> &nodevoltages) const
     {
-        double current = I_s*(exp((nodevoltages[anode]-nodevoltages[cathode])/(N*Vt))-1) + (nodevoltages[anode]-nodevoltages[cathode])*GMIN;
+        double V = nodevoltages[anode]-nodevoltages[cathode];
+        double current = 0;
+        if(V > -5*N*Vt){
+            current = I_s*(exp((V)/(N*Vt))-1) + (V)*GMIN;
+        }else if (V > BV){
+            current = V*GMIN;
+        }else{
+            current = -I_s*(exp(-(BV+V)/Vt)-1+BV/Vt);
+        }
         //current = current>10?10:current;
         //std::cout << "Current  " <<current << std::endl; 
         return current;
@@ -357,6 +365,17 @@ private:
     //variable to speed things up
     double denom;
 
+    //Constants for increased speed
+    double GbGcGe;
+    double GbGe;
+    double GbGc;
+    double GcGe;
+    double AfAr;
+    double AfGcGe;
+    double ArGcGe;
+    double AfArGb;
+    double AfArGc;
+    double AfArGe;
     //store the coefficients for current to work out the current passing through
     std::vector<double> collector_current_coeff{0,0,0,0}; //current comming into collector c b e i
     std::vector<double> base_current_coeff{0,0,0,0}; //current coming into base
@@ -379,6 +398,17 @@ public:
         Ge = 1/_Re;
         Af = _Af;
         Ar = _Ar;
+        //pre calculated for increased speed
+        GbGcGe = Gb*Gc*Ge;
+        GbGe = Gb*Ge;
+        GbGc = Gb*Gc;
+        GcGe = Gc*Ge;
+        AfAr = Af*Ar;
+        AfGcGe = Af*Gc*Ge;
+        ArGcGe = Ar*Gc*Ge;
+        AfArGe = Af*Ar*Ge;
+        AfArGb = Af*Ar*Gb;
+        AfArGc = Af*Ar*Gc;
     }
     //gets the current through the diode with voltage v
     double get_diode_current(double v){
@@ -415,8 +445,8 @@ public:
         Ir = get_diode_current(vd) - vd*Gr;
         If = get_diode_current(_vd) - _vd*Gf;
 
-        denom = Gb*Gc*Ge + Gb*Gc*Gf + Gc*Ge*Gf + Gb*Ge*Gr + Gb*Gf*Gr + Gc*Ge*Gr + Gc*Gf*Gr + Ge*Gf*Gr
-            - Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Gb*Gf*Gr - Af*Ar*Gc*Gf*Gr - Af*Ar*Ge*Gf*Gr;
+        denom = GbGcGe + GbGc*Gf + GcGe*Gf + GbGe*Gr + Gb*Gf*Gr + GcGe*Gr + Gc*Gf*Gr + Ge*Gf*Gr
+            - AfGcGe*Gr - ArGcGe*Gf - AfArGb*Gf*Gr - AfArGc*Gf*Gr - AfArGe*Gf*Gr;
     }
     //denom = (Gb*Gc*Ge + Gb*Gc*Gf + Gc*Ge*Gf + Gb*Ge*Gr + Gb*Gf*Gr + Gc*Ge*Gr + Gc*Gf*Gr + Ge*Gf*Gr - Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Gb*Gf*Gr - Af*Ar*Gc*Gf*Gr - Af*Ar*Ge*Gf*Gr
     //V1 = Gb*Ge*Ir + Gb*Gf*Ir + Ge*Gf*Ir - Ge*Gr*If - Ar*Gb*Ge*If + Gb*Gc*Ge*Vc + Gb*Gc*Gf*Vc + Gc*Ge*Gf*Vc + Gb*Ge*Gr*Vb + Gb*Gf*Gr*Vb + Gc*Ge*Gr*Vc + Gc*Gf*Gr*Vc + Ge*Gf*Gr*Ve - Af*Ar*Gb*Gf*Ir - Af*Ar*Ge*Gf*Ir + Af*Ar*Ge*Gr*If - Ar*Gb*Ge*Gf*Vb - Af*Gc*Ge*Gr*Vc - Ar*Gc*Ge*Gf*Vc + Ar*Gb*Ge*Gf*Ve - Af*Ar*Gb*Gf*Gr*Vb - Af*Ar*Gc*Gf*Gr*Vc - Af*Ar*Ge*Gf*Gr*Ve + 
@@ -425,15 +455,15 @@ public:
     double get_collector_coefficient(int node){
         double response;
         if(node == anode){//collector
-            response = (1-(Gb*Gc*Ge + Gb*Gc*Gf + Gc*Ge*Gf + Gc*Ge*Gr + Gc*Gf*Gr - 
-                Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Gc*Gf*Gr)/denom)*Gc;
+            response = (1-(GbGcGe + GbGc*Gf + GcGe*Gf + GcGe*Gr + Gc*Gf*Gr - 
+                AfGcGe*Gr - ArGcGe*Gf - AfArGc*Gf*Gr)/denom)*Gc;
             collector_current_coeff[0] = response;
 
         }else if (node == cathode){//emmitter
-            response = -1 * Ge * (Gc*Gf*Gr + Af*Gb*Gc*Gr - Af*Ar*Gc*Gf*Gr)/denom;
+            response = -1 * Ge * (Gc*Gf*Gr + Af*GbGc*Gr - AfArGc*Gf*Gr)/denom;
             emmitter_current_coeff[0] = response;
         }else if (node == base){//base
-            response = -1 * Gb * (Gc*Ge*Gr + Gc*Gf*Gr - Af*Gc*Ge*Gr - Af*Ar*Gc*Gf*Gr)/denom;
+            response = -1 * Gb * (GcGe*Gr + Gc*Gf*Gr - AfGcGe*Gr - AfArGc*Gf*Gr)/denom;
             base_current_coeff[0] = response;
         }
         return response;
@@ -441,13 +471,13 @@ public:
     double get_base_coefficient(int node){
         double response;
         if(node == anode){//collector
-            response = -1 * Gc * (Gb*Ge*Gr + Gb*Gf*Gr - Ar*Gb*Ge*Gf - Af*Ar*Gb*Gf*Gr) / denom;
+            response = -1 * Gc * (GbGe*Gr + Gb*Gf*Gr - Ar*GbGe*Gf - AfArGb*Gf*Gr) / denom;
             collector_current_coeff[1] = response;
         }else if (node == cathode){//emmitter
-            response = -1 * Ge * (Gb*Gc*Gf + Gb*Gf*Gr - Af*Gb*Gc*Gr - Af*Ar*Gb*Gf*Gr) / denom;
+            response = -1 * Ge * (GbGc*Gf + Gb*Gf*Gr - Af*GbGc*Gr - AfArGb*Gf*Gr) / denom;
             emmitter_current_coeff[1] = response;
         }else if (node == base){//base
-            response = (1 - (Gb*Gc*Ge + Gb*Gc*Gf + Gb*Ge*Gr + Gb*Gf*Gr - Af*Ar*Gb*Gf*Gr) / denom) * Gb;
+            response = (1 - (GbGcGe + GbGc*Gf + GbGe*Gr + Gb*Gf*Gr - AfArGb*Gf*Gr) / denom) * Gb;
             base_current_coeff[1] = response;
         }
         return response;
@@ -455,14 +485,14 @@ public:
     double get_emmitter_coefficient(int node){
         double response;
         if(node == anode){//collector
-            response = -1 * Gc * (Ge*Gf*Gr + Ar*Gb*Ge*Gf - Af*Ar*Ge*Gf*Gr) / denom;
+            response = -1 * Gc * (Ge*Gf*Gr + Ar*GbGe*Gf - AfArGe*Gf*Gr) / denom;
             collector_current_coeff[2] = response;
         }else if (node == cathode){//emmitter
-            response = (1 - (Gb*Gc*Ge + Gc*Ge*Gf + Gb*Ge*Gr + Gc*Ge*Gr + Ge*Gf*Gr -
-                Af*Gc*Ge*Gr - Ar*Gc*Ge*Gf - Af*Ar*Ge*Gf*Gr) / denom) * Ge;
+            response = (1 - (GbGcGe + GcGe*Gf + GbGe*Gr + GcGe*Gr + Ge*Gf*Gr -
+                AfGcGe*Gr - ArGcGe*Gf - AfArGe*Gf*Gr) / denom) * Ge;
             emmitter_current_coeff[2] = response;
         }else if (node == base){//base
-            response = -1 * Gb * (Gc*Ge*Gf + Ge*Gf*Gr - Ar*Gc*Ge*Gf - Af*Ar*Ge*Gf*Gr) / denom;
+            response = -1 * Gb * (GcGe*Gf + Ge*Gf*Gr - ArGcGe*Gf - AfArGe*Gf*Gr) / denom;
             base_current_coeff[2] = response;
         }
         return response;
@@ -470,16 +500,16 @@ public:
     double get_constant_coefficient(int node){
         double response;
         if(node == anode){//collector
-            response = -1 * Gc * (Gb*Ge*Ir + Gb*Gf*Ir + Ge*Gf*Ir - Ge*Gr*If - Ar*Gb*Ge*If
-                - Af*Ar*Gb*Gf*Ir - Af*Ar*Ge*Gf*Ir + Af*Ar*Ge*Gr*If) / denom;
+            response = -1 * Gc * (GbGe*Ir + Gb*Gf*Ir + Ge*Gf*Ir - Ge*Gr*If - Ar*GbGe*If
+                - AfArGb*Gf*Ir - AfArGe*Gf*Ir + AfArGe*Gr*If) / denom;
             collector_current_coeff[3] = response;
         }else if (node == cathode){//emmitter
-            response = -1 * Ge * (Gb*Gc*If + Gb*Gr*If - Gc*Gf*Ir + Gc*Gr*If - Af*Gb*Gc*Ir - 
-                Af*Ar*Gb*Gr*If + Af*Ar*Gc*Gf*Ir - Af*Ar*Gc*Gr*If) /denom;
+            response = -1 * Ge * (GbGc*If + Gb*Gr*If - Gc*Gf*Ir + Gc*Gr*If - Af*GbGc*Ir - 
+                AfArGb*Gr*If + AfArGc*Gf*Ir - AfArGc*Gr*If) /denom;
             emmitter_current_coeff[3] = response;
         }else if (node == base){//base
-            response = -1 * Gb * (Af*Gc*Ge*Ir - Gc*Ge*Ir - Gc*Gf*Ir - Ge*Gr*If - Gc*Ge*If + 
-                Ar*Gc*Ge*If + Af*Ar*Gc*Gf*Ir + Af*Ar*Ge*Gr*If) /denom;
+            response = -1 * Gb * (AfGcGe*Ir - GcGe*Ir - Gc*Gf*Ir - Ge*Gr*If - GcGe*If + 
+                ArGcGe*If + AfArGc*Gf*Ir + AfArGe*Gr*If) /denom;
             base_current_coeff[3] = response;
         }
         return response;

@@ -3,13 +3,19 @@
 
 #include <vector>
 #include <iostream>
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include<Eigen/SparseCholesky>
+#include<Eigen/SparseLU>
+#include<Eigen/SparseQR>
+
 #include <string>
 #include "Component.hpp"
 #include "Circuit.hpp"
 #include <chrono>
 using namespace std;
-using Eigen::MatrixXd;
+//using Eigen::MatrixXd;
+using namespace Eigen;
 //to compile use g++ -I eigen3 KCLSolver.cpp -o ...
 
 //creates the kcl equation for a node in the circuit
@@ -157,9 +163,14 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
 
     //create a matrix with the correct dimensions
     MatrixXd matrix(circuit.get_number_of_nodes()-1,circuit.get_number_of_nodes()-1);
+    //SparseMatrix<double> matrix(circuit.get_number_of_nodes()-1,circuit.get_number_of_nodes()-1);
     //create vectors for the left and right hand side of the equation
     MatrixXd result(circuit.get_number_of_nodes()-1,1);
     MatrixXd constants(circuit.get_number_of_nodes()-1,1);
+        //SparseMatrix<double> result(circuit.get_number_of_nodes()-1,1);
+        //SparseMatrix<double> constants(circuit.get_number_of_nodes()-1,1);
+        //VectorXd result(circuit.get_number_of_nodes()-1);
+        //VectorXd constants(circuit.get_number_of_nodes()-1);
     //iterate through all the inputs
     for(int i=0; i < circuit.get_number_of_nodes()-1; i++){
             //for each input extract the row data
@@ -182,6 +193,9 @@ vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
         //cout << "matrix" <<endl; 
     matrix = matrix.inverse();
     result = matrix * constants;
+    //Eigen::SimplicialLDLT<SparseMatrix<double>> solver;
+    //solver.compute(matrix);
+    //result = solver.solve(constants);
     //result = matrix.householderQr().solve(constants);
     //}
     //auto end = chrono::steady_clock::now();

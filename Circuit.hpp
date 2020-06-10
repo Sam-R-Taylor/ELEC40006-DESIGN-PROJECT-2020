@@ -67,16 +67,16 @@ public:
     size_t max_iterations = 1000;           //edit after testing
     Circuit()
     {
-        std::cerr<<"Circuit constructed"<<std::endl;
+        //std::cerr<<"Circuit constructed"<<std::endl;
     }
     ~Circuit()
     {
         for(Component* i:components)
         {
             delete i;
-            std::cerr<<"Component destructed"<<std::endl;
+            //std::cerr<<"Component destructed"<<std::endl;
         }
-        std::cerr<<"Circuit destructed"<<std::endl;
+        //std::cerr<<"Circuit destructed"<<std::endl;
     }
     void set_voltages(std::vector<double> _voltages){
         voltages = _voltages;
