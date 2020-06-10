@@ -1,9 +1,9 @@
 #ifndef COMPONENT_HPP
 #define COMPONENT_HPP
 
-#include<iostream>
-#include<string>
-#include<cmath>
+#include <iostream>
+#include <string>
+#include <cmath>
 
 class Component
 {
@@ -155,11 +155,6 @@ public:
     }
     ~Capacitor(){}
 
-
-    double get_voltage() const
-    {
-        return integral/value;
-    }
     double get_conductance() const
     {
         return conductance;

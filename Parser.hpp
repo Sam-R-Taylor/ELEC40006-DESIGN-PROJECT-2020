@@ -1,23 +1,19 @@
 #ifndef LEO_PARSER_HPP
 #define LEO_PARSER_HPP
 
-#include"Circuit.hpp"
-#include"Component.hpp"
-#include"leo_KCLSolver2.hpp"
-#include"TransientSolver.hpp"
-#include"TransientAnalysis.hpp"
-#include"OPAnalysis.hpp"
-//#include <Eigen/Dense>
-#include<fstream>
-#include<cctype>
+#include "Circuit.hpp"
+#include "Component.hpp"
+#include "KCLSolver.hpp"
+#include "TransientSolver.hpp"
+#include "TransientAnalysis.hpp"
+#include "OPAnalysis.hpp"
+#include <fstream>
+#include <cctype>
 #include <memory> 
-#include<cmath>
-#include<limits>
-#include<cassert>
-#include<chrono>
-//#include <memory>
-//using Eigen::MatrixXd;
-
+#include <cmath>
+#include <limits>
+#include <cassert>
+#include <chrono>
 
 //declaring constants
 double lfemto = pow(10,-15);
@@ -94,7 +90,7 @@ void parse_input(std::fstream & src)
 {
     //initializing variables for Circuit and component objects
     Circuit _circuit;
-
+    std::vector<int> voltage_anodes;
     std::string _name;
     std::string _anode;
     std::string _cathode;
@@ -214,7 +210,25 @@ void parse_input(std::fstream & src)
                     //std::cout << "frequency read is " << read_value(_frequency) << std::endl;
                     //std::cout << "dc offset read is " << read_value(_dc_offset)<< std::endl;
                     //std::cout << "amplitude read is "<< read_value(_amplitude)<< std::endl;
-                    _circuit.add_component(new AC_Voltage_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_amplitude),read_value(_frequency),read_value(_dc_offset)));
+                    //necessary as kcl algorithm requires that two voltage sources dont have the same anode
+                    int anode = read_node_number(_anode);
+                    int cathode = read_node_number(_cathode);
+                    double amplitude = read_value(_amplitude);
+                    double offset = read_value(_dc_offset);
+                    bool swap = false;
+                    for(auto x: voltage_anodes){
+                        swap = anode == x;
+                    }
+                    if(swap){
+                        int temp;
+                        temp = anode;
+                        anode = cathode;
+                        cathode = temp;
+                        amplitude = -1 * amplitude;
+                        offset = -1 * offset;
+                    }
+                    voltage_anodes.push_back(anode);
+                    _circuit.add_component(new AC_Voltage_Source(anode,cathode,_name,amplitude,read_value(_frequency),offset));
                     std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" A " <<read_value(_amplitude) << " f " << read_value(_frequency) << " offset " << read_value(_dc_offset)<< std::endl;
 
                 }
@@ -222,7 +236,23 @@ void parse_input(std::fstream & src)
                 {
                     size_t index = _voltage.find_first_of(digits);
                     _voltage = _voltage.substr(index,std::string::npos);
-                    _circuit.add_component(new Voltage_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_voltage)));
+
+                    int anode = read_node_number(_anode);
+                    int cathode = read_node_number(_cathode);
+                    double voltage = read_value(_voltage);
+                    bool swap = false;
+                    for(auto x: voltage_anodes){
+                        swap = anode == x;
+                    }
+                    if(swap){
+                        int temp;
+                        temp = anode;
+                        anode = cathode;
+                        cathode = temp;
+                        voltage = -1 * voltage;
+                    }
+                    voltage_anodes.push_back(anode);
+                    _circuit.add_component(new Voltage_Source(anode,cathode,_name,voltage));
                     std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
                 }
             }

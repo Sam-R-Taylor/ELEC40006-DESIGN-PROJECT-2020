@@ -4,5 +4,5 @@ V1 N004 0 5
 V2 N001 N004 5
 R3 N003 0 1k
 Q1 N001 N002 N003 0 NPN
-.tran 0 5 0 1
+.op
 .end

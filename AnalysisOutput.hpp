@@ -34,7 +34,7 @@ double Current_at_voltage_component(Circuit &circuit, Voltage_Component* compone
             }
             if(dynamic_cast<Voltage_Component*>(_component)){
                 int next_node = _component->get_anode() == node?_component->get_cathode():_component->get_anode(); 
-                current += current_at_voltage_component(circuit,dynamic_cast<Voltage_Component*>(_component),next_node);
+                current += Current_at_voltage_component(circuit,dynamic_cast<Voltage_Component*>(_component),next_node);
             }
         }
     }
@@ -68,14 +68,20 @@ double GetCurrent(Component* component){
     }
     return 0;
 }
-void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
+void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime = -1){
+    bool OP = false;
+    if(CurrentTime == -1){
+        OP = true;
+    }
     fstream myfile;
     myfile.open("output_voltage.txt",fstream::app);
     fstream myfile2;
     myfile2.open("output_current.txt",fstream::app);
     if (myfile.is_open())
     {
+        if(!OP){
         myfile << CurrentTime << "," ;
+        }
         for(int i = 0; i < CKTIn.get_voltages().size()-1; i++) {
             myfile << CKTIn.get_voltages().at(i) << ",";
         }
@@ -104,7 +110,9 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
             }
             myfile2 << "\n";
         }
-        myfile2 << CurrentTime << "," ;
+        if(!OP){
+            myfile2 << CurrentTime << "," ;
+        }
         for(int i = 0; i < CKTIn.get_components().size()-1; i++){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){
                     std::vector<double> current = ((BJT*)CKTIn.get_components().at(i))->currents;
@@ -122,7 +130,7 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime){
             myfile2 << current[1] << ", ";
             myfile2 << current[2];
         }else{
-            myfile2 << GetCurrent(CKTIn,CKTIn.get_components().at(CKTIn.get_components().size()-1));
+            myfile2 << GetCurrent(CKTIn.get_components().at(CKTIn.get_components().size()-1));
         }
         myfile2 << "\n";
   }
