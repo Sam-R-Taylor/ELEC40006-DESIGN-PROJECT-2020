@@ -115,6 +115,28 @@ void Matrix_solver(Circuit& input_circuit)
                 Vec(cathode)+=current;
             }
         }
+        else if(dynamic_cast<Voltage_Controlled_Current_Source*>(i))
+        {
+            Voltage_Controlled_Current_Source* VCCSptr = dynamic_cast<Voltage_Controlled_Current_Source*>(i);
+            double gain = VCCSptr->get_gain();
+
+            //add coefficients for anode and cathode
+            if(anode!=-1 && cathode!=-1)
+            {
+                Mat(anode,cathode)-=gain;
+                Mat(cathode,anode)-=gain;
+                Mat(anode,anode)+=gain;
+                Mat(cathode,cathode)+=gain;
+            }
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=gain;
+            }
+            else
+            {
+                Mat(cathode,cathode)+=gain;
+            }
+        }
         else if(dynamic_cast<Capacitor*>(i))
         {
             Capacitor* Cptr = dynamic_cast<Capacitor*>(i);
