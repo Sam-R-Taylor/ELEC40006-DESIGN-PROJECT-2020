@@ -6,6 +6,7 @@
 #include"leo_KCLSolver2.hpp"
 #include"TransientSolver.hpp"
 #include"TransientAnalysis.hpp"
+#include"OPAnalysis.hpp"
 //#include <Eigen/Dense>
 #include<fstream>
 #include<cctype>
@@ -38,7 +39,7 @@ std::string digits("9876543210.");
 
 
 //helper function
-int node_number(const std::string& node_name)
+int read_node_number(const std::string& node_name)
 {
     char first_char = node_name[0];
     assert(first_char == 'N' || first_char == '0');
@@ -156,7 +157,7 @@ void parse_input(std::fstream & src)
 
                 //building Circuit obj
                 _circuit.build_nodes();
-                _circuit.print_node_components();
+                //_circuit.print_node_components();
 
                 int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
@@ -164,21 +165,14 @@ void parse_input(std::fstream & src)
                 //cout << "stop_time" << stop_time << endl ;
                 //cout << "Time Step" << time_step << endl ;
                 //cout << "Num Time Step" << num_timestep << endl ;
+                OPAnalysis(_circuit);
                 TransientAnalysis(_circuit,stop_time,num_timestep);
 
             }
             else if (command == "op")
             {
-                
-                /*_circuit.build_nodes();
-                _circuit.print_node_components();
-                std::cout << "added connections " <<std::endl;
-                _circuit.add_connection_resistors_BJTs();
-                _circuit.print_node_components();
-                */
-                //need to set capacitors as OC and inductors as SC
-
-                //Matrix_solver(_circuit);
+                _circuit.build_nodes();
+                OPAnalysis(_circuit);
             }
             else
             {   
@@ -195,8 +189,8 @@ void parse_input(std::fstream & src)
                 //Resistor added to _circuit
                 std::string _resistance;
                 src >> _name >> _anode >> _cathode >> _resistance;
-                _circuit.add_component(new Resistor(node_number(_anode),node_number(_cathode),_name,read_value(_resistance)));
-                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_resistance) << std::endl;
+                _circuit.add_component(new Resistor(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_resistance)));
+                std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_value(_resistance) << std::endl;
             }
             break;
 
@@ -205,8 +199,8 @@ void parse_input(std::fstream & src)
                 //Current source added to _circuit
                 std::string _current;
                 src >> _name >> _anode >> _cathode >> _current;
-                _circuit.add_component(new Current_source(node_number(_anode),node_number(_cathode),_name,read_value(_current)));
-                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) << " "<<read_value(_current) << std::endl;
+                _circuit.add_component(new Current_source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_current)));
+                std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) << " "<<read_value(_current) << std::endl;
             }   
             break; 
         case 'v': 
@@ -233,8 +227,8 @@ void parse_input(std::fstream & src)
                     cout << "dc offset read is " << read_value(_dc_offset)<< endl;
                     cout << "amplitude read is "<< read_value(_amplitude)<< endl;
 
-                    _circuit.add_component(new AC_Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_amplitude),read_value(_frequency),read_value(_dc_offset)));
-                    std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" A " <<read_value(_amplitude) << " f " << read_value(_frequency) << " offset " << read_value(_dc_offset)<< std::endl;
+                    _circuit.add_component(new AC_Voltage_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_amplitude),read_value(_frequency),read_value(_dc_offset)));
+                    std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" A " <<read_value(_amplitude) << " f " << read_value(_frequency) << " offset " << read_value(_dc_offset)<< std::endl;
 
                 }
                 else
@@ -242,8 +236,8 @@ void parse_input(std::fstream & src)
                     size_t index = _voltage.find_first_of(digits);
                     _voltage = _voltage.substr(index,std::string::npos);
                     //std::cout << _voltage << std::endl;
-                    _circuit.add_component(new Voltage_Source(node_number(_anode),node_number(_cathode),_name,read_value(_voltage)));
-                    std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
+                    _circuit.add_component(new Voltage_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_voltage)));
+                    std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
                 }
             }
             break;
@@ -252,8 +246,8 @@ void parse_input(std::fstream & src)
                 //Diode source added to _circuit
                 std::string _model_name;
                 src >> _name >> _anode >> _cathode >> _model_name;
-                _circuit.add_component(new Diode(node_number(_anode),node_number(_cathode),_name));
-                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<_model_name << std::endl;
+                _circuit.add_component(new Diode(read_node_number(_anode),read_node_number(_cathode),_name));
+                std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<_model_name << std::endl;
             }
             break;
         case 'c' :
@@ -261,8 +255,8 @@ void parse_input(std::fstream & src)
                 //Capacitor added to circuit
                 std::string _capacitance;
                 src >> _name >> _anode >> _cathode >> _capacitance;
-                _circuit.add_component(new Capacitor(node_number(_anode),node_number(_cathode),_name,read_value(_capacitance)));
-                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_capacitance) << std::endl;
+                _circuit.add_component(new Capacitor(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_capacitance)));
+                std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_value(_capacitance) << std::endl;
             }
             break;
         case 'l' :
@@ -270,8 +264,8 @@ void parse_input(std::fstream & src)
                 //Capacitor added to circuit
                 std::string _inductance;
                 src >> _name >> _anode >> _cathode >> _inductance;
-                _circuit.add_component(new Inductor(node_number(_anode),node_number(_cathode),_name,read_value(_inductance)));
-                std::cout<< "added "<<_name << node_number(_anode) << node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
+                _circuit.add_component(new Inductor(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_inductance)));
+                std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_value(_inductance) << std::endl;
             }
             break;
         case 'q' :
@@ -282,9 +276,9 @@ void parse_input(std::fstream & src)
                 std::string _emitter;
                 std::string _model_name;
                 src >> _name >>_collector >> _base >> _emitter >> _model_name;
-                _circuit.add_component(new BJT(node_number(_collector),node_number(_base),node_number(_emitter),
+                _circuit.add_component(new BJT(read_node_number(_collector),read_node_number(_base),read_node_number(_emitter),
                     _name,0.67,0.995,1,10,0.2,0.3));
-                std::cout<< "added "<<_name<< node_number(_collector) << node_number(_base) << node_number(_emitter) << " " <<_model_name << std::endl;
+                std::cout<< "added "<<_name<< read_node_number(_collector) << read_node_number(_base) << read_node_number(_emitter) << " " <<_model_name << std::endl;
             }
             break;
         default:

@@ -131,6 +131,20 @@ public:
     std::vector<double> get_voltages() const{return voltages;}
 };
 
+bool IsLinear(Circuit & circuit){
+    bool isLinear = true;
+    for(Component* component: circuit.get_components()){
+        if(dynamic_cast<Diode*>(component)){
+            isLinear = false; 
+        }
+        if(dynamic_cast<BJT*>(component)){
+            ((BJT*)component)->set_op(circuit.get_voltages());
+            isLinear = false;
+        }
+    }
+    return isLinear;
+}
+
 
 
 #endif

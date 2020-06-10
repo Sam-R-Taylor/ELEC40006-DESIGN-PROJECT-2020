@@ -17,7 +17,7 @@ using Eigen::MatrixXd;
 
 
 
-void TransientSolver(Circuit &circuit){
+void TransientSolver(Circuit &circuit, bool OP = false){
     bool incomplete = true;
     int current_iteration = 0;
     //iterate adjusting voltages each time
@@ -41,7 +41,7 @@ void TransientSolver(Circuit &circuit){
         //for(auto x: old_voltages){
         //    std::cout << x << std::endl;
         //}
-        Matrix_solver(circuit);   
+        Matrix_solver(circuit,OP);   
         //NodeVoltageSolver(circuit);
         //check the error
         

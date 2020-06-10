@@ -160,8 +160,8 @@ private:
     /*
     integral of current wrt time. Current goes from anode to cathode
     */
-    double conductance;
-    double linear_current;
+    double conductance = 0;
+    double linear_current = 0;
     double value;
     double integral;
 public:
@@ -608,6 +608,9 @@ public:
     {
         return control_voltage_cathode;
     }
+    double get_voltage(){
+        return gain;
+    };
 };
 
 class AC_Voltage_Source:
