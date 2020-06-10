@@ -10,6 +10,7 @@
 //#include <Eigen/Dense>
 #include<fstream>
 #include<cctype>
+#include <memory> 
 #include<cmath>
 #include<limits>
 #include<cassert>
@@ -61,18 +62,11 @@ double read_value(const std::string& value_str)
     size_t index = value_str.find_first_not_of(digits);
     if (index == std::string::npos)
     {
-        //std::cout << "if"<< std::endl;
-        //std::cout << value_str<< std::endl;
         return stod(value_str);
     }
     else
     {
-        //std::cout << "else"<< std::endl;
-        //std::cout << value_str<< std::endl;
-
-
         char c = tolower(value_str[index]);
-        //std::cout << "char is " << c << std::endl;
         double number = stod(value_str.substr(0,index));
 
         if(c == 'f'){return lfemto*number;}
@@ -98,9 +92,6 @@ double read_value(const std::string& value_str)
 void parse_input(std::fstream & src)
 
 {
-
-
-
     //initializing variables for Circuit and component objects
     Circuit _circuit;
 
@@ -132,8 +123,6 @@ void parse_input(std::fstream & src)
             src.get();
             src >> command;
 
-            //std::cout << command << std::endl;
-
             if (command == "end")
             {   
                 //close input file
@@ -157,8 +146,7 @@ void parse_input(std::fstream & src)
 
                 //building Circuit obj
                 _circuit.build_nodes();
-                //_circuit.print_node_components();
-
+                
                 int num_timestep = stop_time/time_step;     //number of timesteps within the simulation
                 //NEEDS CONRTOLLER IMPLEMENTATION
                 std::cout << "TRANSIENT" << endl ;
@@ -167,12 +155,15 @@ void parse_input(std::fstream & src)
                 //cout << "Num Time Step" << num_timestep << endl ;
                 OPAnalysis(_circuit);
                 TransientAnalysis(_circuit,stop_time,num_timestep);
+                std::cout << "Finished analysis" << endl ;
 
             }
             else if (command == "op")
             {
+                std::cout << "OP" << endl ;
                 _circuit.build_nodes();
                 OPAnalysis(_circuit);
+                std::cout << "Finished analysis" << endl ;
             }
             else
             {   
@@ -210,7 +201,6 @@ void parse_input(std::fstream & src)
                 src >> _name >> _anode >> _cathode;
                 std::getline(src,_voltage);
                 src.putback('\n');
-                //std::cout << _voltage << std::endl;
                 if(_voltage.substr(1,4)=="SINE")
                 {
                     std::string _dc_offset;
@@ -220,13 +210,10 @@ void parse_input(std::fstream & src)
                     std::stringstream ss(_voltage,ios_base::in);
                     ss.ignore(std::numeric_limits<std::streamsize>::max(), '(');
                     ss >> _dc_offset >> _amplitude >> _frequency;
-
-                    cout <<  _dc_offset << _amplitude << _frequency<< endl;
-
-                    cout << "frequency read is " << read_value(_frequency) <<endl;
-                    cout << "dc offset read is " << read_value(_dc_offset)<< endl;
-                    cout << "amplitude read is "<< read_value(_amplitude)<< endl;
-
+                    //std::cout <<  _dc_offset << _amplitude << _frequency<< std::endl;
+                    //std::cout << "frequency read is " << read_value(_frequency) << std::endl;
+                    //std::cout << "dc offset read is " << read_value(_dc_offset)<< std::endl;
+                    //std::cout << "amplitude read is "<< read_value(_amplitude)<< std::endl;
                     _circuit.add_component(new AC_Voltage_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_amplitude),read_value(_frequency),read_value(_dc_offset)));
                     std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" A " <<read_value(_amplitude) << " f " << read_value(_frequency) << " offset " << read_value(_dc_offset)<< std::endl;
 
@@ -235,7 +222,6 @@ void parse_input(std::fstream & src)
                 {
                     size_t index = _voltage.find_first_of(digits);
                     _voltage = _voltage.substr(index,std::string::npos);
-                    //std::cout << _voltage << std::endl;
                     _circuit.add_component(new Voltage_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_voltage)));
                     std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_value(_voltage) << std::endl;
                 }

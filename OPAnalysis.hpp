@@ -1,14 +1,14 @@
+#ifndef OPANALYSIS_HPP
+#define OPANALYSIS_HPP
+
 #include <vector>
 #include <iostream>
 #include <eigen3/Eigen/Dense>
-#include <string>
 #include "Component.hpp"
-#include <memory> 
 #include "Circuit.hpp"
-#include <fstream>
 #include "TransientSolver.hpp"
-#include "leo_KCLSolver2.hpp"
-using Eigen::MatrixXd;
+#include "KCLSolver.hpp"
+#include <memory> 
 
 void OPAnalysis(Circuit &circuit){
     if(IsLinear(circuit)){
@@ -20,3 +20,5 @@ void OPAnalysis(Circuit &circuit){
         std::cout << v << std::endl;
     }
 }
+
+#endif

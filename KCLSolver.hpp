@@ -1,239 +1,362 @@
-#ifndef KCLSOLVER_HPP
-#define KCLSOLVER_HPP
+#ifndef LEO_KCLSOLVER2_HPP
+#define LEO_KCLSOLVER2_HPP
 
-#include <vector>
-#include <iostream>
-//#include <Eigen/Dense>
-#include <Eigen/Sparse>
-#include<Eigen/SparseCholesky>
-#include<Eigen/SparseLU>
-#include<Eigen/SparseQR>
-
-#include <string>
-#include "Component.hpp"
 #include "Circuit.hpp"
-#include <chrono>
-using namespace std;
-//using Eigen::MatrixXd;
-using namespace Eigen;
-//to compile use g++ -I eigen3 KCLSolver.cpp -o ...
+#include "Component.hpp"
+#include<memory>
+#include<Eigen/Dense>
+#include<cassert>
 
-//creates the kcl equation for a node in the circuit
-//input is the current node and a list of nodes
-//output is a vector of doubles representing each of the coeefiicients {a,b,c...,d}
-//such that ax1 + bx2 + cx3 ...+ d =0
-//if being used for a super node include the component connecting the two nodes as the last parameter
-vector<double> coefficient_generator(Node *node, vector<Node> *nodes, Component *source_component = nullptr){
-    //create a vector to store the output coefficients
-    vector<double> coefficients(nodes->size() + 1,0);
-    //iterate through all the components connected to that node
-    for(Component* component: node->components_attached){
-        //if the source component is not included just continue, otherwise only run if teh current component
-        //isn't the connecting component
-        if(source_component == nullptr || component != source_component){
-            //create a vector to store the contributions to the final coefficients of this component
-            vector<double> sub_coefficients(nodes->size() + 1,0);
-            if(dynamic_cast<BJT*>(component)){
-                sub_coefficients[component->get_anode()] += ((BJT*)component)->get_collector_coefficient(node->index);
-                sub_coefficients[component->get_cathode()]+= ((BJT*)component)->get_emmitter_coefficient(node->index);
-                sub_coefficients[((BJT*)component)->get_base()] += ((BJT*)component)->get_base_coefficient(node->index);
-                sub_coefficients[nodes->size()] += ((BJT*)component)->get_constant_coefficient(node->index);
+void Matrix_solver(Circuit& input_circuit, bool OP = false)
+{ 
+    //initializing a matrix of the right size 
+    int Mat_size = input_circuit.get_number_of_nodes() - 1;     
+    Eigen::MatrixXd Mat(Mat_size,Mat_size);
+
+    //initializing a vector of the right size
+    Eigen::VectorXd Vec(Mat_size);
+
+    //Fills up the matrix with 0s
+    Mat.setZero(Mat_size,Mat_size);
+
+    //Fills up the vector with 0s
+    Vec.setZero(Mat_size);
+
+    //needed to store voltage components
+    std::vector<Voltage_Component*> voltage_components;
+
+    //initializing each element of the conductance matrix
+    //sum of currents out of a node = 0
+    for(Component* i: input_circuit.get_components())
+    {
+        int anode = i->get_anode() -1;
+        int cathode = i->get_cathode() -1;
+
+        if(dynamic_cast<Resistor*>(i))
+        {
+            Resistor* Rptr = dynamic_cast<Resistor*>(i);
+            double conductance = Rptr->get_conductance();
+
+            //add coefficients for anode and cathode
+            if(anode!=-1 && cathode!=-1)
+            {
+                Mat(anode,cathode)-=conductance;
+                Mat(cathode,anode)-=conductance;
+                Mat(anode,anode)+=conductance;
+                Mat(cathode,cathode)+=conductance;
             }
-            //if a component is a diode use its linear properties
-            if(dynamic_cast<Diode*>(component)){
-                //((Diode*)component)->set_conductance();
-                if(component->get_anode() == node->index){
-                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
-                    sub_coefficients[component->get_anode()] += ((Diode*)component)->get_anode_coefficient();
-                    sub_coefficients[component->get_cathode()] += ((Diode*)component)->get_cathode_coefficient();
-                    cout << ((Diode*)component)->get_anode_coefficient() << " " << ((Diode*)component)->get_cathode_coefficient() << " " << ((Diode*)component)->get_constant_coefficient() << endl;
-                }
-                if(component->get_cathode() == node->index){
-                    sub_coefficients[component->get_anode()] += -((Diode*)component)->get_anode_coefficient();
-                    sub_coefficients[component->get_cathode()] += -((Diode*)component)->get_cathode_coefficient();
-                }
-                sub_coefficients[nodes->size()] += ((Diode*)component)->get_constant_coefficient() * (component->get_anode() == node->index?1:-1);
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=conductance;
             }
-            //if component type is resistor
-            else if(dynamic_cast<Resistor*>(component)){
-                //check with node of the resistor is the current node
-                if(component->get_anode() == node->index){
-                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
-                    sub_coefficients[component->get_anode()] += ((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += -((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                }
-                else if(component->get_cathode() == node->index){
-                    sub_coefficients[component->get_anode()] += -((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += ((Resistor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                }
+            else
+            {
+                Mat(cathode,cathode)+=conductance;
             }
-            //if component type is current source
-            else if(dynamic_cast<Current_source*>(component)){
-                //add the current source value to the final constant in the list of coefficients
-                sub_coefficients[nodes->size()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
+        }
+        else if(dynamic_cast<Current_source*>(i))
+        {
+            Current_source* Currentptr = dynamic_cast<Current_source*>(i);
+            double current = Currentptr->get_current();
+
+            //add coefficients for anode
+            if(anode!=-1){Vec(anode)-=current;}
+            
+            //add coefficients for cathode
+            if(cathode!=-1){Vec(cathode)+=current;}
+        }
+        else if(dynamic_cast<Voltage_Component*>(i))
+        {
+            Voltage_Component* Vptr = dynamic_cast<Voltage_Component*>(i);
+
+            //needs to be processed at the end
+            voltage_components.push_back(Vptr);
+        }
+        else if(dynamic_cast<Inductor*>(i))
+        {
+            Inductor* Iptr = dynamic_cast<Inductor*>(i);
+            double current = Iptr->get_linear_current();
+            double conductance = Iptr->get_conductance();
+
+            //for Inductor current source and resistor
+            
+            //add coefficients for anode and cathode
+            if(anode!=-1 && cathode!=-1)
+            {
+                
+                Mat(anode,cathode)-=conductance;
+                Mat(cathode,anode)-=conductance;
+                Mat(anode,anode)+=conductance;
+                Mat(cathode,cathode)+=conductance;
+
+                Vec(anode)-=current;
+                Vec(cathode)+=current;
             }
-            else if(dynamic_cast<Inductor*>(component)){
-                sub_coefficients[nodes->size()] -= ((Inductor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
-                //sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
-                //sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
-                if(component->get_anode() == node->index){
-                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
-                    sub_coefficients[component->get_anode()] += ((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += -((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                }
-                else if(component->get_cathode() == node->index){
-                    sub_coefficients[component->get_anode()] += -((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += ((Inductor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                }
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=conductance;
+                Vec(anode)-=current;
             }
-            else if(dynamic_cast<Capacitor*>(component)){
-                cout << ((Capacitor*)component)->get_linear_current() << endl;
-                cout << ((Capacitor*)component)->get_conductance() << endl;
-                sub_coefficients[nodes->size()] += ((Capacitor*)component)->get_linear_current() * (component->get_anode() == node->index?-1:1);
-                //sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1);
-                //sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance() * (component->get_anode() == node->index?-1:1); 
-                if(component->get_anode() == node->index){
-                    //assign 1/r and -1/r to each corresponding coefficient of the resistor nodes
-                    sub_coefficients[component->get_anode()] += ((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += -((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                }
-                else if(component->get_cathode() == node->index){
-                    sub_coefficients[component->get_anode()] += -((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                    sub_coefficients[component->get_cathode()] += ((Capacitor*)component)->get_conductance();//1/((Resistor*)component)->get_value();
-                }
+            else
+            {
+                Mat(cathode,cathode)+=conductance;
+                Vec(cathode)+=current;
             }
-            //if component is a voltage source
-            else if(dynamic_cast<Voltage_Component*>(component)){
-                //check which end of the voltage source is connected to the current node
-                if(component->get_anode() == node->index){
-                    //std::cout << "get current "<< std::endl;
-                    //generate the coeffiecient for node on the other side of the voltage source
-                    //leaving out he connection to the current node by adding the source_component parameter
-                    sub_coefficients = 
-                        coefficient_generator(&((*nodes)[component->get_cathode()]), nodes,component);
-                    ((Voltage_Component*)component)->set_coefficients(sub_coefficients);
-                    //correct the coefficient by swapping "N2" with "N1 + V" and add the voltage constant
-                    //multiplied by the coefficient value to the constant term of the coefficients.
-                    if(dynamic_cast<Voltage_Controlled_Voltage_Source*>(component)){
-                        sub_coefficients[node->index] += sub_coefficients[component->get_cathode()];
-                        sub_coefficients[((Voltage_Controlled_Voltage_Source*)component)->get_control_anode()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage() *-1;
-                        sub_coefficients[((Voltage_Controlled_Voltage_Source*)component)->get_control_cathode()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage();
-                    }
-                    else{
-                        sub_coefficients[node->index] += sub_coefficients[component->get_cathode()];
-                        sub_coefficients[nodes->size()] += sub_coefficients[component->get_cathode()] * ((Voltage_Component*)component)->get_voltage() *-1;
-                    }
-                    sub_coefficients[component->get_cathode()] = 0;
-                }
-                if(component->get_cathode() == node->index){
-                    sub_coefficients = 
-                    coefficient_generator(&((*nodes)[component->get_anode()]), nodes,component);
-                    if(dynamic_cast<Voltage_Controlled_Voltage_Source*>(component)){
-                        sub_coefficients[node->index] += sub_coefficients[component->get_anode()];
-                        sub_coefficients[((Voltage_Controlled_Voltage_Source*)component)->get_control_anode()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage();
-                        sub_coefficients[((Voltage_Controlled_Voltage_Source*)component)->get_control_cathode()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage() * -1;
-                    }
-                    else{
-                        sub_coefficients[node->index] += sub_coefficients[component->get_anode()];
-                        sub_coefficients[nodes->size()] += sub_coefficients[component->get_anode()] * ((Voltage_Component*)component)->get_voltage();
-                    }
-                    sub_coefficients[component->get_anode()] = 0;
-                }
+        }
+        else if(dynamic_cast<Voltage_Controlled_Current_Source*>(i))
+        {
+            Voltage_Controlled_Current_Source* VCCSptr = dynamic_cast<Voltage_Controlled_Current_Source*>(i);
+            double gain = VCCSptr->get_gain();
+
+            //add coefficients for anode and cathode
+            if(anode!=-1 && cathode!=-1)
+            {
+                Mat(anode,cathode)-=gain;
+                Mat(cathode,anode)-=gain;
+                Mat(anode,anode)+=gain;
+                Mat(cathode,cathode)+=gain;
             }
-            else if(dynamic_cast<Voltage_Controlled_Current_Source*>(component)){
-                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_control_anode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?-1:1);
-                sub_coefficients[((Voltage_Controlled_Current_Source*)component)->get_control_cathode()] += ((Current_source*)component)->get_current() * (component->get_anode() == node->index?1:-1);
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=gain;
             }
-            //add the sub coefficients to the output
-            for(int i=0; i < coefficients.size(); i++){
-                coefficients[i] += sub_coefficients[i];
+            else
+            {
+                Mat(cathode,cathode)+=gain;
+            }
+        }
+        else if(dynamic_cast<Capacitor*>(i))
+        {
+            Capacitor* Cptr = dynamic_cast<Capacitor*>(i);
+            double current = Cptr->get_linear_current();
+            double conductance = Cptr->get_conductance();
+
+
+            //for Capacitor current source and resistor
+            
+            //add coefficients for anode and cathode
+            if(anode!=-1 && cathode!=-1)
+            {
+                
+                Mat(anode,cathode)-=conductance;
+                Mat(cathode,anode)-=conductance;
+                Mat(anode,anode)+=conductance;
+                Mat(cathode,cathode)+=conductance;
+
+                Vec(anode)+=current;
+                Vec(cathode)-=current;
+            }
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=conductance;
+                Vec(anode)+=current;
+            }
+            else
+            {
+                Mat(cathode,cathode)+=conductance;
+                Vec(cathode)-=current;
+            }
+        }
+        else if(dynamic_cast<Diode*>(i))
+        {
+            Diode* Dptr = dynamic_cast<Diode*>(i);
+            double anode_coeff = Dptr->get_anode_coefficient();
+            double cathode_coeff = Dptr->get_cathode_coefficient();
+            double current = Dptr->get_constant_coefficient();
+            std::cout << anode_coeff << " " << cathode_coeff << " " << current << std::endl;
+            if(anode!=-1 && cathode!=-1)
+            {             
+                //add diode coefficients
+                Mat(anode,anode)+=anode_coeff;
+                Mat(anode,cathode)+=cathode_coeff;
+
+                Mat(cathode,anode)-=anode_coeff;
+                Mat(cathode,cathode)-=cathode_coeff;
+
+                Vec(anode)-=current;          
+                Vec(cathode)+=current;
+            }
+            else if(anode!=-1)
+            {
+                Mat(anode,anode)+=anode_coeff;
+                Vec(anode)-=current;
+            }
+            else
+            {
+                Mat(cathode,cathode)-=cathode_coeff;
+                Vec(cathode)+=current;
+            }
+        }
+        else if(dynamic_cast<BJT*>(i))
+        {
+            BJT* BJTptr = dynamic_cast<BJT*>(i);
+            int base = BJTptr->get_base() -1;
+            if(anode!=-1)
+            {    
+                //add collector coefficients
+                Mat(anode,anode)+=BJTptr->get_collector_coefficient(anode+1);;
+                if(cathode!=-1){
+                    //collector emmitter
+                    Mat(anode,cathode)+=BJTptr->get_emmitter_coefficient(anode+1);
+                    Mat(cathode,anode)+=BJTptr->get_collector_coefficient(cathode+1);
+                }
+                if(base!=-1){
+                    //collector base
+                    Mat(anode,base)+=BJTptr->get_base_coefficient(anode+1);
+                    Mat(base,anode)+=BJTptr->get_collector_coefficient(base+1);
+                }
+                Vec(anode)-=BJTptr->get_constant_coefficient(anode+1);
+            }
+            if(cathode!=-1)
+            { 
+                //add emmitter coefficients
+                Mat(cathode,cathode)+=BJTptr->get_emmitter_coefficient(cathode+1);
+                if(base!=-1){
+                    //emmitter base 
+                    Mat(cathode,base)+=BJTptr->get_base_coefficient(cathode+1);
+                    Mat(base,cathode)+=BJTptr->get_emmitter_coefficient(base+1);
+                }
+                Vec(cathode)-=BJTptr->get_constant_coefficient(cathode+1);
+            }
+            if(base!=-1)
+            { 
+                //add base coefficients
+                Mat(base,base)+=BJTptr->get_base_coefficient(base+1);
+                Vec(base)-=BJTptr->get_constant_coefficient(base+1);
             }
         }
     }
-    //return the output
-    return coefficients;
-}
 
-//takes a vector of an object (ie nodes)
-//the object type named here as Data must have a method get_data that outputs the 
-//constants of a line of a matrix in the form {a,b,c, ... ,d} such that
-//ax1 + bx2 + cx3 .... + d = 0
-//the matrix outputs the solution to the matrix equation in a vector float
-vector<double> MatrixSolver(Circuit &circuit){  //vector<Node> &input){
+    //processing voltage sources
+    for(Voltage_Component* i : voltage_components)
+    {
+        int anode = i->get_anode() -1;
+        int cathode = i->get_cathode() -1;
 
-    //create a matrix with the correct dimensions
-    MatrixXd matrix(circuit.get_number_of_nodes()-1,circuit.get_number_of_nodes()-1);
-    //SparseMatrix<double> matrix(circuit.get_number_of_nodes()-1,circuit.get_number_of_nodes()-1);
-    //create vectors for the left and right hand side of the equation
-    MatrixXd result(circuit.get_number_of_nodes()-1,1);
-    MatrixXd constants(circuit.get_number_of_nodes()-1,1);
-        //SparseMatrix<double> result(circuit.get_number_of_nodes()-1,1);
-        //SparseMatrix<double> constants(circuit.get_number_of_nodes()-1,1);
-        //VectorXd result(circuit.get_number_of_nodes()-1);
-        //VectorXd constants(circuit.get_number_of_nodes()-1);
-    //iterate through all the inputs
-    for(int i=0; i < circuit.get_number_of_nodes()-1; i++){
-            //for each input extract the row data
-            vector<double> row = coefficient_generator(&circuit.get_nodes_ptr()->at(i+1),circuit.get_nodes_ptr());
-            //fill the corresponding matrix row with the input data
-            for(int j=1; j<circuit.get_number_of_nodes(); j++){
-                matrix(i,j-1) = row[j];
+        if(dynamic_cast<Voltage_Source*>(i) || dynamic_cast<AC_Voltage_Source*>(i))
+        {            
+            double voltage = i->get_voltage();
+            
+            assert(anode != cathode);
+
+            if(cathode == -1)
+            {   
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;                   
+                Vec(anode) = voltage;
             }
-            //add the final input data value to the constants, make negative 
-            //as moved to other side of equation
-            constants(i) = -row[circuit.get_number_of_nodes()];
+            else if (anode == -1)
+            {
+                Mat.row(cathode).setZero();
+                Mat(cathode,cathode) = -1;
+                Vec(cathode) = voltage;
+            }
+            else
+            {   
+                //combines KCL equations
+                Mat.row(cathode) += Mat.row(anode);
+                Vec(cathode) += Vec(anode);
+                //sets anode node to V_anode - V_cathode = deltaV
+                Mat.row(anode).setZero();
+                Mat(anode,anode) = 1;
+                Mat(anode,cathode) = -1;
+                Vec(anode) = voltage;
+            }
+        }
+        else if (dynamic_cast<Voltage_Controlled_Voltage_Source*>(i))
+        {
+            Voltage_Controlled_Voltage_Source* Vptr = dynamic_cast<Voltage_Controlled_Voltage_Source*>(i);
+            double gain = Vptr->get_gain();
+            int control_anode = Vptr->get_control_anode() -1;
+            int control_cathode = Vptr->get_control_cathode() -1;
+
+            assert(anode != cathode);
+
+            if(anode == -1)
+            {
+                //sets defining eq of VCVS at row cathode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(cathode).setZero();
+                Vec(cathode) = 0;
+
+                //Mat(cathode,anode)+= 1;
+                Mat(cathode,cathode)+= -1;
+                if(control_anode != -1) Mat(cathode,control_anode)+= -gain;
+                if(control_cathode!=-1) Mat(cathode,control_cathode)+= gain;
+            }
+            else if (cathode == -1)
+            {
+                //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(anode).setZero();
+                Vec(anode) = 0;
+
+                Mat(anode,anode)+= 1;
+                //Mat(anode,cathode)+= -1;
+                if(control_anode != -1) Mat(anode,control_anode)+= -gain;
+                if(control_cathode!=-1) Mat(anode,control_cathode)+= gain;
+            }
+            else
+            {
+                //combines KCL equations
+                Mat.row(cathode) += Mat.row(anode);
+                Vec(cathode) += Vec(anode);
+                
+                //sets defining eq of VCVS at row anode: V_anode - V_cathode = gain(V_control_anode - V_control_cathode)
+                Mat.row(anode).setZero();
+                Vec(anode) = 0;
+                
+                Mat(anode,anode)+= 1;
+                Mat(anode,cathode)+= -1;              
+                if(control_anode != -1) Mat(anode,control_anode)+= -gain;
+                if(control_cathode!=-1) Mat(anode,control_cathode)+= gain;             
+            }       
+        }
     }
-    //invert matrix and solve equation
+    //if OP is true replace all inductors with short circuits
+    if(OP){
+        for(Component* component: input_circuit.get_components()){
+            if(dynamic_cast<Inductor*>(component)){
+                if(component->get_cathode()!=0&&component->get_anode()!=0){
 
+                    for(int i = 0; i < input_circuit.get_number_of_nodes() -1; i++){
+                        Mat(component->get_cathode()-1,i) += Mat(component->get_anode()-1,i);
+                        Mat(component->get_anode()-1,i) = 0;
+                    }
+                    Mat(component->get_anode()-1,component->get_anode()-1) = 1;
+                    Mat(component->get_anode()-1,component->get_cathode()-1) = -1;
+                    Vec(component->get_anode()-1) = 0;
 
-    //MatrixXd matrix2 = matrix;
-    //auto start = chrono::steady_clock::now();
-    //for(int i = 0; i < 1; i++){
-        //cout << matrix <<endl;
-        //cout << "matrix" <<endl; 
-    matrix = matrix.inverse();
-    result = matrix * constants;
-    //Eigen::SimplicialLDLT<SparseMatrix<double>> solver;
-    //solver.compute(matrix);
-    //result = solver.solve(constants);
-    //result = matrix.householderQr().solve(constants);
-    //}
-    //auto end = chrono::steady_clock::now();
-    //auto diff = end - start;
-    //cout << chrono::duration <double, milli> (diff).count() << " ms" << endl;
-    
-    
-    
-    //convert the output matrix to vector format
-    vector<double> output;
-    output.push_back(0);
-    for(int i=0; i < circuit.get_number_of_nodes() -1; i++){
-            output.push_back(result(i));
+                }else if(component->get_cathode()!=0){
+                    
+                    for(int i = 0; i < input_circuit.get_number_of_nodes() -1; i++){
+                        Mat(component->get_cathode()-1,i) = 0;
+                    }
+                    Mat(component->get_cathode()-1,component->get_anode()-1) = 1;
+                    Mat(component->get_cathode()-1,component->get_cathode()-1) = -1;
+                    Vec(component->get_cathode()-1) = 0;
+                    
+                }else{
+                   
+                    for(int i = 0; i < input_circuit.get_number_of_nodes() -1; i++){
+                        Mat(component->get_anode()-1,i) = 0;
+                    }
+                    Mat(component->get_anode()-1,component->get_anode()-1) = 1;
+                    Mat(component->get_anode()-1,component->get_cathode()-1) = -1;
+                    Vec(component->get_anode()-1) = 0;
+                    
+                }   
+            }        
+        }
     }
-    //return output
-    return output;
-}
 
+    //finding the inverse matrix
+    Eigen::VectorXd solution(Mat_size);
+    Mat = Mat.inverse();
 
-//returns the current through a component
-double GetCurrent(Circuit &circuit, Component* component){
-//double ComponentCurrent(vector<double> &voltages, vector<Node> &nodes, Component* component){
-    double current = 0;
-    if(dynamic_cast<Voltage_Component*>(component)){
-        current = ((Voltage_Component*)component)->get_current(circuit.get_voltages());
-    }else if(dynamic_cast<Current_Component*>(component)){
-        return ((Current_Component*)component)->get_current(circuit.get_voltages());
-    }
-    return current;
-}
+    solution = Mat * Vec;
 
-
-//outputs the vector of voltages given the vector of components, optional vector of nodes used to increase speed
-void NodeVoltageSolver(Circuit &circuit){  //vector<Component*> &components, vector<Node> *nodes = nullptr){
-    circuit.set_voltages(MatrixSolver(circuit));
+    input_circuit.set_voltages_eigen(solution);
+    return;
 }
 
 
 #endif
-
-

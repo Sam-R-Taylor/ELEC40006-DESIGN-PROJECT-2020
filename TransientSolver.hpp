@@ -1,21 +1,15 @@
 #ifndef TRANSIENTSOLVER_HPP
 #define TRANSIENTSOLVER_HPP
 
-
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
 #include <string>
 #include "Component.hpp"
 #include"Circuit.hpp"
-//#include "KCLSolver.hpp"
 #include <memory> 
-#include "leo_KCLSolver2.hpp"
+#include "KCLSolver.hpp"
 using Eigen::MatrixXd;
-
-
-
-
 
 void TransientSolver(Circuit &circuit, bool OP = false){
     bool incomplete = true;
@@ -38,12 +32,7 @@ void TransientSolver(Circuit &circuit, bool OP = false){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        //for(auto x: old_voltages){
-        //    std::cout << x << std::endl;
-        //}
         Matrix_solver(circuit,OP);   
-        //NodeVoltageSolver(circuit);
-        //check the error
         
         //set the stored voltages to the new voltages
         incomplete = false;

@@ -1,4 +1,4 @@
-#include "Circuit.hpp"
+/*#include "Circuit.hpp"
 #include "Component.hpp"
 #include "KCLSolver.hpp"
 #include "TransientSolver.hpp"
@@ -32,10 +32,6 @@ int main(){
         auto diff = end - start;
         cout << chrono::duration <double, milli> (diff).count() << endl;
         
-        //v = circuit.get_voltages();
-        //for(auto x: v){
-        //    cout << x << endl;
-        //}
         
     }
-}
+}*/

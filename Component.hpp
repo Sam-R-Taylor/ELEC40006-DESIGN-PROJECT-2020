@@ -12,7 +12,7 @@ protected:
     int anode;
     int cathode;
 public:
-    Component(){}                            //to implement
+    Component(){}                        
     virtual ~Component(){}
     /*
     reurns the anode of the component
@@ -60,7 +60,6 @@ public:
     double get_current(const std::vector<double> &nodeVoltages) const
     {
         double current = (nodeVoltages[anode]-nodeVoltages[cathode])/resistance;
-        //std::cout << "Resistor Current" << current << std::endl;
         return current;
     }
     double get_conductance() const{
@@ -87,18 +86,6 @@ public:
         inductance = _inductance;
     }
     ~Inductor(){}
-    /*
-    given an increment computed by "controller" due to a timestep
-    updates the inductance of Inductor::integral
-    */
-    void update_integral(double increment){
-        integral += increment;
-    }
-    
-    double get_current() const        //does not need the parameter. modify later
-    {
-        return integral/inductance;
-    }
 
     double get_conductance() const
     {
@@ -106,8 +93,6 @@ public:
     }
     double get_linear_current() const
     {
-        //std::cout << "Conductance " << conductance << std::endl;
-        //std::cout << "VoltageN " << conductance << std::endl;
         return linear_current;
     }
     void set_conductance(double deltatime) //Not const as setters
@@ -116,13 +101,10 @@ public:
     }
     void set_linear_current(double In) 
     {
-        //std::cout << "current " << In << std::endl;
         linear_current = In;
     }
     double get_current(const std::vector<double> &nodeVoltages) const
     {
-        //std::cout << "Conductance " << conductance << std::endl;
-        //std::cout << "Voltage " << (nodeVoltages[anode]-nodeVoltages[cathode]) << std::endl;
         return linear_current + conductance * (nodeVoltages[anode]-nodeVoltages[cathode]);
     }
 };
@@ -134,22 +116,23 @@ private:
     /*
     fixed current going from anode to cathode
     */
-    double current;
+    double Current;
 public:
     Current_source(int _anode, int _cathode, std:: string _name, double _current){
         anode = _anode;
         cathode = _cathode; 
         name = _name;
-        current = _current;
+        Current = _current;
     }
     ~Current_source(){}
+    //present for compatibilty with current component
     double get_current(const std::vector<double> &nodeVoltages) const
     {
-        return current;
+        return Current;
     }
     double get_current() const
     {
-        return current;
+        return Current;
     }
 };   
 
@@ -163,7 +146,6 @@ private:
     double conductance = 0;
     double linear_current = 0;
     double value;
-    double integral;
 public:
     Capacitor(int _anode, int _cathode, std:: string _name, double _value){
         anode = _anode;
@@ -186,7 +168,7 @@ public:
     {
         return linear_current;
     }
-    void set_conductance(double deltatime) //Not const as setters
+    void set_conductance(double deltatime)
     {
         conductance = value/deltatime;
     }
@@ -197,15 +179,6 @@ public:
     double get_current(const std::vector<double> &nodeVoltages) const
     {
         return conductance * (nodeVoltages[anode]-nodeVoltages[cathode]) - linear_current;
-    }
-    /*
-    given an increment computed by "controller" due to a timestep
-    updates the value of Capacitor::integral
-    */
-    void update_integral(double increment)
-    {
-        //std::cout << "Integral " << integral << std::endl;
-        integral += increment;
     }
 };
 
@@ -243,7 +216,6 @@ public:
     //set the voltage across the diode
     void set_vd(double _vd){
         vd = _vd;
-        //std::cout << "Vd " << vd << std::endl;
     }
     //set the current through the diode at operating point
     void set_id0(double _id0){
@@ -267,7 +239,6 @@ public:
         return (id0 - this->get_conductance()*vd);
     }
     void set_conductance(){
-        //std::cout << "conductance " << get_conductance() << std::endl;
         G2 = get_conductance();
     }
     double get_anode_coefficient(){
@@ -291,8 +262,6 @@ public:
         }else{
             current = -I_s*(exp(-(BV+V)/Vt)-1+BV/Vt);
         }
-        //current = current>10?10:current;
-        //std::cout << "Current  " <<current << std::endl; 
         return current;
     }
     double get_rs(){
@@ -398,7 +367,7 @@ public:
         Ge = 1/_Re;
         Af = _Af;
         Ar = _Ar;
-        //pre calculated for increased speed
+        //calculated for increased speed
         GbGcGe = Gb*Gc*Ge;
         GbGe = Gb*Ge;
         GbGc = Gb*Gc;
@@ -540,20 +509,9 @@ public:
 class Voltage_Component:
     public Component
 {
-    std::vector<double> current_coefficients;
 public:
     double current;
     virtual double get_voltage() const = 0;
-    void set_coefficients(std::vector<double> _current_coefficients){
-        current_coefficients = _current_coefficients;
-    }
-    double get_current(std::vector<double> voltages){
-        double current;
-        for(int i=0; i< voltages.size(); i++){
-            current += voltages[i] * current_coefficients[i];
-        }
-        return current;
-    }
 };
 
 class Voltage_Source:
@@ -630,9 +588,8 @@ class AC_Voltage_Source:
         name = _name;
         Voltage_amplitude = _Voltage_amplitude;
         frequency = _frequency;
-        //phase = _phase;
         DC_Offset = _DC_Offset;
-
+        currentVoltage = _DC_Offset;
     }
     double Get_Voltage_amplitude() const
     {
@@ -642,20 +599,9 @@ class AC_Voltage_Source:
     {
         return frequency;
     }
-    /*
-    double Get_phase() const
-    {
-        return phase;
-    }
-    */
     void Set_Voltage(double CurrentTime)
     {
         currentVoltage = (Voltage_amplitude)*sin((2*M_PI*frequency*CurrentTime)) + DC_Offset ;
-        //std::cout << "sin arg is " << (2*M_PI*frequency*CurrentTime) << std::endl;
-
-        //std::cout<<"current frequency is " << frequency << std::endl;
-        //y(t)=Asin(2pift)
-
     }
     double get_voltage() const
     {
