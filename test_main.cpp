@@ -1,3 +1,4 @@
+/*
 #include"Parser.hpp"
 #include<fstream>
 int main(int argc, char const *argv[])
@@ -6,3 +7,4 @@ int main(int argc, char const *argv[])
     parse_input(input);
     return 0;
 }
+*/
