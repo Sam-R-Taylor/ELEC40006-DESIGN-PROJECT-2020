@@ -297,6 +297,26 @@ void parse_input(std::fstream & src)
                 std::cout<< "added "<<_name<< read_node_number(_collector) << read_node_number(_base) << read_node_number(_emitter) << " " <<_model_name << std::endl;
             }
             break;
+        case 'e' :
+            {
+                std::string _control_anode;
+                std::string _control_cathode;
+                std::string _gain;
+                src >> _name >> _anode >> _cathode >> _control_anode >> _control_cathode >> _gain;
+                _circuit.add_component(new Voltage_Controlled_Voltage_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_gain),read_node_number(_control_anode),read_node_number(_control_cathode)));
+                std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_node_number(_control_anode)<<" "<<read_node_number(_control_cathode);
+            }
+            break;
+        case 'g' :
+            {
+                std::string _control_anode;
+                std::string _control_cathode;
+                std::string _gain;
+                src >> _name >> _anode >> _cathode >> _control_anode >> _control_cathode >> _gain;
+                _circuit.add_component(new Voltage_Controlled_Current_Source(read_node_number(_anode),read_node_number(_cathode),_name,read_value(_gain),read_node_number(_control_anode),read_node_number(_control_cathode)));
+                std::cout<< "added "<<_name << read_node_number(_anode) << read_node_number(_cathode) <<" " <<read_node_number(_control_anode)<<" "<<read_node_number(_control_cathode);
+            }
+            break;
         default:
             std::cout<< "non-handled case"<< std::endl;
             std::cout<<"tmp is "<<tmp<<std::endl;
