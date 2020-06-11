@@ -163,7 +163,7 @@ void Matrix_solver(Circuit& input_circuit, bool OP = false)
             double anode_coeff = Dptr->get_anode_coefficient();
             double cathode_coeff = Dptr->get_cathode_coefficient();
             double current = Dptr->get_constant_coefficient();
-            std::cout << anode_coeff << " " << cathode_coeff << " " << current << std::endl;
+            //std::cout << anode_coeff << " " << cathode_coeff << " " << current << std::endl;
             if(anode!=-1 && cathode!=-1)
             {             
                 //add diode coefficients

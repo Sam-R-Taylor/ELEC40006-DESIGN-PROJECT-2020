@@ -91,7 +91,7 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime = -1){
     }else cout << "Unable to open voltage file";
     
     if(myfile2.is_open()){
-        if(CurrentTime == 0){
+        if(CurrentTime <= 0){
             for(int i = 0; i < CKTIn.get_components().size()-1; i++){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){
                     myfile2 << CKTIn.get_components().at(i)->get_name() << "C" << ", ";
