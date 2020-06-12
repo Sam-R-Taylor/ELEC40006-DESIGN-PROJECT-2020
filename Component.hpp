@@ -294,6 +294,10 @@ public:
     {
         return gain;        
     }
+    virtual double get_current(const std::vector<double> &nodeVoltages) const{
+        double current =  gain*(nodeVoltages[control_voltage_anode] - nodeVoltages[control_voltage_cathode]);
+        return current;
+    }
     int get_control_anode() const
     {
         return control_voltage_anode;
@@ -568,7 +572,7 @@ public:
     {
         return control_voltage_cathode;
     }
-    double get_voltage(){
+    double get_voltage() const{
         return gain;
     };
 };
