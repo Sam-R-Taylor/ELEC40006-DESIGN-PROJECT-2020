@@ -313,10 +313,12 @@ void Matrix_solver(Circuit& input_circuit, bool OP = false)
     }
     //if OP is true replace all inductors with short circuits
     if(OP){
+        //std::cout << "IN OP" << std::endl;
         for(Component* component: input_circuit.get_components()){
             if(dynamic_cast<Inductor*>(component)){
+                //std::cout << "IN Inductor" << std::endl;
                 if(component->get_cathode()!=0&&component->get_anode()!=0){
-
+                    //std::cout << "IN cathode" << std::endl;
                     for(int i = 0; i < input_circuit.get_number_of_nodes() -1; i++){
                         Mat(component->get_cathode()-1,i) += Mat(component->get_anode()-1,i);
                         Mat(component->get_anode()-1,i) = 0;
@@ -326,34 +328,32 @@ void Matrix_solver(Circuit& input_circuit, bool OP = false)
                     Vec(component->get_anode()-1) = 0;
 
                 }else if(component->get_cathode()!=0){
-                    
+                    //std::cout << "IN anode" << std::endl;
                     for(int i = 0; i < input_circuit.get_number_of_nodes() -1; i++){
                         Mat(component->get_cathode()-1,i) = 0;
                     }
-                    Mat(component->get_cathode()-1,component->get_anode()-1) = 1;
                     Mat(component->get_cathode()-1,component->get_cathode()-1) = -1;
                     Vec(component->get_cathode()-1) = 0;
                     
                 }else{
-                   
+                    //std::cout << "IN ELSE" << std::endl;
+                    //std::cout << input_circuit.get_number_of_nodes() -1 << std::endl;
                     for(int i = 0; i < input_circuit.get_number_of_nodes() -1; i++){
                         Mat(component->get_anode()-1,i) = 0;
                     }
                     Mat(component->get_anode()-1,component->get_anode()-1) = 1;
-                    Mat(component->get_anode()-1,component->get_cathode()-1) = -1;
                     Vec(component->get_anode()-1) = 0;
                     
                 }   
             }        
         }
     }
-
+    //std::cout << "OUT OF OP" << std::endl;
     //finding the inverse matrix
     Eigen::VectorXd solution(Mat_size);
     Mat = Mat.inverse();
-
     solution = Mat * Vec;
-
+    //std::cout << Vec << std::endl;
     input_circuit.set_voltages_eigen(solution);
     return;
 }

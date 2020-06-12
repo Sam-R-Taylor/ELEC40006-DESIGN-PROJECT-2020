@@ -9,6 +9,7 @@
 #include"Circuit.hpp"
 #include <memory> 
 #include "KCLSolver.hpp"
+#include "SparseKCLSolver.hpp"
 using Eigen::MatrixXd;
 
 void TransientSolver(Circuit &circuit, bool OP = false){
@@ -33,10 +34,10 @@ void TransientSolver(Circuit &circuit, bool OP = false){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        Matrix_solver(circuit,OP);   
-        for(auto x: circuit.get_voltages()){
-            std::cout<<x<<std::endl;
-        }
+        Sparse_Matrix_solver(circuit,OP); 
+        //for(auto x: circuit.get_voltages()){
+        //    std::cout << x << std::endl;
+        //}  
         //set the stored voltages to the new voltages
         incomplete = false;
         for(int i = 0; i < old_voltages.size(); i++){
@@ -46,6 +47,7 @@ void TransientSolver(Circuit &circuit, bool OP = false){
         }
         //check that max iterations haven't occured
         if(current_iteration >= circuit.max_iterations){
+            std::cout << "max iterations" << std::endl;
             exit(1);
             incomplete = false;
         }

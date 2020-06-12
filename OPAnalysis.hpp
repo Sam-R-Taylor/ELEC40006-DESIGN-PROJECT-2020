@@ -7,8 +7,9 @@
 #include "Component.hpp"
 #include "Circuit.hpp"
 #include "TransientSolver.hpp"
-#include "KCLSolver.hpp"
+#include "SparseKCLSolver.hpp"
 #include "AnalysisOutput.hpp"
+#include "KCLSolver.hpp"
 #include <memory> 
 
 void OPAnalysis(Circuit &circuit){
@@ -17,20 +18,16 @@ void OPAnalysis(Circuit &circuit){
     fstream myfile ("output_voltage.txt");
     remove("output_current.txt");
     fstream myfile2 ("output_current.txt");
-
     //solve circuit voltages
     if(IsLinear(circuit)){
-        Matrix_solver(circuit,true);
+        Sparse_Matrix_solver(circuit,true);
     }else{
         TransientSolver(circuit,true);
     }
     //solve circuit currents
-    Calculate_currents(circuit);
+    Calculate_currents(circuit,true);
     //print the voltages and currents to files setting current time to -1 tells output not to print time
     NodeVoltagesToFile(circuit,-1);
-    for(auto v: circuit.get_voltages()){
-        std::cout << v << std::endl;
-    }
 }
 
 #endif

@@ -166,6 +166,8 @@ public:
     void set_conductance(double deltatime)
     {
         conductance = value/deltatime;
+        //std::cout << "value" << value << std::endl;
+        //std::cout << conductance << std::endl;
     }
     void set_linear_current(double VoltageN) 
     {

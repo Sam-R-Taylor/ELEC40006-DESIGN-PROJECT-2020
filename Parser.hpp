@@ -3,8 +3,6 @@
 
 #include "Circuit.hpp"
 #include "Component.hpp"
-#include "KCLSolver.hpp"
-#include "TransientSolver.hpp"
 #include "TransientAnalysis.hpp"
 #include "OPAnalysis.hpp"
 #include <fstream>
