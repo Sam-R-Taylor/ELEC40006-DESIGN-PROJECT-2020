@@ -4,8 +4,8 @@
 
 #include <vector>
 #include "Component.hpp"
-#include <Eigen/Sparse>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
+#include <eigen3/Eigen/Dense>
 
 struct Node{
     int index = 0;

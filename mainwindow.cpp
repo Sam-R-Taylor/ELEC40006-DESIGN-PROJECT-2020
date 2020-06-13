@@ -57,8 +57,10 @@ void MainWindow::makeplotVoltage(){
 
     }
     ui->customPlot->axisRect(0)->axis(QCPAxis::atLeft)->rescale();
+    ui->customPlot->axisRect(0)->axis(QCPAxis::atTop)->rescale();
+    ui->customPlot->axisRect(0)->axis(QCPAxis::atBottom)->rescale();
+    ui->customPlot->axisRect(0)->axis(QCPAxis::atRight)->rescale();
     ui->customPlot->replot();
-
 }
 
 void MainWindow::makeplotCurrent(){
@@ -92,6 +94,9 @@ void MainWindow::makeplotCurrent(){
 
     }
     ui->customPlot->axisRect(0)->axis(QCPAxis::atLeft)->rescale();
+    ui->customPlot->axisRect(0)->axis(QCPAxis::atTop)->rescale();
+    ui->customPlot->axisRect(0)->axis(QCPAxis::atBottom)->rescale();
+    ui->customPlot->axisRect(0)->axis(QCPAxis::atRight)->rescale();
     ui->customPlot->replot();
 
 }

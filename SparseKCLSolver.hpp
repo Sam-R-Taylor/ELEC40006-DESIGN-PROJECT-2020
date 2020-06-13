@@ -6,7 +6,7 @@
 #include <memory>
 #include <cassert>
 #include <vector>
-#include <Eigen/Sparse>
+#include <eigen3/Eigen/Sparse>
 
 using namespace Eigen;
 
