@@ -306,6 +306,10 @@ public:
     {
         return control_voltage_cathode;
     }
+    double get_current(const std::vector<double> &nodeVoltages) const
+    {
+        return (nodeVoltages[get_control_anode()]-nodeVoltages[get_control_cathode()])*gain;
+    }
 };
 
 class BJT:                

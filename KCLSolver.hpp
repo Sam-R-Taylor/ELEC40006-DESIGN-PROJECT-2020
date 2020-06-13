@@ -4,7 +4,7 @@
 #include "Circuit.hpp"
 #include "Component.hpp"
 #include <memory>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <cassert>
 
 void Matrix_solver(Circuit& input_circuit, bool OP = false)
@@ -107,22 +107,44 @@ void Matrix_solver(Circuit& input_circuit, bool OP = false)
         {
             Voltage_Controlled_Current_Source* VCCSptr = dynamic_cast<Voltage_Controlled_Current_Source*>(i);
             double gain = VCCSptr->get_gain();
+            double control_anode = VCCSptr->get_control_anode() -1;
+            double control_cathode = VCCSptr->get_control_cathode() -1;
 
             //add coefficients for anode and cathode
             if(anode!=-1 && cathode!=-1)
-            {
-                Mat(anode,cathode)-=gain;
-                Mat(cathode,anode)-=gain;
-                Mat(anode,anode)+=gain;
-                Mat(cathode,cathode)+=gain;
+            {   
+                if(control_cathode != -1)
+                {
+                    Mat(anode,control_cathode)-=gain;
+                    Mat(cathode,control_cathode)+=gain;
+                }
+                if(control_anode != -1)
+                {
+                    Mat(cathode,control_anode)-=gain;
+                    Mat(anode,control_anode)+=gain;
+                }
             }
             else if(anode!=-1)
             {
-                Mat(anode,anode)+=gain;
+                if(control_cathode != -1)
+                {
+                    Mat(anode,control_cathode)-=gain;
+                }
+                if(control_anode != -1)
+                {
+                    Mat(anode,control_anode)+=gain;
+                }
             }
             else
             {
-                Mat(cathode,cathode)+=gain;
+                if(control_cathode != -1)
+                {
+                    Mat(cathode,control_cathode)+=gain;
+                }
+                if(control_anode != -1)
+                {
+                    Mat(cathode,control_anode)-=gain;
+                }
             }
         }
         else if(dynamic_cast<Capacitor*>(i))
