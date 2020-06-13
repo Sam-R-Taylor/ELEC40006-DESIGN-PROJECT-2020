@@ -1,3 +1,0 @@
-R1 5 6 30mii
-R2 0 1 2kiuoiu
-l 1 0 23t
