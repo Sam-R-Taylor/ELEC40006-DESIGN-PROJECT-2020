@@ -144,22 +144,44 @@ void Sparse_Matrix_solver(Circuit& input_circuit, bool OP = false)
         {
             Voltage_Controlled_Current_Source* VCCSptr = dynamic_cast<Voltage_Controlled_Current_Source*>(i);
             double gain = VCCSptr->get_gain();
+            double control_anode = VCCSptr->get_control_anode() -1;
+            double control_cathode = VCCSptr->get_control_cathode() -1;
 
             //add coefficients for anode and cathode
             if(anode!=-1 && cathode!=-1)
-            {
-                Mat.coeffRef(anode,cathode)-=gain;
-                Mat.coeffRef(cathode,anode)-=gain;
-                Mat.coeffRef(anode,anode)+=gain;
-                Mat.coeffRef(cathode,cathode)+=gain;
+            {   
+                if(control_cathode != -1)
+                {
+                    Mat.coeffRef(anode,control_cathode)-=gain;
+                    Mat.coeffRef(cathode,control_cathode)+=gain;
+                }
+                if(control_anode != -1)
+                {
+                    Mat.coeffRef(cathode,control_anode)-=gain;
+                    Mat.coeffRef(anode,control_anode)+=gain;
+                }
             }
             else if(anode!=-1)
             {
-                Mat.coeffRef(anode,anode)+=gain;
+                if(control_cathode != -1)
+                {
+                    Mat.coeffRef(anode,control_cathode)-=gain;
+                }
+                if(control_anode != -1)
+                {
+                    Mat.coeffRef(anode,control_anode)+=gain;
+                }
             }
             else
             {
-                Mat.coeffRef(cathode,cathode)+=gain;
+                if(control_cathode != -1)
+                {
+                    Mat.coeffRef(cathode,control_cathode)+=gain;
+                }
+                if(control_anode != -1)
+                {
+                    Mat.coeffRef(cathode,control_anode)-=gain;
+                }
             }
         }
         else if(dynamic_cast<Capacitor*>(i))
