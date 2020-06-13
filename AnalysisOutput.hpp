@@ -8,8 +8,6 @@
 #include <memory> 
 #include "Circuit.hpp"
 #include <fstream>
-#include "TransientSolver.hpp"
-#include "KCLSolver.hpp"
 using namespace std;
 
 double Current_at_voltage_component(Circuit &circuit, Voltage_Component* component, int _node = -1){
@@ -41,11 +39,50 @@ double Current_at_voltage_component(Circuit &circuit, Voltage_Component* compone
     return current;
 }
 
-void Calculate_currents(Circuit &circuit){
+double Current_at_inductor(Circuit &circuit, Inductor* component, int _node = -1){
+    double current = 0;
+    int node = _node == -1?component->get_anode():_node;
+    for(int i = 0; i < circuit.get_nodes().at(node).components_attached.size(); i++){
+        Component* _component = circuit.get_nodes().at(node).components_attached[i];
+        Inductor* v = dynamic_cast<Inductor*>(_component);
+        if(v != component){
+            if(dynamic_cast<Inductor*>(_component)){
+                int next_node = _component->get_anode() == node?_component->get_cathode():_component->get_anode(); 
+                current += Current_at_inductor(circuit,dynamic_cast<Inductor*>(_component),next_node);
+            }else{
+                if(dynamic_cast<Current_Component*>(_component)){
+                    current += ((Current_Component*)_component)->current * 
+                    (_component->get_anode() == node?-1:1);
+                }
+                if(dynamic_cast<BJT*>(_component)){
+                    int connection = 1;
+                    if(_component->get_anode() == node){
+                        connection = 0;
+                    }else if (_component->get_cathode() == node){
+                        connection = 2;
+                    }
+                    current -= ((BJT*)_component)->currents[connection];
+                }
+            }
+        }
+    }
+    return current;
+}
+
+void Calculate_currents(Circuit &circuit, bool OP = false){
     std::vector<Voltage_Component*> voltage_components;
+    std::vector<Inductor*> inductors;
     for (Component* component: circuit.get_components()){
-        if(dynamic_cast<Current_Component*>(component)){
-            ((Current_Component*)component)->current = ((Current_Component*)component)->get_current(circuit.get_voltages());
+        if(OP){
+            if(dynamic_cast<Inductor*>(component)){
+                inductors.push_back(dynamic_cast<Inductor*>(component));
+            }
+            else if(dynamic_cast<Current_Component*>(component)){
+                ((Current_Component*)component)->current = ((Current_Component*)component)->get_current(circuit.get_voltages());
+            }
+        }
+        else if(dynamic_cast<Current_Component*>(component)){
+                ((Current_Component*)component)->current = ((Current_Component*)component)->get_current(circuit.get_voltages());
         }
         if(dynamic_cast<BJT*>(component)){
             ((BJT*)component)->currents = ((BJT*)component)->get_current(circuit.get_voltages());
@@ -56,6 +93,9 @@ void Calculate_currents(Circuit &circuit){
     }
     for(Voltage_Component* component: voltage_components){
         component->current = Current_at_voltage_component(circuit,component);
+    }
+    for(Inductor* component: inductors){
+        component->current = Current_at_inductor(circuit,component);
     }
 }
 
@@ -81,6 +121,8 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime = -1){
     {
         if(!OP){
         myfile << CurrentTime << "," ;
+        }else{
+        myfile << 0 << "," ;    
         }
         for(int i = 0; i < CKTIn.get_voltages().size()-1; i++) {
             myfile << CKTIn.get_voltages().at(i) << ",";
@@ -91,7 +133,7 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime = -1){
     }else cout << "Unable to open voltage file";
     
     if(myfile2.is_open()){
-        if(CurrentTime == 0){
+        if(CurrentTime < 0){
             for(int i = 0; i < CKTIn.get_components().size()-1; i++){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){
                     myfile2 << CKTIn.get_components().at(i)->get_name() << "C" << ", ";
@@ -112,6 +154,8 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime = -1){
         }
         if(!OP){
             myfile2 << CurrentTime << "," ;
+        }else{
+            myfile2 << 0 << "," ;
         }
         for(int i = 0; i < CKTIn.get_components().size()-1; i++){
                 if(dynamic_cast<BJT*>(CKTIn.get_components().at(i))){

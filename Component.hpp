@@ -166,6 +166,8 @@ public:
     void set_conductance(double deltatime)
     {
         conductance = value/deltatime;
+        //std::cout << "value" << value << std::endl;
+        //std::cout << conductance << std::endl;
     }
     void set_linear_current(double VoltageN) 
     {
@@ -189,7 +191,7 @@ private:
     //current at voltage guess, used for linear aproximations
     double id0 = 0;
     //ideality coefficient 
-    double N;;
+    double N;
     //breakdown voltage
     double BV = -75;
     double GMIN = pow(10,-12);
@@ -208,16 +210,12 @@ public:
         G1 = 1/Rs;
     }
     ~Diode(){}
-    //set the voltage across the diode
-    void set_vd(double _vd){
-        vd = _vd;
-    }
     //set the current through the diode at operating point
     void set_id0(double _id0){
         id0 = _id0;
     }
     //get the linear aproximation of the conductor for the diode
-    double get_conductance(){
+    double get_conductance() const{
         double conductance = GMIN;
         //check if less than break down voltage
         if(vd < BV){
@@ -229,7 +227,7 @@ public:
         return conductance;
     }
     //get the linear aproximations of the current source from the diode
-    double get_linear_current(){
+    double get_linear_current() const{
         //double current = (id0 - this->get_conductance()*vd);
         return (id0 - this->get_conductance()*vd);
     }
@@ -248,7 +246,8 @@ public:
     //get the current through the diode
     double get_current(const std::vector<double> &nodevoltages) const
     {
-        double V = nodevoltages[anode]-nodevoltages[cathode];
+        //double V0 = (nodevoltages[anode]*G1+nodevoltages[cathode]*G2 - this->get_linear_current())/(G1+G2);
+        double V = vd;
         double current = 0;
         if(V > -5*N*Vt){
             current = I_s*(exp((V)/(N*Vt))-1) + (V)*GMIN;
@@ -262,8 +261,16 @@ public:
     double get_rs(){
         return Rs;
     }
-    void set_cathode(int _index){cathode = _index;}
-    void set_anode(int _index){anode = _index;}
+    //void set_cathode(int _index){cathode = _index;}
+    //void set_anode(int _index){anode = _index;}
+    //set the voltage across the diode
+    //void set_vd(double _vd){
+    void set_vd(std::vector<double> voltages){
+        //vd = _vd;
+        double V0 = (voltages[anode]*G1+voltages[cathode]*G2 - this->get_linear_current())/(G1+G2);
+        //vd = voltages[anode] - voltages[cathode];
+        vd = V0 - voltages[cathode];
+    }
 };
 
 class Voltage_Controlled_Current_Source :                
@@ -286,6 +293,10 @@ public:
     virtual double get_gain() const
     {
         return gain;        
+    }
+    virtual double get_current(const std::vector<double> &nodeVoltages) const{
+        double current =  gain*(nodeVoltages[control_voltage_anode] - nodeVoltages[control_voltage_cathode]);
+        return current;
     }
     int get_control_anode() const
     {

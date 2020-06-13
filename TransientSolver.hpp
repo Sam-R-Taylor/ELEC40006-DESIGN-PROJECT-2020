@@ -9,6 +9,7 @@
 #include"Circuit.hpp"
 #include <memory> 
 #include "KCLSolver.hpp"
+#include "SparseKCLSolver.hpp"
 using Eigen::MatrixXd;
 
 void TransientSolver(Circuit &circuit, bool OP = false){
@@ -21,7 +22,8 @@ void TransientSolver(Circuit &circuit, bool OP = false){
         for(Component* component: circuit.get_components()){
             //adjust all the diodes for the current voltage guess
             if(dynamic_cast<Diode*>(component)){
-                ((Diode*)component)->set_vd(circuit.get_voltages()[component->get_anode()] - circuit.get_voltages()[component->get_cathode()]);
+                //((Diode*)component)->set_vd(circuit.get_voltages()[component->get_anode()] - circuit.get_voltages()[component->get_cathode()]);
+                ((Diode*)component)->set_vd(circuit.get_voltages());
                 ((Diode*)component)->set_id0(((Diode*)component)->get_current(circuit.get_voltages()));
                 ((Diode*)component)->set_conductance();
             }
@@ -32,8 +34,10 @@ void TransientSolver(Circuit &circuit, bool OP = false){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        Matrix_solver(circuit,OP);   
-        
+        Sparse_Matrix_solver(circuit,OP); 
+        //for(auto x: circuit.get_voltages()){
+        //    std::cout << x << std::endl;
+        //}  
         //set the stored voltages to the new voltages
         incomplete = false;
         for(int i = 0; i < old_voltages.size(); i++){
@@ -43,6 +47,7 @@ void TransientSolver(Circuit &circuit, bool OP = false){
         }
         //check that max iterations haven't occured
         if(current_iteration >= circuit.max_iterations){
+            std::cout << "max iterations" << std::endl;
             exit(1);
             incomplete = false;
         }

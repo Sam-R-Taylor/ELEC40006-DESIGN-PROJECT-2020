@@ -4,7 +4,8 @@
 
 #include <vector>
 #include "Component.hpp"
-#include "eigen3/Eigen/Dense"
+#include <Eigen/Sparse>
+#include <Eigen/Dense>
 
 struct Node{
     int index = 0;
@@ -63,7 +64,7 @@ public:
     //diodes constants
     double GMIN = pow(10,-12);
     double ABSTOL = pow(10,-12);
-    double RELTOL = pow(10,-6);
+    double RELTOL = pow(10,-3);
     size_t max_iterations = 1000;           //edit after testing
     Circuit()
     {
@@ -123,6 +124,15 @@ public:
         {
             //std::cerr <<"index " << solution(i) << std::endl;
             voltages[i+1] = solution(i);
+        }
+    }
+    void set_voltages_eigen(Eigen::SparseVector<double> & solution)
+    {
+        //std::cerr <<"setting voltages" << std::endl;
+        for(int i = 0; i<solution.size(); i++)
+        {
+            //std::cerr <<"index " << solution(i) << std::endl;
+            voltages[i+1] = solution.coeffRef(i);
         }
     }
     std::vector<Node> *get_nodes_ptr() {return &nodes;}
