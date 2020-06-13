@@ -6,7 +6,7 @@
 #include <iostream>
 #include <chrono>
 #include <vector>
-#include"leo_KCLSolver.hpp"
+#include"KCLSolver.hpp"
 using namespace std;
 int main(){
     
@@ -15,7 +15,7 @@ int main(){
     Resistor r1{2,1,"R1",1000};
     Resistor r2{2,3,"R2",5000};
     Resistor r3{4,0,"R3",2000};
-    Voltage_Controlled_Voltage_Source v2{4,3,"V2",6,2,0};
+    Voltage_Controlled_Current_Source v2{4,3,"V2",0.01,2,0};
     //Diode d1{2,3,"D1"};
     //Current_source i1{0,2,"I1",0.005};
     //(BJT bj{1,2,3,"BJ",0.67,0.995,1,10,0.2,0.3};
