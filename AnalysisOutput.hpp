@@ -127,7 +127,7 @@ void NodeVoltagesToFile(Circuit& CKTIn , double CurrentTime = -1){
         for(int i = 0; i < CKTIn.get_voltages().size()-1; i++) {
             myfile << CKTIn.get_voltages().at(i) << ",";
         }
-        myfile << CKTIn.get_voltages().at(CKTIn.get_voltages().size()-1);
+        myfile << CKTIn.get_voltages().at(CKTIn.get_voltages().size()-1) << ",";
         myfile << "\n";
         myfile.close();
     }else cout << "Unable to open voltage file";
