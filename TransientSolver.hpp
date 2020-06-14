@@ -34,7 +34,7 @@ void TransientSolver(Circuit &circuit, bool OP = false){
         }
         //set the voltages to the output of the KCL with the components
         std::vector<double> old_voltages = circuit.get_voltages(); 
-        Matrix_solver(circuit,OP); 
+        Sparse_Matrix_solver(circuit,OP); 
         //for(auto x: circuit.get_voltages()){
         //    std::cout << x << std::endl;
         //}  

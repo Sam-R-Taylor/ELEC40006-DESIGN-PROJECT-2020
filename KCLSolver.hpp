@@ -4,7 +4,7 @@
 #include "Circuit.hpp"
 #include "Component.hpp"
 #include <memory>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <cassert>
 
 void Matrix_solver(Circuit& input_circuit, bool OP = false)

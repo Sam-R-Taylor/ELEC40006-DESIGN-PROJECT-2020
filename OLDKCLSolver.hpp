@@ -4,10 +4,10 @@
 #include <vector>
 #include <iostream>
 //#include <Eigen/Dense>
-#include <Eigen/Sparse>
-#include<Eigen/SparseCholesky>
-#include<Eigen/SparseLU>
-#include<Eigen/SparseQR>
+#include <eigen3/Eigen/Sparse>
+#include<eigen3/Eigen/SparseCholesky>
+#include<eigen3/Eigen/SparseLU>
+#include<eigen3/Eigen/SparseQR>
 
 #include <string>
 #include "Component.hpp"
